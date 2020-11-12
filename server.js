@@ -3,6 +3,8 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const session = require("express-session");
+const RedisStore = require("connect-redis")(session);
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 
@@ -34,6 +36,21 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 
 app.use(express.static(path.join(__dirname, "client/build")));
+app.use(
+  session({
+    store: process.env.REDIS_URL
+      ? new RedisStore({ url: process.env.REDIS_URL })
+      : null,
+    secret: process.env.SESSION_SECRET,
+    resave: process.env.REDIS_URL ? false : true,
+    saveUninitialized: false,
+    cooke: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1000 * 60 * 60 * 24 * 7 * 365,
+    },
+  })
+);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
