@@ -16,7 +16,22 @@ mongoose
     console.log(`MongoDB Connection Error: ${err.message}`);
   });
 
-// test heroku mongodb atlas connection
+const userSchema = new mongoose.Schema({
+  googleId: String,
+  googleAccessToken: String,
+  googleRefreshToken: String,
+  googleTokenExpiresIn: Number,
+  googleScopes: String,
+  googleTokenType: String,
+  wrikeAccessToken: String,
+  wrikeRefreshToken: String,
+  wrikeHost: String,
+  wrikeTokenType: String,
+  wrikeTokenExpiresIn: Number,
+  wrikeFirstName: String,
+  wrikeLastName: String,
+});
+const User = mongoose.model("User", userSchema);
 
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(bodyParser.urlencoded({ extended: false }));
