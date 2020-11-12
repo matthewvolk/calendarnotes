@@ -38,7 +38,7 @@ const User = mongoose.model("User", userSchema);
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
   session({
-    store: process.env.REDIS_URL
+    store: !!process.env.REDIS_URL
       ? new RedisStore({ url: process.env.REDIS_URL })
       : null,
     secret: process.env.SESSION_SECRET,
