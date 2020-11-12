@@ -16,6 +16,8 @@ mongoose
     console.log(`MongoDB Connection Error: ${err.message}`);
   });
 
+// test heroku mongodb atlas connection
+
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
