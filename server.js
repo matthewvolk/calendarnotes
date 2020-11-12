@@ -3,6 +3,7 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
 const port = process.env.PORT || 5000;
@@ -39,7 +40,7 @@ app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
   session({
     store: !!process.env.REDIS_URL
-      ? new RedisStore({ url: process.env.REDIS_URL })
+      ? new RedisStore(redis.createClient(process.env.REDIS_URL))
       : null,
     secret: process.env.SESSION_SECRET,
     resave: process.env.REDIS_URL ? false : true,
