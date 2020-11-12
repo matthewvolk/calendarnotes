@@ -4,9 +4,19 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const port = process.env.PORT || 5000;
+const mongoose = require("mongoose");
+
+mongoose
+  .connect(process.env.MONGODB_CONNECTION_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Successfully connected to MongoDB"))
+  .catch((err) => {
+    console.log(`MongoDB Connection Error: ${err.message}`);
+  });
 
 app.use(express.static(path.join(__dirname, "client/build")));
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
