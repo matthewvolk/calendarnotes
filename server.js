@@ -1,4 +1,5 @@
 require("dotenv").config();
+const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const app = express();
@@ -70,3 +71,18 @@ app.get("*", (req, res) => {
 app.listen(port, () => {
   console.log(`HTTP server listening on http://localhost:${port}`);
 });
+
+// https for local dev
+if (process.env.NODE_ENV === "local") {
+  require("https")
+    .createServer(
+      {
+        key: fs.readFileSync("./localhost.key"),
+        cert: fs.readFileSync("./localhost.crt"),
+      },
+      app
+    )
+    .listen(8443, () => {
+      console.log(`HTTPS server listening at https://localhost:8443/api`);
+    });
+}
