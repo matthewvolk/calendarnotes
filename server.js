@@ -13,8 +13,6 @@ const axios = require("axios");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 
-// let redisClient = redis.createClient(process.env.REDIS_URL);
-
 mongoose
   .connect(process.env.MONGODB_CONNECTION_URI, {
     useNewUrlParser: true,
@@ -258,4 +256,9 @@ if (process.env.NODE_ENV === "local") {
 /**
  * @todo
  * 1. https://stackoverflow.com/questions/61126689/how-to-override-express-api-routes-with-react-router
+ */
+
+/**
+ * @notes
+ * Flush Heroku Redis Cache: $ heroku redis:cli, $ flushall
  */
