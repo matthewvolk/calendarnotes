@@ -26,7 +26,9 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <h1 style={{ fontSize: "4rem", marginTop: "0", marginBottom: "0" }}>
+          <h1
+            style={{ fontSize: "5.25rem", marginTop: "0", marginBottom: "0" }}
+          >
             🗓
           </h1>
           <h3 style={{ margin: "1rem 0 1rem 0" }}>{data.name}</h3>
