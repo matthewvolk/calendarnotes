@@ -185,7 +185,7 @@ app.get(
     failureRedirect: "/api/failure",
   }),
   (req, res) => {
-    res.redirect("/api");
+    res.redirect("/");
   }
 );
 

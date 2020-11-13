@@ -30,6 +30,9 @@ class App extends Component {
           <pre style={{ margin: "0", fontSize: "1.15rem" }}>
             Author: {data.author}
           </pre>
+          <pre style={{ marginTop: "0.5rem", fontSize: "1.15rem" }}>
+            logged_in: {data.logged_in}
+          </pre>
         </header>
       </div>
     );
