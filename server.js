@@ -7,12 +7,13 @@ const bodyParser = require("body-parser");
 const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
-const redisClient = redis.createClient(process.env.REDIS_URL);
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
+
+let redisClient = redis.createClient(process.env.REDIS_URL);
 
 mongoose
   .connect(process.env.MONGODB_CONNECTION_URI, {
@@ -92,7 +93,9 @@ passport.use(
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
   session({
-    store: !!process.env.REDIS_URL ? new RedisStore(redisClient) : null,
+    store: !!process.env.REDIS_URL
+      ? new RedisStore({ client: redisClient })
+      : null,
     secret: process.env.SESSION_SECRET,
     resave: process.env.REDIS_URL ? false : true,
     saveUninitialized: false,
