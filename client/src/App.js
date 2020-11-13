@@ -35,11 +35,11 @@ class App extends Component {
           <pre style={{ margin: "0", fontSize: "1.15rem" }}>
             Author: {data.author}
           </pre>
-          <pre style={{ marginTop: "0", fontSize: "1.15rem" }}>
+          <pre style={{ margin: "0", fontSize: "1.15rem" }}>
             logged_in: {data.logged_in ? "true" : "false"}
           </pre>
           {data.logged_in ? (
-            <pre style={{ marginTop: "0", fontSize: "1.15rem" }}>
+            <pre style={{ margin: "0", fontSize: "1.15rem" }}>
               user: {data.user.firstName} {data.user.lastName}
             </pre>
           ) : null}
@@ -49,6 +49,7 @@ class App extends Component {
               textDecoration: "underline",
               cursor: "pointer",
               fontSize: "0.85em",
+              marginTop: "1rem",
             }}
             onClick={this.logInWithGoogle}
           >
