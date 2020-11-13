@@ -121,6 +121,9 @@ app.get("/api", (req, res) => {
     googleLogin: `https://${req.get("host")}/api/google/auth`,
     googleRefresh: `https://${req.get("host")}/api/google/auth/refresh`,
     googleCalendars: `https://${req.get("host")}/api/google/calendars`,
+    wrikeLogin: `https://${req.get("host")}/api/wrike/auth`,
+    wrikeRefresh: `https://${req.get("host")}/api/wrike/auth/refresh`,
+    wrikeProfile: `https://${req.get("host")}/api/wrike/profile`,
     deleteSession: `https://${req.get("host")}/api/delete/session`,
   };
 
@@ -204,7 +207,7 @@ app.get("/api/google/auth/refresh", ensureAuthenticated, async (req, res) => {
         googleScopes: response.data.scope,
       }
     ).exec();
-    res.redirect("/api");
+    res.redirect("/");
   } catch (err) {
     next(err);
   }
@@ -229,6 +232,86 @@ app.get(
     }
   }
 );
+
+app.get("/api/wrike/auth", ensureAuthenticated, (req, res) => {
+  res.redirect(
+    `https://login.wrike.com/oauth2/authorize/v4?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&response_type=code&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`
+  );
+});
+
+app.get(
+  "/api/wrike/auth/callback",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: `https://login.wrike.com/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=authorization_code&code=${req.query.code}&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`,
+      });
+      const user = await User.findOneAndUpdate(
+        { googleId: req.user.googleId },
+        {
+          wrikeAccessToken: response.data.access_token,
+          wrikeRefreshToken: response.data.refresh_token,
+          wrikeHost: response.data.host,
+          wrikeTokenType: response.data.token_type,
+          wrikeTokenExpiresIn: response.data.expires_in,
+        }
+      ).exec();
+      res.redirect("/");
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+app.get(
+  "/api/wrike/auth/refresh",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: `https://${req.user.wrikeHost}/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${req.user.wrikeRefreshToken}`,
+      });
+      const user = await User.findOneAndUpdate(
+        { googleId: req.user.googleId },
+        {
+          wrikeAccessToken: response.data.access_token,
+          wrikeRefreshToken: response.data.refresh_token,
+          wrikeHost: response.data.host,
+          wrikeTokenType: response.data.token_type,
+          wrikeTokenExpiresIn: response.data.expires_in,
+        }
+      ).exec();
+      res.redirect("/");
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+app.get("/api/wrike/profile", ensureAuthenticated, async (req, res, next) => {
+  try {
+    const response = await axios({
+      method: "get",
+      url: "https://www.wrike.com/api/v4/contacts?me",
+      headers: {
+        Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+      },
+    });
+    const user = await User.findOneAndUpdate(
+      { googleId: req.user.googleId },
+      {
+        wrikeFirstName: response.data.data[0].firstName,
+        wrikeLastName: response.data.data[0].lastName,
+      }
+    ).exec();
+    res.redirect("/");
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname + "/client/build/index.html"));
