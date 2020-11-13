@@ -116,16 +116,12 @@ function ensureAuthenticated(req, res, next) {
 
 app.get("/api", (req, res) => {
   const links = {
-    home: `${req.protocol}://${req.get("host")}/api/`,
-    user: `${req.protocol}://${req.get("host")}/api/user`,
-    googleLogin: `${req.protocol}://${req.get("host")}/api/google/auth`,
-    googleRefresh: `${req.protocol}://${req.get(
-      "host"
-    )}/api/google/auth/refresh`,
-    googleCalendars: `${req.protocol}://${req.get(
-      "host"
-    )}/api/google/calendars`,
-    deleteSession: `${req.protocol}://${req.get("host")}/api/delete/session`,
+    home: `https://${req.get("host")}/api/`,
+    user: `https://${req.get("host")}/api/user`,
+    googleLogin: `https://${req.get("host")}/api/google/auth`,
+    googleRefresh: `https://${req.get("host")}/api/google/auth/refresh`,
+    googleCalendars: `https://${req.get("host")}/api/google/calendars`,
+    deleteSession: `https://${req.get("host")}/api/delete/session`,
   };
 
   if (req.user) {
