@@ -13,7 +13,7 @@ const axios = require("axios");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 
-let redisClient = redis.createClient(process.env.REDIS_URL);
+// let redisClient = redis.createClient(process.env.REDIS_URL);
 
 mongoose
   .connect(process.env.MONGODB_CONNECTION_URI, {
@@ -94,7 +94,7 @@ app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
   session({
     store: !!process.env.REDIS_URL
-      ? new RedisStore({ client: redisClient })
+      ? new RedisStore({ client: redis.createClient(process.env.REDIS_URL) })
       : null,
     secret: process.env.SESSION_SECRET,
     resave: process.env.REDIS_URL ? false : true,
