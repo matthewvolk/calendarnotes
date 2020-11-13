@@ -91,9 +91,7 @@ passport.use(
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
   session({
-    store: !!process.env.REDIS_URL
-      ? new RedisStore(redis.createClient({ client: process.env.REDIS_URL }))
-      : null,
+    store: !!process.env.REDIS_URL ? new RedisStore(redis) : null,
     secret: process.env.SESSION_SECRET,
     resave: process.env.REDIS_URL ? false : true,
     saveUninitialized: false,
