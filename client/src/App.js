@@ -17,7 +17,7 @@ class App extends Component {
 
   logInWithGoogle = (e) => {
     e.preventDefault();
-    window.location.assign(`${window.location.host}/api/google/auth`);
+    window.location.assign("/api/google/auth");
   };
 
   render() {
@@ -38,7 +38,17 @@ class App extends Component {
           <pre style={{ marginTop: "0", fontSize: "1.15rem" }}>
             logged_in: {data.logged_in ? "true" : "false"}
           </pre>
-          <a onClick={this.logInWithGoogle}>Log in with Google</a>
+          <a
+            style={{
+              color: "#62dafb",
+              textDecoration: "underline",
+              cursor: "pointer",
+              fontSize: "0.85em",
+            }}
+            onClick={this.logInWithGoogle}
+          >
+            Log in with Google
+          </a>
         </header>
       </div>
     );
