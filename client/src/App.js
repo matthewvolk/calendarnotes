@@ -29,7 +29,7 @@ class App extends Component {
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h3 style={{ margin: "0.25rem 0 1rem 0" }}>{data.name}</h3>
-          <pre style={{ margin: "0 0 0.25rem 0", fontSize: "1.15rem" }}>
+          <pre style={{ margin: "0", fontSize: "1.15rem" }}>
             v{data.version}
           </pre>
           <pre style={{ margin: "0", fontSize: "1.15rem" }}>
