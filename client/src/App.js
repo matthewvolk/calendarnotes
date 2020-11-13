@@ -31,7 +31,7 @@ class App extends Component {
             Author: {data.author}
           </pre>
           <pre style={{ marginTop: "0.5rem", fontSize: "1.15rem" }}>
-            logged_in: {data.logged_in}
+            logged_in: {data.logged_in ? "true" : "false"}
           </pre>
         </header>
       </div>
