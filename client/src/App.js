@@ -33,9 +33,6 @@ class App extends Component {
             v{data.version}
           </pre>
           <pre style={{ margin: "0", fontSize: "1.15rem" }}>
-            author: {data.author}
-          </pre>
-          <pre style={{ margin: "0", fontSize: "1.15rem" }}>
             logged_in: {data.logged_in ? "true" : "false"}
           </pre>
           {data.logged_in ? (
