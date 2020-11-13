@@ -15,6 +15,11 @@ class App extends Component {
       .then((data) => this.setState({ data }));
   };
 
+  logInWithGoogle = (e) => {
+    e.preventDefault();
+    window.location.assign(`${window.location.host}/api/google/auth`);
+  };
+
   render() {
     const { data } = this.state;
     console.log(data);
@@ -30,9 +35,10 @@ class App extends Component {
           <pre style={{ margin: "0", fontSize: "1.15rem" }}>
             Author: {data.author}
           </pre>
-          <pre style={{ marginTop: "0.5rem", fontSize: "1.15rem" }}>
+          <pre style={{ marginTop: "0", fontSize: "1.15rem" }}>
             logged_in: {data.logged_in ? "true" : "false"}
           </pre>
+          <a onClick={this.logInWithGoogle}>Log in with Google</a>
         </header>
       </div>
     );
