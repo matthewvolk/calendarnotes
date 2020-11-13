@@ -38,6 +38,11 @@ class App extends Component {
           <pre style={{ marginTop: "0", fontSize: "1.15rem" }}>
             logged_in: {data.logged_in ? "true" : "false"}
           </pre>
+          {data.logged_in ? (
+            <pre style={{ marginTop: "0", fontSize: "1.15rem" }}>
+              user: {data.user.firstName} {data.user.lastName}
+            </pre>
+          ) : null}
           <a
             style={{
               color: "#62dafb",

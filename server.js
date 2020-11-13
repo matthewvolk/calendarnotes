@@ -146,7 +146,7 @@ app.get("/api", (req, res) => {
   }
 });
 
-app.get("/api/delete/session", ensureAuthenticated, (req, res) => {
+app.get("/api/delete/session", (req, res) => {
   req.session.destroy();
   res.redirect("/api");
 });
