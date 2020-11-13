@@ -43,18 +43,13 @@ class App extends Component {
               user: {data.user.firstName} {data.user.lastName}
             </pre>
           ) : null}
-          <a
-            style={{
-              color: "#62dafb",
-              textDecoration: "underline",
-              cursor: "pointer",
-              fontSize: "0.85em",
-              marginTop: "1rem",
-            }}
+          <button
             onClick={this.logInWithGoogle}
+            type="button"
+            class="login-with-google-btn"
           >
-            Log in with Google
-          </a>
+            Sign in with Google
+          </button>
         </header>
       </div>
     );
