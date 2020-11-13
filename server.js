@@ -180,7 +180,7 @@ app.get(
 );
 
 app.get(
-  "/api/v1/google/auth/callback",
+  "/api/google/auth/callback",
   passport.authenticate("google", {
     failureRedirect: "/api/failure",
   }),
