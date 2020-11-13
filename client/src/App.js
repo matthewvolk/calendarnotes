@@ -27,7 +27,8 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
+          {/* <img src={logo} className="App-logo" alt="logo" /> */}
+          <h1 style={{ fontSize: "4rem", marginTop: "0" }}>🗓</h1>
           <h3 style={{ margin: "0.25rem 0 1rem 0" }}>{data.name}</h3>
           <pre style={{ margin: "0", fontSize: "1.15rem" }}>
             v{data.version}
