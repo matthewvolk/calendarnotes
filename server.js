@@ -4,9 +4,11 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const redis = require("redis").createClient(process.env.REDIS_URL);
+const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
+if (process.env.REDIS_URL)
+  const redisClient = redis.createClient(process.env.REDIS_URL);
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
@@ -91,7 +93,7 @@ passport.use(
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
   session({
-    store: !!process.env.REDIS_URL ? new RedisStore(redis) : null,
+    store: !!process.env.REDIS_URL ? new RedisStore(redisClient) : null,
     secret: process.env.SESSION_SECRET,
     resave: process.env.REDIS_URL ? false : true,
     saveUninitialized: false,
