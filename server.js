@@ -7,8 +7,7 @@ const bodyParser = require("body-parser");
 const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
-if (process.env.REDIS_URL)
-  const redisClient = redis.createClient(process.env.REDIS_URL);
+const redisClient = redis.createClient(process.env.REDIS_URL);
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
