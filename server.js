@@ -7,6 +7,9 @@ const bodyParser = require("body-parser");
 const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
+const axios = require("axios");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 
@@ -21,6 +24,8 @@ mongoose
   });
 
 const userSchema = new mongoose.Schema({
+  firstName: String,
+  lastName: String,
   googleId: String,
   googleAccessToken: String,
   googleRefreshToken: String,
@@ -36,6 +41,52 @@ const userSchema = new mongoose.Schema({
   wrikeLastName: String,
 });
 const User = mongoose.model("User", userSchema);
+
+passport.serializeUser(function (user, done) {
+  done(null, user.googleId);
+});
+
+passport.deserializeUser(async function (id, done) {
+  try {
+    const user = await User.findOne({ googleId: id }).exec();
+    if (!user) done(null, false);
+    else done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_OAUTH2_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_OAUTH2_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_OAUTH2_REDIRECT_URI,
+    },
+    async function (accessToken, refreshToken, profile, done) {
+      let user;
+      try {
+        user = await User.findOne({ googleId: profile.id }).exec();
+      } catch (err) {
+        done(err, false);
+      }
+
+      if (user) {
+        return done(null, user);
+      } else {
+        user = new User({
+          firstName: profile.name.givenName,
+          lastName: profile.name.familyName,
+          googleId: profile.id,
+          googleAccessToken: accessToken,
+          googleRefreshToken: refreshToken,
+        });
+        await user.save();
+        return done(null, user);
+      }
+    }
+  )
+);
 
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
@@ -55,14 +106,133 @@ app.use(
 );
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(passport.initialize());
+app.use(passport.session());
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  else res.status(401).send("Unauthorized");
+}
 
 app.get("/api", (req, res) => {
-  res.json({
-    name: "CalendarNotes",
-    version: "0.0.1 alpha",
-    author: "Matthew Volk",
-  });
+  const links = {
+    home: `${req.protocol}://${req.get("host")}/api/`,
+    user: `${req.protocol}://${req.get("host")}/api/user`,
+    googleLogin: `${req.protocol}://${req.get("host")}/api/google/auth`,
+    googleRefresh: `${req.protocol}://${req.get(
+      "host"
+    )}/api/google/auth/refresh`,
+    googleCalendars: `${req.protocol}://${req.get(
+      "host"
+    )}/api/google/calendars`,
+    deleteSession: `${req.protocol}://${req.get("host")}/api/delete/session`,
+  };
+
+  if (req.user) {
+    res.json({
+      name: "CalendarNotes",
+      version: "0.0.1 alpha",
+      author: "Matthew Volk",
+      logged_in: true,
+      links,
+      user: req.user,
+      session: req.session,
+    });
+  } else {
+    res.json({
+      name: "CalendarNotes",
+      version: "0.0.1 alpha",
+      author: "Matthew Volk",
+      logged_in: false,
+      links,
+      session: req.session,
+    });
+  }
 });
+
+app.get("/api/delete/session", ensureAuthenticated, (req, res) => {
+  req.session.destroy();
+  res.redirect("/api");
+});
+
+app.get("/api/user", ensureAuthenticated, async (req, res) => {
+  try {
+    user = await User.findOne({ googleId: req.user.googleId }).exec();
+    res.send(user);
+  } catch (err) {
+    res.send("Error from catch within /api/user!");
+  }
+});
+
+app.get("/api/failure", (req, res) => {
+  res.send("Failed to Authenticate with Google OAuth2");
+});
+
+app.get(
+  "/api/google/auth",
+  passport.authenticate("google", {
+    scope: [
+      "email",
+      "profile",
+      "openid",
+      "https://www.googleapis.com/auth/calendar",
+      "https://www.googleapis.com/auth/calendar.events",
+    ],
+    accessType: "offline",
+    prompt: "consent",
+  })
+);
+
+app.get(
+  "/api/v1/google/auth/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/api/failure",
+  }),
+  (req, res) => {
+    res.redirect("/api");
+  }
+);
+
+app.get("/api/google/auth/refresh", ensureAuthenticated, async (req, res) => {
+  try {
+    const response = await axios({
+      method: "post",
+      url: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${req.user.googleRefreshToken}`,
+    });
+    const user = await User.findOneAndUpdate(
+      { googleId: req.user.googleId },
+      {
+        googleAccessToken: response.data.access_token,
+        googleTokenType: response.data.token_type,
+        googleTokenExpiresIn: response.data.expires_in,
+        googleScopes: response.data.scope,
+      }
+    ).exec();
+    res.redirect("/api");
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get(
+  "/api/google/calendars",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
+        headers: {
+          Authorization: `Bearer ${req.user.googleAccessToken}`,
+        },
+      });
+      let data = response.data;
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname + "/client/build/index.html"));
