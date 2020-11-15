@@ -359,7 +359,7 @@ app.get("/api/wrike/profile", ensureAuthenticated, async (req, res, next) => {
   try {
     const response = await axios({
       method: "get",
-      url: "https://www.wrike.com/api/v4/contacts?me",
+      url: `https://${req.user._doc.wrikeHost}/api/v4/contacts?me`,
       headers: {
         Authorization: `Bearer ${req.user.wrikeAccessToken}`,
       },
@@ -376,6 +376,41 @@ app.get("/api/wrike/profile", ensureAuthenticated, async (req, res, next) => {
     next(err);
   }
 });
+
+app.get("/api/wrike/spaces", ensureAuthenticated, async (req, res, next) => {
+  try {
+    const response = await axios({
+      method: "get",
+      url: `https://${req.user._doc.wrikeHost}/api/v4/spaces`,
+      headers: {
+        Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+      },
+    });
+    res.json({ spaces: response.data });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get(
+  "/api/wrike/spaces/:spaceId/folders",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    let { spaceId } = req.params;
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://${req.user._doc.wrikeHost}/api/v4/spaces/${spaceId}/folders`,
+        headers: {
+          Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+        },
+      });
+      res.json({ spaces: response.data });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname + "/client/build/index.html"));
