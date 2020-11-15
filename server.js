@@ -10,6 +10,7 @@ const RedisStore = require("connect-redis")(session);
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
+const { startOfWeek, endOfWeek } = require("date-fns");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 
@@ -41,6 +42,28 @@ const userSchema = new mongoose.Schema({
   wrikeLastName: String,
 });
 const User = mongoose.model("User", userSchema);
+
+// const newUserSchema = new mongoose.Schema({
+//   google: {
+//     firstName: String,
+//     lastName: String,
+//     id: String,
+//     accessToken: String,
+//     refreshToken: String,
+//     tokenExpiresIn: Number,
+//     accessScopes: String,
+//     tokenType: String
+//   },
+//   wrike: {
+//     firstName: String,
+//     lastName: String,
+//     accessToken: String,
+//     refreshToken: String,
+//     apiHost: String,
+//     tokenType: String,
+//     tokenExpiresIn: Number,
+//   },
+// });
 
 passport.serializeUser(function (user, done) {
   done(null, user.googleId);
@@ -120,7 +143,9 @@ app.get("/api", (req, res) => {
     user: `https://${req.get("host")}/api/user`,
     googleLogin: `https://${req.get("host")}/api/google/auth`,
     googleRefresh: `https://${req.get("host")}/api/google/auth/refresh`,
+    date: `https://${req.get("host")}/api/date/today`,
     googleCalendars: `https://${req.get("host")}/api/google/calendars`,
+    googleCalendarEvents: `/api/google/calendars/:calendarId/events`,
     wrikeLogin: `https://${req.get("host")}/api/wrike/auth`,
     wrikeRefresh: `https://${req.get("host")}/api/wrike/auth/refresh`,
     wrikeProfile: `https://${req.get("host")}/api/wrike/profile`,
@@ -221,6 +246,45 @@ app.get(
       const response = await axios({
         method: "get",
         url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
+        headers: {
+          Authorization: `Bearer ${req.user.googleAccessToken}`,
+        },
+      });
+      let data = response.data;
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+app.get("/api/date/today", (req, res) => {
+  let today = new Date();
+  let startOfCurrentWeek = startOfWeek(today).toISOString();
+  let endOfCurrentWeek = endOfWeek(today).toISOString();
+  res.json({
+    today: today.toISOString(),
+    startOfCurrentWeek,
+    endOfCurrentWeek,
+  });
+});
+
+app.get(
+  "/api/google/calendars/:calendarId/events",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    let url;
+    const { calendarId } = req.params;
+    const { timeMax, timeMin } = req.query;
+    if (timeMax && timeMin) {
+      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMax=${timeMax}&timeMin=${timeMin}`;
+    } else {
+      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
+    }
+    try {
+      const response = await axios({
+        method: "get",
+        url,
         headers: {
           Authorization: `Bearer ${req.user.googleAccessToken}`,
         },
@@ -338,10 +402,16 @@ if (process.env.NODE_ENV === "local") {
 
 /**
  * @todo
- * 1. https://stackoverflow.com/questions/61126689/how-to-override-express-api-routes-with-react-router
+ * [ ] https://support.google.com/cloud/answer/9110914?hl=en
+ * [ ] https://www.indiehackers.com/forum/how-to-handle-user-sessions-in-a-node-and-react-app-e7b467048b
+ * [ ] https://stackoverflow.com/questions/61126689/how-to-override-express-api-routes-with-react-router
+ * [ ] https://stackoverflow.com/questions/41069593/how-do-i-handle-errors-in-passport-deserializeuser
+ * [ ] https://stackoverflow.com/questions/44362205/passport-nodeerror-failed-to-deserialize-user-out-of-session
+ * [ ] https://stackoverflow.com/questions/35359295/how-does-passport-js-stores-user-object-in-session
+ * [ ] https://stackoverflow.com/questions/27637609/understanding-passport-serialize-deserialize
  */
 
 /**
  * @notes
- * Flush Heroku Redis Cache: $ heroku redis:cli, $ flushall
+ * - Flush Heroku Redis Cache: $ heroku redis:cli, $ flushall
  */
