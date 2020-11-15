@@ -149,7 +149,9 @@ app.get("/api", (req, res) => {
     wrikeLogin: `https://${req.get("host")}/api/wrike/auth`,
     wrikeRefresh: `https://${req.get("host")}/api/wrike/auth/refresh`,
     wrikeProfile: `https://${req.get("host")}/api/wrike/profile`,
-    deleteSession: `https://${req.get("host")}/api/delete/session`,
+    wrikeSpaces: `https://${req.get("host")}/api/wrike/spaces`,
+    wrikeFolders: `/api/wrike/spaces/:spaceId/folders`,
+    logOut: `https://${req.get("host")}/api/delete/session`,
   };
 
   if (req.user) {
