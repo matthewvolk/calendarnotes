@@ -10,7 +10,13 @@ const RedisStore = require("connect-redis")(session);
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
-const { startOfWeek, endOfWeek } = require("date-fns");
+const {
+  startOfWeek,
+  endOfWeek,
+  differenceInMinutes,
+  parseISO,
+  format,
+} = require("date-fns");
 const port = process.env.PORT || 5000;
 const mongoose = require("mongoose");
 
@@ -366,6 +372,7 @@ app.get("/api/wrike/profile", ensureAuthenticated, async (req, res, next) => {
         Authorization: `Bearer ${req.user.wrikeAccessToken}`,
       },
     });
+    console.dir(response.data.data[0]);
     const user = await User.findOneAndUpdate(
       { googleId: req.user.googleId },
       {
@@ -414,6 +421,121 @@ app.get(
   }
 );
 
+app.post(
+  "/api/notes/create/calendar/:calendarId/event/:eventId/folder/:folderId",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    /**
+     * @todo
+     * 1. Error handling for bad data supplied with URL above
+     */
+
+    // let tempGoogleAuth;
+    // let tempWrikeAuth;
+    // let tempWrikeContact;
+
+    let { folderId, eventId, calendarId } = req.params;
+    let eventResponse;
+    try {
+      eventResponse = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+        headers: {
+          Authorization: `Bearer ${req.user.googleAccessToken}`,
+        },
+      });
+      console.log("Retrieved Google Calendar Event!");
+    } catch (err) {
+      next(err);
+    }
+
+    console.dir(eventResponse);
+
+    let wrikeBody = {};
+    wrikeBody.title =
+      eventResponse.data.summary +
+      ` - ${format(
+        parseISO(eventResponse.data.start.dateTime),
+        "EEEE, MMMM d ⋅ H:mmaaaaa'm' - "
+      )}${format(parseISO(eventResponse.data.end.dateTime), "H:mmaaaaa'm'")}`;
+    wrikeBody.description = `<h4><b>Attendees</b></h4><ul>`;
+    eventResponse.data.attendees.forEach((obj, index) => {
+      if (!obj.organizer) {
+        wrikeBody.description += `<li><a href="mailto:${obj.email}">${obj.email}</a></li>`;
+      }
+    });
+    wrikeBody.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4>Action Items</h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /><b>[ ASSIGNEE_NAME ]:</b>&nbsp;</label></li></ul>`;
+    wrikeBody.dates = {};
+    wrikeBody.dates.type = "Planned";
+    wrikeBody.dates.duration = differenceInMinutes(
+      parseISO(eventResponse.data.end.dateTime),
+      parseISO(eventResponse.data.start.dateTime)
+    );
+    wrikeBody.dates.start = format(
+      parseISO(eventResponse.data.start.dateTime),
+      "yyyy-MM-dd'T'HH:mm:ss"
+    );
+    wrikeBody.dates.due = format(
+      parseISO(eventResponse.data.end.dateTime),
+      "yyyy-MM-dd'T'HH:mm:ss"
+    );
+
+    /**
+     * @todo
+     * either make an api call to contacts?me or use current logged in Wrike user
+     * from React
+     */
+    wrikeBody.responsibles = [tempWrikeContact];
+
+    let wrikeResponse;
+
+    try {
+      wrikeResponse = await axios({
+        method: "post",
+        url: `https://${req.user._doc.wrikeHost}/api/v4/folders/${folderId}/tasks`,
+        headers: {
+          Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+        },
+        data: wrikeBody,
+      });
+      console.log("Created Wrike Task!");
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+
+    let googleEventCreationResponse;
+
+    try {
+      googleEventCreationResponse = await axios({
+        method: "post",
+        url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+        headers: {
+          Authorization: `Bearer ${req.user.googleAccessToken}`,
+        },
+        data: {
+          summary: "_Notes",
+          description: wrikeResponse.data.data[0].permalink,
+          start: {
+            dateTime: eventResponse.data.start.dateTime,
+          },
+          end: {
+            dateTime: eventResponse.data.end.dateTime,
+          },
+          reminders: {
+            useDefault: false,
+          },
+          colorId: "8",
+        },
+      });
+      console.log("Created Google Calendar Notes Task!");
+      res.send("Success!");
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname + "/client/build/index.html"));
 });
@@ -446,6 +568,8 @@ if (process.env.NODE_ENV === "local") {
  * [ ] https://stackoverflow.com/questions/44362205/passport-nodeerror-failed-to-deserialize-user-out-of-session
  * [ ] https://stackoverflow.com/questions/35359295/how-does-passport-js-stores-user-object-in-session
  * [ ] https://stackoverflow.com/questions/27637609/understanding-passport-serialize-deserialize
+ *
+ * [ ] When someone changes their response to "Not Going" or "Maybe", potentially update the meeting notes.
  */
 
 /**
