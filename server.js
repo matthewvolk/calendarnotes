@@ -545,7 +545,7 @@ app.listen(port, () => {
 });
 
 // https for local dev
-if (process.env.NODE_ENV === "local") {
+if (process.env.NODE_ENV === "development") {
   require("https")
     .createServer(
       {
