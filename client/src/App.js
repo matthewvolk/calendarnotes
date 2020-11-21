@@ -1,7 +1,8 @@
 import React, { Component } from "react";
+import { BrowserRouter, Route, Switch, Link } from "react-router-dom";
 import "./App.css";
 
-class App extends Component {
+class Home extends Component {
   state = { data: {} };
 
   componentDidMount() {
@@ -46,7 +47,7 @@ class App extends Component {
           <button
             onClick={this.logInWithGoogle}
             type="button"
-            class="login-with-google-btn"
+            className="login-with-google-btn"
           >
             Sign in with Google
           </button>
@@ -55,5 +56,29 @@ class App extends Component {
     );
   }
 }
+
+const Dashboard = () => {
+  return <div>Dashboard</div>;
+};
+
+const NotFound = () => {
+  return (
+    <div>
+      Oops! That page doesn't exist. <Link to="/">Go Home</Link>.
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <BrowserRouter>
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route exact path="/dashboard" component={Dashboard} />
+        <Route path="/" component={NotFound} />
+      </Switch>
+    </BrowserRouter>
+  );
+};
 
 export default App;
