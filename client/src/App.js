@@ -42,11 +42,47 @@ const Login = () => {
 
 const Dashboard = () => {
   const { userData } = useContext(UserContext);
+  const [calendars, setCalendars] = useState(null);
+
+  useEffect(() => {
+    const getCalendarData = async () => {
+      const res = await fetch("/api/google/calendars", {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setCalendars(data);
+
+      /**
+       * @todo handle server errors
+       */
+    };
+    getCalendarData();
+  }, []);
+
   return (
     <>
       <div>
-        Welcome, {userData.user.firstName} {userData.user.lastName}
+        <b>
+          Welcome, {userData.user.firstName} {userData.user.lastName}
+        </b>
       </div>
+      <div>
+        <b>Calendar:</b>&nbsp;
+        <select>
+          {calendars ? (
+            calendars.items.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.summary}
+              </option>
+            ))
+          ) : (
+            <option value="loading" disabled>
+              Loading...
+            </option>
+          )}
+        </select>
+      </div>
+      <a href="/api/wrike/auth">Login with Wrike</a> |&nbsp;
       <a href="/api/delete/session">Logout</a>
     </>
   );
@@ -76,6 +112,10 @@ const App = () => {
       const res = await fetch("/api");
       const data = await res.json();
       setUserData(data);
+
+      /**
+       * @todo handle server errors
+       */
     };
     getUserData();
   }, []);
@@ -89,16 +129,3 @@ const App = () => {
 };
 
 export default App;
-
-/**
- * @notes
- * - UserContext isn't important yet, but it will be when I have many components, it'll be the source of truth for user data throughout the app
- * - I don't need client side routing, because the entire app functions on the premise of the user being logged out or logged in
- * - UserContext checks to see if there is a user logged in, and if there is, the <Home /> component is conditionally rendered
- * - Either rendered as a login screen or rendered as the app itself, all based on whether or not a user is logged in.
- * @nextsteps
- * - I need to move the useEffect hook from <Home /> and into <App />, then refactor <Home /> to use the context from the UserContext
- * - <App /> will then show either "Loading..." while it fetches data, or it will render the <Home /> component
- * - The <Home /> component will then check the user context and either render the <Authenticated /> app or the <Unauthenticated /> app
- * - The "Loading..." part is going to be hard because useEffect can't be used as the "isLoading ? <div>Loading...</div> : <Home />"
- */
