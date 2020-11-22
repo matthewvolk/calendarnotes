@@ -256,11 +256,14 @@ app.get(
   "/api/google/calendars/:calendarId/events",
   ensureAuthenticated,
   async (req, res, next) => {
+    let today = new Date();
+    let timeMin = startOfWeek(today).toISOString();
+    let timeMax = endOfWeek(today).toISOString();
     let url;
     const { calendarId } = req.params;
-    const { timeMax, timeMin } = req.query;
     if (timeMax && timeMin) {
       url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMax=${timeMax}&timeMin=${timeMin}`;
+      console.log(url);
     } else {
       url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
     }
@@ -275,7 +278,7 @@ app.get(
       let data = response.data;
       res.json(data);
     } catch (err) {
-      next(err);
+      res.json(err.response.data);
     }
   }
 );
