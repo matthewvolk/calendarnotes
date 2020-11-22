@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import UserContext from "./context/UserContext";
-import "./App.css";
 
 const Login = () => {
   const { userData } = useContext(UserContext);
@@ -11,37 +10,31 @@ const Login = () => {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1 style={{ fontSize: "5.25rem", marginTop: "0", marginBottom: "0" }}>
-          🗓
-        </h1>
-        <h3 style={{ margin: "1rem 0 1rem 0" }}>CalendarNotes</h3>
-        <pre style={{ margin: "0", fontSize: "1.15rem" }}>
-          v{userData.version}
-        </pre>
-        <pre style={{ margin: "0", fontSize: "1.15rem" }}>
-          logged_in: {userData.logged_in ? "true" : "false"}
-        </pre>
-        {userData.logged_in ? (
-          <pre style={{ margin: "0", fontSize: "1.15rem" }}>
-            user: {userData.user.firstName} {userData.user.lastName}
-          </pre>
-        ) : null}
-        <button
-          onClick={logInWithGoogle}
-          type="button"
-          className="login-with-google-btn"
-        >
-          Sign in with Google
-        </button>
-      </header>
+    <div className="Login-frame">
+      <div className="Login">
+        <div className="Login-box">
+          <h1 className="calendar-emoji">🗓</h1>
+          <h3 className="calendar-header">CalendarNotes</h3>
+          <div className="button-frame">
+            <button
+              onClick={logInWithGoogle}
+              type="button"
+              className="login-with-google-btn"
+            >
+              Sign in with Google
+            </button>
+          </div>
+          <div className="Login-box-info">
+            <pre className="Login-box-info-text">version: 0.0.1 alpha</pre>
+            <pre className="Login-box-info-text">by: Matthew Volk</pre>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-const Dashboard = () => {
-  const { userData } = useContext(UserContext);
+const CalendarSelector = () => {
   const [calendars, setCalendars] = useState(null);
 
   useEffect(() => {
@@ -51,13 +44,34 @@ const Dashboard = () => {
       });
       const data = await res.json();
       setCalendars(data);
-
-      /**
-       * @todo handle server errors
-       */
     };
     getCalendarData();
   }, []);
+
+  if (calendars) {
+    return (
+      <div>
+        <b>Calendar:</b>&nbsp;
+        <select>
+          {calendars.items.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.summary}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <b>Calendars:</b> Loading...
+      </div>
+    );
+  }
+};
+
+const Dashboard = () => {
+  const { userData } = useContext(UserContext);
 
   return (
     <>
@@ -65,22 +79,7 @@ const Dashboard = () => {
         <b>
           Welcome, {userData.user.firstName} {userData.user.lastName}
         </b>
-      </div>
-      <div>
-        <b>Calendar:</b>&nbsp;
-        <select>
-          {calendars ? (
-            calendars.items.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.summary}
-              </option>
-            ))
-          ) : (
-            <option value="loading" disabled>
-              Loading...
-            </option>
-          )}
-        </select>
+        <CalendarSelector />
       </div>
       <a href="/api/wrike/auth">Login with Wrike</a> |&nbsp;
       <a href="/api/delete/session">Logout</a>
