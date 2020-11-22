@@ -39,6 +39,7 @@ const userSchema = new mongoose.Schema({
   googleTokenExpiresIn: Number,
   googleScopes: String,
   googleTokenType: String,
+  googleSelectedCalendar: String,
   wrikeAccessToken: String,
   wrikeRefreshToken: String,
   wrikeHost: String,
@@ -144,40 +145,14 @@ function ensureAuthenticated(req, res, next) {
 }
 
 app.get("/api", (req, res) => {
-  const links = {
-    home: `https://${req.get("host")}/api/`,
-    user: `https://${req.get("host")}/api/user`,
-    googleLogin: `https://${req.get("host")}/api/google/auth`,
-    googleRefresh: `https://${req.get("host")}/api/google/auth/refresh`,
-    date: `https://${req.get("host")}/api/date/today`,
-    googleCalendars: `https://${req.get("host")}/api/google/calendars`,
-    googleCalendarEvents: `/api/google/calendars/:calendarId/events`,
-    wrikeLogin: `https://${req.get("host")}/api/wrike/auth`,
-    wrikeRefresh: `https://${req.get("host")}/api/wrike/auth/refresh`,
-    wrikeProfile: `https://${req.get("host")}/api/wrike/profile`,
-    wrikeSpaces: `https://${req.get("host")}/api/wrike/spaces`,
-    wrikeFolders: `/api/wrike/spaces/:spaceId/folders`,
-    logOut: `https://${req.get("host")}/api/delete/session`,
-  };
-
   if (req.user) {
     res.json({
-      name: "CalendarNotes",
-      version: "0.0.1 alpha",
-      author: "Matthew Volk",
       logged_in: true,
-      links,
       user: req.user,
-      session: req.session,
     });
   } else {
     res.json({
-      name: "CalendarNotes",
-      version: "0.0.1 alpha",
-      author: "Matthew Volk",
       logged_in: false,
-      links,
-      session: req.session,
     });
   }
 });
