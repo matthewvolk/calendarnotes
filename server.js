@@ -262,8 +262,7 @@ app.get(
     let url;
     const { calendarId } = req.params;
     if (timeMax && timeMin) {
-      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMax=${timeMax}&timeMin=${timeMin}`;
-      console.log(url);
+      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMax=${timeMax}&timeMin=${timeMin}&singleEvents=true`;
     } else {
       url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
     }
