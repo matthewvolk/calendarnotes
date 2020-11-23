@@ -40,11 +40,11 @@ const Dashboard = () => {
         </b>
         <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
       </div>
+      {/* <a href="/api/wrike/auth">Login with Wrike</a> |&nbsp; */}
+      <a href="/api/delete/session">Logout</a>
       <div>
         <Events events={events} />
       </div>
-      <a href="/api/wrike/auth">Login with Wrike</a> |&nbsp;
-      <a href="/api/delete/session">Logout</a>
     </>
   );
 };
