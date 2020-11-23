@@ -32,6 +32,11 @@ const Dashboard = () => {
     }
   }, [currentCalendarId]);
 
+  const logout = (e) => {
+    e.preventDefault();
+    window.location.assign("/api/delete/session");
+  };
+
   return (
     <>
       <div>
@@ -40,8 +45,11 @@ const Dashboard = () => {
         </b>
         <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
       </div>
-      {/* <a href="/api/wrike/auth">Login with Wrike</a> |&nbsp; */}
-      <a href="/api/delete/session">Logout</a>
+      <br />
+      <button disabled>Login with Wrike</button> |&nbsp;
+      <button onClick={logout}>Logout</button>
+      <br />
+      <br />
       <div>
         <Events events={events} />
       </div>
