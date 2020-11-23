@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const CalendarSelector = () => {
+const CalendarSelector = ({ setCurrentCalendarId }) => {
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -23,28 +23,11 @@ const CalendarSelector = () => {
   }, []);
 
   useEffect(() => {
-    const getEvents = async (calendarId) => {
-      console.log(encodeURIComponent(calendarId));
-      const res = await fetch(
-        `/api/google/calendars/${encodeURIComponent(calendarId)}/events`,
-        {
-          credentials: "include",
-        }
-      );
-      const data = await res.json();
-      if (data.error) {
-        console.log(
-          "Oops! You don't have permission to consume that calendar."
-        );
-      } else {
-        console.log(data);
-      }
-    };
-
+    /**
+     * @todo change state of <Dashboard /> selected calendar
+     */
     if (selectedOption) {
-      getEvents(selectedOption.value);
-    } else {
-      console.log("No selected option");
+      setCurrentCalendarId(selectedOption.value);
     }
   }, [selectedOption]);
 
@@ -55,7 +38,7 @@ const CalendarSelector = () => {
     });
   };
 
-  if (options && options.length > 1) {
+  if (options && options.length) {
     return (
       <>
         <div>
