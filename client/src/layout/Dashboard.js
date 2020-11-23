@@ -23,7 +23,16 @@ const Dashboard = () => {
       );
       const data = await res.json();
       if (!data.error) {
-        setEvents(data.items.filter((obj) => obj.start));
+        let removeCancelledEvents = data.items.filter((obj) => obj.start);
+        let orderByEarliestFirst = removeCancelledEvents.sort((a, b) => {
+          return (
+            new Date(a.start.dateTime).getTime() -
+            new Date(b.start.dateTime).getTime()
+          );
+        });
+        setEvents(orderByEarliestFirst);
+      } else {
+        console.error("ERROR at getEvents()", data);
       }
     };
 

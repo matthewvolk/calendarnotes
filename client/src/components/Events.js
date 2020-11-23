@@ -1,5 +1,4 @@
 const Events = ({ events }) => {
-  console.log("From <Events />", events);
   if (events) {
     return (
       <>
@@ -22,9 +21,9 @@ const Events = ({ events }) => {
                     <td>
                       {new Intl.DateTimeFormat("en-US", {
                         weekday: "long",
-                        // year: "numeric",
-                        // month: "long",
-                        // day: "numeric",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
                         hour: "numeric",
                         minute: "numeric",
                       }).format(
