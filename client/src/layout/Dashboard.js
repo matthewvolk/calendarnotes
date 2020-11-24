@@ -14,6 +14,10 @@ const Dashboard = () => {
      * so I can persist when page reloads
      */
 
+    /**
+     * @todo figure out refresh tokens
+     */
+
     const getEvents = async (currentCalendarId) => {
       const res = await fetch(
         `/api/google/calendars/${encodeURIComponent(currentCalendarId)}/events`,
