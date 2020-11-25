@@ -10,8 +10,20 @@ const RedisStore = require("connect-redis")(session);
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
+const mongoose = require("mongoose");
 
 const auth = require("./middlewares/auth");
+const User = require("./models/User");
+
+mongoose
+  .connect(process.env.MONGODB_CONNECTION_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Successfully connected to MongoDB"))
+  .catch((err) => {
+    console.log(`MongoDB Connection Error: ${err.message}`);
+  });
 
 /**
  * @todo create Wrike and Google Axios clients
@@ -41,59 +53,6 @@ const {
   format,
 } = require("date-fns");
 const port = process.env.PORT || 5000;
-const mongoose = require("mongoose");
-
-mongoose
-  .connect(process.env.MONGODB_CONNECTION_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Successfully connected to MongoDB"))
-  .catch((err) => {
-    console.log(`MongoDB Connection Error: ${err.message}`);
-  });
-
-const userSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  googleId: String,
-  googleAccessToken: String,
-  googleRefreshToken: String,
-  googleTokenExpiresIn: Number,
-  googleScopes: String,
-  googleTokenType: String,
-  googleSelectedCalendar: String,
-  wrikeAccessToken: String,
-  wrikeRefreshToken: String,
-  wrikeHost: String,
-  wrikeTokenType: String,
-  wrikeTokenExpiresIn: Number,
-  wrikeFirstName: String,
-  wrikeLastName: String,
-});
-const User = mongoose.model("User", userSchema);
-
-// const newUserSchema = new mongoose.Schema({
-//   google: {
-//     firstName: String,
-//     lastName: String,
-//     id: String,
-//     accessToken: String,
-//     refreshToken: String,
-//     tokenExpiresIn: Number,
-//     accessScopes: String,
-//     tokenType: String
-//   },
-//   wrike: {
-//     firstName: String,
-//     lastName: String,
-//     accessToken: String,
-//     refreshToken: String,
-//     apiHost: String,
-//     tokenType: String,
-//     tokenExpiresIn: Number,
-//   },
-// });
 
 passport.serializeUser(function (user, done) {
   done(null, user.googleId);
