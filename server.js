@@ -7,13 +7,22 @@ const bodyParser = require("body-parser");
 const redis = require("redis");
 const session = require("express-session");
 const RedisStore = require("connect-redis")(session);
-const passport = require("passport");
-const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
 const mongoose = require("mongoose");
+const {
+  startOfWeek,
+  endOfWeek,
+  differenceInMinutes,
+  parseISO,
+  format,
+} = require("date-fns");
 
+const passport = require("passport");
+require("./config/passport")(passport);
 const auth = require("./middlewares/auth");
 const User = require("./models/User");
+
+const port = process.env.PORT || 5000;
 
 mongoose
   .connect(process.env.MONGODB_CONNECTION_URI, {
@@ -44,61 +53,6 @@ mongoose
  * @todo
  * Dependency injection: https://cdn-media-1.freecodecamp.org/images/1*TF-VdAgPfcD497kAW77Ukg.png
  */
-
-const {
-  startOfWeek,
-  endOfWeek,
-  differenceInMinutes,
-  parseISO,
-  format,
-} = require("date-fns");
-const port = process.env.PORT || 5000;
-
-passport.serializeUser(function (user, done) {
-  done(null, user.googleId);
-});
-
-passport.deserializeUser(async function (id, done) {
-  try {
-    const user = await User.findOne({ googleId: id }).exec();
-    if (!user) done(null, false);
-    else done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_OAUTH2_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_OAUTH2_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_OAUTH2_REDIRECT_URI,
-    },
-    async function (accessToken, refreshToken, profile, done) {
-      let user;
-      try {
-        user = await User.findOne({ googleId: profile.id }).exec();
-      } catch (err) {
-        done(err, false);
-      }
-
-      if (user) {
-        return done(null, user);
-      } else {
-        user = new User({
-          firstName: profile.name.givenName,
-          lastName: profile.name.familyName,
-          googleId: profile.id,
-          googleAccessToken: accessToken,
-          googleRefreshToken: refreshToken,
-        });
-        await user.save();
-        return done(null, user);
-      }
-    }
-  )
-);
 
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
