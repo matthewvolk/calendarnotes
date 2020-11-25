@@ -10,6 +10,29 @@ const RedisStore = require("connect-redis")(session);
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const axios = require("axios");
+
+const auth = require("./middlewares/auth");
+
+/**
+ * @todo create Wrike and Google Axios clients
+ * const myClient = axios.create({
+ *    baseUrl: "https://api.example.com",
+ *    headers: {
+ *      Authorization: "Bearer ..."
+ *    }
+ * })
+ *
+ * try {
+ *    const res = await myClient.get("/test")
+ *    const data = res.data
+ * } catch (err) {
+ *    handleError(err)
+ * }
+ *
+ * @todo
+ * Dependency injection: https://cdn-media-1.freecodecamp.org/images/1*TF-VdAgPfcD497kAW77Ukg.png
+ */
+
 const {
   startOfWeek,
   endOfWeek,
@@ -139,11 +162,6 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  else res.status(401).send("Unauthorized");
-}
-
 app.get("/api", (req, res) => {
   if (req.user) {
     res.json({
@@ -162,7 +180,7 @@ app.get("/api/delete/session", (req, res) => {
   res.redirect("/");
 });
 
-app.get("/api/user", ensureAuthenticated, async (req, res) => {
+app.get("/api/user", auth.ensureAuthenticated, async (req, res) => {
   try {
     user = await User.findOne({ googleId: req.user.googleId }).exec();
     res.send(user);
@@ -200,30 +218,34 @@ app.get(
   }
 );
 
-app.get("/api/google/auth/refresh", ensureAuthenticated, async (req, res) => {
-  try {
-    const response = await axios({
-      method: "post",
-      url: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${req.user.googleRefreshToken}`,
-    });
-    const user = await User.findOneAndUpdate(
-      { googleId: req.user.googleId },
-      {
-        googleAccessToken: response.data.access_token,
-        googleTokenType: response.data.token_type,
-        googleTokenExpiresIn: response.data.expires_in,
-        googleScopes: response.data.scope,
-      }
-    ).exec();
-    res.redirect("/");
-  } catch (err) {
-    next(err);
+app.get(
+  "/api/google/auth/refresh",
+  auth.ensureAuthenticated,
+  async (req, res) => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${req.user.googleRefreshToken}`,
+      });
+      const user = await User.findOneAndUpdate(
+        { googleId: req.user.googleId },
+        {
+          googleAccessToken: response.data.access_token,
+          googleTokenType: response.data.token_type,
+          googleTokenExpiresIn: response.data.expires_in,
+          googleScopes: response.data.scope,
+        }
+      ).exec();
+      res.redirect("/");
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 app.get(
   "/api/google/calendars",
-  ensureAuthenticated,
+  auth.ensureAuthenticated,
   async (req, res, next) => {
     try {
       const response = await axios({
@@ -254,7 +276,7 @@ app.get("/api/date/today", (req, res) => {
 
 app.get(
   "/api/google/calendars/:calendarId/events",
-  ensureAuthenticated,
+  auth.ensureAuthenticated,
   async (req, res, next) => {
     let today = new Date();
     let timeMin = startOfWeek(today).toISOString();
@@ -282,7 +304,7 @@ app.get(
   }
 );
 
-app.get("/api/wrike/auth", ensureAuthenticated, (req, res) => {
+app.get("/api/wrike/auth", auth.ensureAuthenticated, (req, res) => {
   res.redirect(
     `https://login.wrike.com/oauth2/authorize/v4?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&response_type=code&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`
   );
@@ -290,7 +312,7 @@ app.get("/api/wrike/auth", ensureAuthenticated, (req, res) => {
 
 app.get(
   "/api/wrike/auth/callback",
-  ensureAuthenticated,
+  auth.ensureAuthenticated,
   async (req, res, next) => {
     try {
       const response = await axios({
@@ -316,7 +338,7 @@ app.get(
 
 app.get(
   "/api/wrike/auth/refresh",
-  ensureAuthenticated,
+  auth.ensureAuthenticated,
   async (req, res, next) => {
     try {
       const response = await axios({
@@ -340,47 +362,55 @@ app.get(
   }
 );
 
-app.get("/api/wrike/profile", ensureAuthenticated, async (req, res, next) => {
-  try {
-    const response = await axios({
-      method: "get",
-      url: `https://${req.user._doc.wrikeHost}/api/v4/contacts?me`,
-      headers: {
-        Authorization: `Bearer ${req.user.wrikeAccessToken}`,
-      },
-    });
-    console.dir(response.data.data[0]);
-    const user = await User.findOneAndUpdate(
-      { googleId: req.user.googleId },
-      {
-        wrikeFirstName: response.data.data[0].firstName,
-        wrikeLastName: response.data.data[0].lastName,
-      }
-    ).exec();
-    res.redirect("/");
-  } catch (err) {
-    next(err);
+app.get(
+  "/api/wrike/profile",
+  auth.ensureAuthenticated,
+  async (req, res, next) => {
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://${req.user._doc.wrikeHost}/api/v4/contacts?me`,
+        headers: {
+          Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+        },
+      });
+      console.dir(response.data.data[0]);
+      const user = await User.findOneAndUpdate(
+        { googleId: req.user.googleId },
+        {
+          wrikeFirstName: response.data.data[0].firstName,
+          wrikeLastName: response.data.data[0].lastName,
+        }
+      ).exec();
+      res.redirect("/");
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
-app.get("/api/wrike/spaces", ensureAuthenticated, async (req, res, next) => {
-  try {
-    const response = await axios({
-      method: "get",
-      url: `https://${req.user._doc.wrikeHost}/api/v4/spaces`,
-      headers: {
-        Authorization: `Bearer ${req.user.wrikeAccessToken}`,
-      },
-    });
-    res.json({ spaces: response.data });
-  } catch (err) {
-    next(err);
+app.get(
+  "/api/wrike/spaces",
+  auth.ensureAuthenticated,
+  async (req, res, next) => {
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://${req.user._doc.wrikeHost}/api/v4/spaces`,
+        headers: {
+          Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+        },
+      });
+      res.json({ spaces: response.data });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 app.get(
   "/api/wrike/spaces/:spaceId/folders",
-  ensureAuthenticated,
+  auth.ensureAuthenticated,
   async (req, res, next) => {
     let { spaceId } = req.params;
     try {
@@ -400,7 +430,7 @@ app.get(
 
 app.post(
   "/api/notes/create/calendar/:calendarId/event/:eventId/folder/:folderId",
-  ensureAuthenticated,
+  auth.ensureAuthenticated,
   async (req, res, next) => {
     /**
      * @todo
