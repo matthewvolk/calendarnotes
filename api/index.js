@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middlewares/auth");
 const User = require("../models/User");
+const UserService = require("../services/UserService");
 const axios = require("axios");
 const passport = require("passport");
 require("../config/passport")(passport);
@@ -32,11 +33,12 @@ router.get("/delete/session", (req, res) => {
 });
 
 router.get("/user", auth.ensureAuthenticated, async (req, res) => {
+  const userService = new UserService();
   try {
-    user = await User.findOne({ googleId: req.user.googleId }).exec();
+    const user = await userService.getUser(req.user.googleId);
     res.send(user);
   } catch (err) {
-    res.send("Error from catch within /api/user!");
+    res.send(null);
   }
 });
 
