@@ -58,9 +58,9 @@ const Dashboard = () => {
   return (
     <>
       <div>
-        <b>
+        <h3>
           Welcome, {userData.user.firstName} {userData.user.lastName}
-        </b>
+        </h3>
         <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
       </div>
       <br />
@@ -70,7 +70,15 @@ const Dashboard = () => {
         <button onClick={loginWithWrike}>Login with Wrike</button>
       )}
       <button onClick={logout}>Logout</button>
-      <br />
+      {userData.user.wrikeAccessToken ? (
+        <div>
+          <br />
+          <b>Choose Wrike Space:</b>&nbsp;
+          <select disabled>
+            <option>N/A</option>
+          </select>
+        </div>
+      ) : null}
       <br />
       <div>
         <Events events={events} />
