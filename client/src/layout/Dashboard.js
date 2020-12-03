@@ -70,9 +70,9 @@ const Dashboard = () => {
         <button onClick={loginWithWrike}>Login with Wrike</button>
       )}
       <button onClick={logout}>Logout</button>
+      <br />
       {userData.user.wrikeAccessToken ? (
         <div>
-          <br />
           <b>Choose Wrike Space:</b>&nbsp;
           <select disabled>
             <option>N/A</option>
