@@ -50,6 +50,11 @@ const Dashboard = () => {
     window.location.assign("/api/delete/session");
   };
 
+  const loginWithWrike = (e) => {
+    e.preventDefault();
+    window.location.assign("/api/wrike/auth");
+  };
+
   return (
     <>
       <div>
@@ -59,7 +64,11 @@ const Dashboard = () => {
         <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
       </div>
       <br />
-      <button disabled>Login with Wrike</button> |&nbsp;
+      {userData.user.wrikeAccessToken ? (
+        <button disabled>Login with Wrike</button>
+      ) : (
+        <button onClick={loginWithWrike}>Login with Wrike</button>
+      )}
       <button onClick={logout}>Logout</button>
       <br />
       <br />
