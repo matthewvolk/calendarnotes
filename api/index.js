@@ -389,7 +389,7 @@ router.post(
         },
       });
       console.log("Created Google Calendar Notes Task!");
-      res.send("Success!");
+      res.json({ status: 200, message: "Success!" });
     } catch (err) {
       next(err);
     }
