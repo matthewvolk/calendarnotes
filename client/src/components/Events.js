@@ -3,6 +3,7 @@ const Events = ({
   setCurrentEventId,
   currentCalendarId,
   wrikeFolderId,
+  createNotes,
 }) => {
   if (events) {
     return (
@@ -47,6 +48,11 @@ const Events = ({
                           onClick={(e) => {
                             e.preventDefault();
                             setCurrentEventId(event.id);
+                            createNotes(
+                              event.id,
+                              currentCalendarId,
+                              wrikeFolderId.id
+                            );
                           }}
                         >
                           Create Meeting Notes

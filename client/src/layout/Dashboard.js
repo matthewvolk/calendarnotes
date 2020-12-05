@@ -49,23 +49,21 @@ const Dashboard = () => {
     }
   }, [currentCalendarId]);
 
-  useEffect(() => {
-    const createNotes = async (
-      currentEventId,
-      currentCalendarId,
-      wrikeFolderId
-    ) => {
-      const res = await fetch(
-        `/api/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`
-      );
-      const data = await res.json();
-      console.log(data);
-    };
-
-    if (currentEventId && currentCalendarId && wrikeFolderId) {
-      createNotes(currentEventId, currentCalendarId, wrikeFolderId.id);
-    }
-  }, [currentEventId]);
+  const createNotes = async (
+    currentEventId,
+    currentCalendarId,
+    wrikeFolderId
+  ) => {
+    const res = await fetch(
+      `https://localhost:8443/api/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
+    const data = await res.json();
+    console.log(data);
+  };
 
   useEffect(() => {
     const logWrikeFolderId = (wrikeFolderId) => {
@@ -111,6 +109,7 @@ const Dashboard = () => {
           setCurrentEventId={setCurrentEventId}
           currentCalendarId={currentCalendarId}
           wrikeFolderId={wrikeFolderId}
+          createNotes={createNotes}
         />
       </div>
     </>
