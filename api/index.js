@@ -356,9 +356,11 @@ router.post(
           Authorization: `Bearer ${req.user.wrikeAccessToken}`,
         },
       });
-      console.dir(wrikeContactResponse);
-      wrikeBody.responsibles.push(wrikeContactResponse.data.id);
-      console.log("Retrieved Wrike Contact ID!", wrikeContactResponse.data.id);
+      wrikeBody.responsibles.push(wrikeContactResponse.data.data.id);
+      console.log(
+        "Retrieved Wrike Contact ID!",
+        wrikeContactResponse.data.data.id
+      );
     } catch (err) {
       console.error(err);
       next(err);
