@@ -2,11 +2,15 @@ import React, { useContext, useEffect, useState } from "react";
 import UserContext from "../context/UserContext";
 import CalendarSelector from "../components/CalendarSelector";
 import Events from "../components/Events";
+import NotesLocation from "../components/NotesLocation";
 
 const Dashboard = () => {
   const { userData } = useContext(UserContext);
-  const [currentCalendarId, setCurrentCalendarId] = useState(null);
   const [events, setEvents] = useState(null);
+
+  const [currentCalendarId, setCurrentCalendarId] = useState(null);
+  const [currentEventId, setCurrentEventId] = useState(null);
+  const [wrikeFolderId, setWrikeFolderId] = useState(null);
 
   useEffect(() => {
     /**
@@ -45,6 +49,34 @@ const Dashboard = () => {
     }
   }, [currentCalendarId]);
 
+  useEffect(() => {
+    const createNotes = async (
+      currentEventId,
+      currentCalendarId,
+      wrikeFolderId
+    ) => {
+      const res = await fetch(
+        `/api/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`
+      );
+      const data = await res.json();
+      console.log(data);
+    };
+
+    if (currentEventId && currentCalendarId && wrikeFolderId) {
+      createNotes(currentEventId, currentCalendarId, wrikeFolderId.id);
+    }
+  }, [currentEventId]);
+
+  useEffect(() => {
+    const logWrikeFolderId = (wrikeFolderId) => {
+      console.log("From <Dashboard />'s logWrikeFolderId()", wrikeFolderId);
+    };
+
+    if (wrikeFolderId) {
+      logWrikeFolderId(wrikeFolderId);
+    }
+  }, [wrikeFolderId]);
+
   const logout = (e) => {
     e.preventDefault();
     window.location.assign("/api/delete/session");
@@ -71,17 +103,15 @@ const Dashboard = () => {
       )}
       <button onClick={logout}>Logout</button>
       <br />
-      {userData.user.wrikeAccessToken ? (
-        <div>
-          <b>Choose Wrike Space:</b>&nbsp;
-          <select disabled>
-            <option>N/A</option>
-          </select>
-        </div>
-      ) : null}
+      <NotesLocation setWrikeFolderId={setWrikeFolderId} />
       <br />
       <div>
-        <Events events={events} />
+        <Events
+          events={events}
+          setCurrentEventId={setCurrentEventId}
+          currentCalendarId={currentCalendarId}
+          wrikeFolderId={wrikeFolderId}
+        />
       </div>
     </>
   );

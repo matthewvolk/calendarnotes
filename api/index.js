@@ -243,13 +243,13 @@ router.get(
 );
 
 router.get(
-  "/wrike/spaces",
+  "/wrike/folders",
   auth.ensureAuthenticated,
   async (req, res, next) => {
     try {
       const response = await axios({
         method: "get",
-        url: `https://${req.user._doc.wrikeHost}/api/v4/spaces`,
+        url: `https://${req.user._doc.wrikeHost}/api/v4/folders`,
         headers: {
           Authorization: `Bearer ${req.user.wrikeAccessToken}`,
         },
@@ -345,7 +345,7 @@ router.post(
      * either make an api call to contacts?me or use current logged in Wrike user
      * from React
      */
-    wrikeBody.responsibles = [tempWrikeContact];
+    // wrikeBody.responsibles = [tempWrikeContact];
 
     let wrikeResponse;
 

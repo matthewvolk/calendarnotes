@@ -46,6 +46,10 @@ mongoose
  * }
  *
  * @todo
+ * Bulletproof Architecture: https://softwareontheroad.com/ideal-nodejs-project-structure/#architecture
+ *     - https://mannhowie.com/clean-architecture-node
+ *     - https://www.codementor.io/@evanbechtol/node-service-oriented-architecture-12vjt9zs9i
+ *     - https://stackoverflow.com/a/42164174
  * Dependency injection: https://cdn-media-1.freecodecamp.org/images/1*TF-VdAgPfcD497kAW77Ukg.png
  * [ ] https://support.google.com/cloud/answer/9110914?hl=en
  * [ ] https://www.indiehackers.com/forum/how-to-handle-user-sessions-in-a-node-and-react-app-e7b467048b

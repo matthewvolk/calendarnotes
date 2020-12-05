@@ -1,4 +1,9 @@
-const Events = ({ events }) => {
+const Events = ({
+  events,
+  setCurrentEventId,
+  currentCalendarId,
+  wrikeFolderId,
+}) => {
   if (events) {
     return (
       <>
@@ -9,7 +14,6 @@ const Events = ({ events }) => {
               <tr>
                 <th scope="col">Event</th>
                 <th scope="col">Date/Time</th>
-                <th scope="col">Notes Location</th>
                 <th scope="col">Create Notes</th>
               </tr>
             </thead>
@@ -38,12 +42,18 @@ const Events = ({ events }) => {
                       )}
                     </td>
                     <td>
-                      <select disabled>
-                        <option>Notes Location</option>
-                      </select>
-                    </td>
-                    <td>
-                      <button disabled>Create Meeting Notes</button>
+                      {currentCalendarId && wrikeFolderId ? (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentEventId(event.id);
+                          }}
+                        >
+                          Create Meeting Notes
+                        </button>
+                      ) : (
+                        <button disabled>Create Meeting Notes</button>
+                      )}
                     </td>
                   </tr>
                 );
