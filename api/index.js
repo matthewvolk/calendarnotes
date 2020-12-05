@@ -346,15 +346,18 @@ router.post(
      * from React
      */
 
+    wrikeBody.responsibles = [];
+
     try {
       const wrikeContactResponse = await axios({
         method: "get",
-        url: `https://${req.user._doc.wrikeHost}/api/v4/contacts?me`,
+        url: `https://${req.user._doc.wrikeHost}/api/v4/contacts?me=true`,
         headers: {
           Authorization: `Bearer ${req.user.wrikeAccessToken}`,
         },
       });
-      wrikeBody.responsibles = [wrikeContactResponse.data.id];
+      console.dir(wrikeContactResponse);
+      wrikeBody.responsibles.push(wrikeContactResponse.data.id);
       console.log("Retrieved Wrike Contact ID!", wrikeContactResponse.data.id);
     } catch (err) {
       console.error(err);
