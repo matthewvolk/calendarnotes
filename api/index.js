@@ -326,7 +326,7 @@ router.post(
         }
       });
     } else {
-      wrikeBody.description += `N/A`;
+      wrikeBody.description += `<li>N/A</li>`;
     }
     wrikeBody.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4>Action Items</h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /><b>[ ASSIGNEE_NAME ]:</b>&nbsp;</label></li></ul>`;
     wrikeBody.dates = {};
