@@ -355,7 +355,7 @@ router.post(
         },
       });
       wrikeBody.responsibles = [wrikeContactResponse.data.id];
-      console.log("Retrieved Wrike Contact ID!");
+      console.log("Retrieved Wrike Contact ID!", wrikeContactResponse.data.id);
     } catch (err) {
       console.error(err);
       next(err);
