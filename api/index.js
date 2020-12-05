@@ -350,6 +350,9 @@ router.post(
       const wrikeContactResponse = await axios({
         method: "get",
         url: `https://${req.user._doc.wrikeHost}/api/v4/contacts?me`,
+        headers: {
+          Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+        },
       });
       wrikeBody.responsibles = [wrikeContactResponse.data.id];
       console.log("Retrieved Wrike Contact ID!");
