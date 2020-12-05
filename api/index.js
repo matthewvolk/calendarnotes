@@ -319,11 +319,15 @@ router.post(
         "EEEE, MMMM d ⋅ H:mmaaaaa'm' - "
       )}${format(parseISO(eventResponse.data.end.dateTime), "H:mmaaaaa'm'")}`;
     wrikeBody.description = `<h4><b>Attendees</b></h4><ul>`;
-    eventResponse.data.attendees.forEach((obj, index) => {
-      if (!obj.organizer) {
-        wrikeBody.description += `<li><a href="mailto:${obj.email}">${obj.email}</a></li>`;
-      }
-    });
+    if (eventResponse.data.attendees) {
+      eventResponse.data.attendees.forEach((obj, index) => {
+        if (!obj.organizer) {
+          wrikeBody.description += `<li><a href="mailto:${obj.email}">${obj.email}</a></li>`;
+        }
+      });
+    } else {
+      wrikeBody.description += `N/A`;
+    }
     wrikeBody.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4>Action Items</h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /><b>[ ASSIGNEE_NAME ]:</b>&nbsp;</label></li></ul>`;
     wrikeBody.dates = {};
     wrikeBody.dates.type = "Planned";
