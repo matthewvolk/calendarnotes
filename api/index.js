@@ -309,7 +309,7 @@ router.post(
       next(err);
     }
 
-    console.dir(eventResponse);
+    // console.dir(eventResponse);
 
     let wrikeBody = {};
     wrikeBody.title =
@@ -345,7 +345,18 @@ router.post(
      * either make an api call to contacts?me or use current logged in Wrike user
      * from React
      */
-    // wrikeBody.responsibles = [tempWrikeContact];
+
+    try {
+      const wrikeContactResponse = await axios({
+        method: "get",
+        url: `https://${req.user._doc.wrikeHost}/api/v4/contacts?me`,
+      });
+      wrikeBody.responsibles = [wrikeContactResponse.data.id];
+      console.log("Retrieved Wrike Contact ID!");
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
 
     let wrikeResponse;
 
