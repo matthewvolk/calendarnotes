@@ -55,7 +55,7 @@ const Dashboard = () => {
     wrikeFolderId
   ) => {
     const res = await fetch(
-      `https://localhost:8443/api/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`,
+      `/api/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`,
       {
         method: "POST",
         credentials: "include",
