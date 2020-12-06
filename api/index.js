@@ -306,6 +306,8 @@ router.post(
       });
       console.log("Retrieved Google Calendar Event!");
     } catch (err) {
+      console.error(err.response.data);
+      console.error(err.response.status);
       next(err);
     }
 
@@ -366,7 +368,8 @@ router.post(
         wrikeContactResponse.data.data[0].id
       );
     } catch (err) {
-      console.error(err);
+      console.error(err.response.data);
+      console.error(err.response.status);
       next(err);
     }
 
@@ -383,7 +386,8 @@ router.post(
       });
       console.log("Created Wrike Task!");
     } catch (err) {
-      console.error(err);
+      console.error(err.response.data);
+      console.error(err.response.status);
       next(err);
     }
 
@@ -414,6 +418,8 @@ router.post(
       console.log("Created Google Calendar Notes Task!");
       res.json({ status: 200, message: "Success!" });
     } catch (err) {
+      console.error(err.response.data);
+      console.error(err.response.status);
       next(err);
     }
   }
