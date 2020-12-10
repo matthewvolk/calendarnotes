@@ -5,14 +5,14 @@ import Login from "../layout/Login";
 
 const Authenticate = () => {
   const { userData } = useContext(UserContext);
-  let logged_in;
+  let loggedIn;
   if (userData.logged_in) {
-    logged_in = true;
+    loggedIn = true;
   } else {
-    logged_in = false;
+    loggedIn = false;
   }
 
-  if (logged_in) {
+  if (loggedIn) {
     return <Dashboard />;
   } else {
     return <Login />;
