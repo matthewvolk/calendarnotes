@@ -8,8 +8,10 @@ const App = () => {
   useEffect(() => {
     const getUserData = async () => {
       const res = await fetch("/api");
+      // if (res.ok) {
       const data = await res.json();
       setUserData(data);
+      // }
 
       /**
        * @todo handle server errors

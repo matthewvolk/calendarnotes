@@ -15,6 +15,18 @@ const {
 } = require("date-fns");
 
 router.get("/", (req, res) => {
+  /**
+   * Input: req.user
+   * Output: logged_in, user object
+   */
+
+  // 1. Add auth.ensureAuthenticated
+  // 2. res.json({ user })
+  // or
+  // const { user } = req;
+  // const userService = new UserService();
+  // const userr = await userService.getUser() ...hmm
+
   if (req.user) {
     res.json({
       logged_in: true,
@@ -28,14 +40,20 @@ router.get("/", (req, res) => {
 });
 
 router.get("/delete/session", (req, res) => {
+  /**
+   * Input: req.session
+   * Output: void
+   */
+
   req.session.destroy();
   res.redirect("/");
 });
 
 router.get("/user", auth.ensureAuthenticated, async (req, res) => {
+  const { googleId } = req.user;
   const userService = new UserService();
   try {
-    const user = await userService.getUser(req.user.googleId);
+    const user = await userService.getUser(googleId);
     res.send(user);
   } catch (err) {
     res.send(null);
@@ -43,10 +61,24 @@ router.get("/user", auth.ensureAuthenticated, async (req, res) => {
 });
 
 router.get("/failure", (req, res) => {
+  /**
+   * Input: N/A
+   * Output: N/A
+   *
+   * Consider the Passport failureRedirect to go to React instead
+   */
+
   res.send("Failed to Authenticate with Google OAuth2");
 });
 
 router.get(
+  /**
+   * Input: N/A
+   * Output: N/A
+   *
+   * Passport's middleware, serialize, and deserialization should use a UserService object
+   */
+
   "/google/auth",
   passport.authenticate("google", {
     scope: [
@@ -62,6 +94,13 @@ router.get(
 );
 
 router.get(
+  /**
+   * Input: N/A
+   * Output: N/A
+   *
+   * Passport's middleware, serialize, and deserialization should use a UserService object
+   */
+
   "/google/auth/callback",
   passport.authenticate("google", {
     failureRedirect: "/api/failure",
@@ -75,6 +114,11 @@ router.get(
   "/google/auth/refresh",
   auth.ensureAuthenticated,
   async (req, res) => {
+    /**
+     * Input: req.user, User Model
+     * Output: Update User Model with refreshed tokens
+     */
+
     try {
       const response = await axios({
         method: "post",
@@ -100,6 +144,11 @@ router.get(
   "/google/calendars",
   auth.ensureAuthenticated,
   async (req, res, next) => {
+    /**
+     * Input: req.user.googleAccessToken
+     * Output: list of Google calendars
+     */
+
     try {
       const response = await axios({
         method: "get",
@@ -117,6 +166,12 @@ router.get(
 );
 
 router.get("/date/today", (req, res) => {
+  /**
+   * Input: N/A
+   * Output: today's date, beginning of week, end of week
+   *
+   * Maybe refactor this so input is a date, and instead this provides start and end of week for that date
+   */
   let today = new Date();
   let startOfCurrentWeek = startOfWeek(today).toISOString();
   let endOfCurrentWeek = endOfWeek(today).toISOString();
@@ -131,6 +186,11 @@ router.get(
   "/google/calendars/:calendarId/events",
   auth.ensureAuthenticated,
   async (req, res, next) => {
+    /**
+     * Input: Calendar ID, req.user.googleAccessToken, timeMin, timeMax
+     * Output: list of events for the week specified
+     */
+
     let today = new Date();
     let timeMin = startOfWeek(today).toISOString();
     let timeMax = endOfWeek(today).toISOString();
@@ -158,6 +218,11 @@ router.get(
 );
 
 router.get("/wrike/auth", auth.ensureAuthenticated, (req, res) => {
+  /**
+   * Input: N/A
+   * Output: N/A
+   */
+
   res.redirect(
     `https://login.wrike.com/oauth2/authorize/v4?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&response_type=code&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`
   );
@@ -167,6 +232,11 @@ router.get(
   "/wrike/auth/callback",
   auth.ensureAuthenticated,
   async (req, res, next) => {
+    /**
+     * Input: N/A
+     * Output: update user object with Wrike tokens
+     */
+
     try {
       const response = await axios({
         method: "post",
@@ -193,6 +263,11 @@ router.get(
   "/wrike/auth/refresh",
   auth.ensureAuthenticated,
   async (req, res, next) => {
+    /**
+     * Input: req.user.wrikeRefreshToken
+     * Output: update user object with refreshed wrike tokens
+     */
+
     try {
       const response = await axios({
         method: "post",
@@ -219,6 +294,11 @@ router.get(
   "/wrike/profile",
   auth.ensureAuthenticated,
   async (req, res, next) => {
+    /**
+     * Input: req.user._doc.wrikeHost, req.user.wrikeAccessToken
+     * Output: First/Last Name from Wrike
+     */
+
     try {
       const response = await axios({
         method: "get",
@@ -246,6 +326,11 @@ router.get(
   "/wrike/folders",
   auth.ensureAuthenticated,
   async (req, res, next) => {
+    /**
+     * Input: req.user._doc.wrikeHost, req.user.wrikeAccessToken
+     * Output: list of Wrike folders
+     */
+
     try {
       const response = await axios({
         method: "get",
@@ -265,6 +350,11 @@ router.get(
   "/wrike/spaces/:spaceId/folders",
   auth.ensureAuthenticated,
   async (req, res, next) => {
+    /**
+     * Input: req.user._doc.wrikeHost, req.user.wrikeAccessToken, spaceId
+     * Output: list of folders under a specific Wrike space
+     */
+
     let { spaceId } = req.params;
     try {
       const response = await axios({
@@ -286,13 +376,14 @@ router.post(
   auth.ensureAuthenticated,
   async (req, res, next) => {
     /**
-     * @todo
-     * 1. Error handling for bad data supplied with URL above
+     * Input: calendarId, eventId, folderId, googleAccessToken, wrikeAccessToken, wrikeContact
+     * Output: create wrike task, create google calendar event
      */
 
-    // let tempGoogleAuth;
-    // let tempWrikeAuth;
-    // let tempWrikeContact;
+    /**
+     * @todo Error handling for bad data supplied with URL above
+     * @todo Figure out why times are incorrect
+     */
 
     let { folderId, eventId, calendarId } = req.params;
     let eventResponse;
@@ -311,15 +402,13 @@ router.post(
       next(err);
     }
 
-    // console.dir(eventResponse);
-
     let wrikeBody = {};
     wrikeBody.title =
       eventResponse.data.summary +
       ` - ${format(
         parseISO(eventResponse.data.start.dateTime),
-        "EEEE, MMMM d ⋅ H:mmaaaaa'm' - "
-      )}${format(parseISO(eventResponse.data.end.dateTime), "H:mmaaaaa'm'")}`;
+        "EEEE, MMMM d ⋅ h:mmaaaaa'm' - "
+      )}${format(parseISO(eventResponse.data.end.dateTime), "h:mmaaaaa'm'")}`;
     wrikeBody.description = `<h4><b>Attendees</b></h4><ul>`;
     if (eventResponse.data.attendees) {
       eventResponse.data.attendees.forEach((obj, index) => {
@@ -345,12 +434,6 @@ router.post(
       parseISO(eventResponse.data.end.dateTime),
       "yyyy-MM-dd'T'HH:mm:ss"
     );
-
-    /**
-     * @todo
-     * either make an api call to contacts?me or use current logged in Wrike user
-     * from React
-     */
 
     wrikeBody.responsibles = [];
 

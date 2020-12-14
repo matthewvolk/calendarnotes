@@ -6,6 +6,8 @@ import Login from "../layout/Login";
 const Authenticate = () => {
   const { userData } = useContext(UserContext);
   let loggedIn;
+  // if (userData) return <Dashboard />
+  // else return <Login />
   if (userData.logged_in) {
     loggedIn = true;
   } else {
