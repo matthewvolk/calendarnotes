@@ -378,7 +378,7 @@ router.post(
 
     /**
      * @todo Error handling for bad data supplied with URL above
-     * @todo Figure out why times are incorrect
+     * @todo Figure out why times are incorrect - WIP
      */
 
     let { folderId, eventId, calendarId } = req.params;
@@ -398,14 +398,28 @@ router.post(
       next(err);
     }
 
-    // let startTime = new Date(eventResponse.data.start.dateTime)
+    /**
+     * @todo below, handle case of all-day events where there is no datetime
+     * @todo below, map days of the week and months of the year from index to string
+     * @todo potentially turn logic below into function?
+     */
+
+    // let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
+    // let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
+    //
+    // let eventStartDay = eventStartTime.getDay();
+    // let eventStartMonth = eventStartTime.getMonth();
+    // let eventStartDate = eventStartTime.getDate();
+    // let formattedEventStartTime = eventStartTime
     //   .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     //   .toLowerCase()
     //   .replace(/ /g, "");
-    // let endTime = new Date(eventResponse.data.end.dateTime)
+    // let formattedEventEndTime = eventEndTime
     //   .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     //   .toLowerCase()
     //   .replace(/ /g, "");
+    //
+    // let eventString = `${eventStartDay}, ${eventStartMonth} ${eventStartDate} ⋅ ${formattedEventStartTime} - ${formattedEventEndTime}`;
 
     let wrikeBody = {};
     wrikeBody.title =
