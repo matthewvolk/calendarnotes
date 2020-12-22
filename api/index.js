@@ -52,12 +52,8 @@ router.get("/delete/session", (req, res) => {
 router.get("/user", auth.ensureAuthenticated, async (req, res) => {
   const { googleId } = req.user;
   const userService = new UserService();
-  try {
-    const user = await userService.getUser(googleId);
-    res.send(user);
-  } catch (err) {
-    res.send(null);
-  }
+  const user = await userService.getUser(googleId);
+  res.send(user);
 });
 
 router.get("/failure", (req, res) => {
@@ -401,6 +397,15 @@ router.post(
       console.error(err.response.status);
       next(err);
     }
+
+    // let startTime = new Date(eventResponse.data.start.dateTime)
+    //   .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    //   .toLowerCase()
+    //   .replace(/ /g, "");
+    // let endTime = new Date(eventResponse.data.end.dateTime)
+    //   .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    //   .toLowerCase()
+    //   .replace(/ /g, "");
 
     let wrikeBody = {};
     wrikeBody.title =
