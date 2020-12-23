@@ -378,7 +378,6 @@ router.post(
 
     /**
      * @todo Error handling for bad data supplied with URL above
-     * @todo Figure out why times are incorrect - WIP
      */
 
     let { folderId, eventId, calendarId } = req.params;
@@ -404,41 +403,67 @@ router.post(
      * @todo potentially turn logic below into function?
      */
 
-    // let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
-    // let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
-    //
-    // let eventStartDay = eventStartTime.getDay();
-    // let eventStartMonth = eventStartTime.getMonth();
-    // let eventStartDate = eventStartTime.getDate();
-    // let formattedEventStartTime = eventStartTime
-    //   .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-    //   .toLowerCase()
-    //   .replace(/ /g, "");
-    // let formattedEventEndTime = eventEndTime
-    //   .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-    //   .toLowerCase()
-    //   .replace(/ /g, "");
-    //
-    // let eventString = `${eventStartDay}, ${eventStartMonth} ${eventStartDate} ⋅ ${formattedEventStartTime} - ${formattedEventEndTime}`;
+    let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
+    let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
+
+    let eventStartDay = eventStartTime.getDay();
+    let eventStartMonth = eventStartTime.getMonth();
+    let eventStartDate = eventStartTime.getDate();
+    let formattedEventStartTime = eventStartTime
+      .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      .toLowerCase()
+      .replace(/ /g, "");
+    let formattedEventEndTime = eventEndTime
+      .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      .toLowerCase()
+      .replace(/ /g, "");
+
+    const numToMonth = (num) => {
+      const monthMap = {
+        0: "January",
+        1: "February",
+        2: "March",
+        3: "April",
+        4: "May",
+        5: "June",
+        6: "July",
+        7: "August",
+        8: "September",
+        9: "October",
+        10: "November",
+        11: "December",
+      };
+      return monthMap[num];
+    };
+
+    const numToDay = (num) => {
+      const dayMap = {
+        0: "Sunday",
+        1: "Monday",
+        2: "Tuesday",
+        3: "Wednesday",
+        4: "Thursday",
+        5: "Friday",
+        6: "Saturday",
+      };
+      return dayMap[num];
+    };
 
     let wrikeBody = {};
-    wrikeBody.title =
-      eventResponse.data.summary +
-      ` - ${format(
-        parseISO(eventResponse.data.start.dateTime),
-        "EEEE, MMMM d ⋅ h:mmaaaaa'm' - "
-      )}${format(parseISO(eventResponse.data.end.dateTime), "h:mmaaaaa'm'")}`;
+    wrikeBody.title = `${eventResponse.data.summary} - ${numToDay(
+      eventStartDay
+    )}, ${numToMonth(
+      eventStartMonth
+    )} ${eventStartDate} ⋅ ${formattedEventStartTime} - ${formattedEventEndTime}`;
     wrikeBody.description = `<h4><b>Attendees</b></h4><ul>`;
     if (eventResponse.data.attendees) {
       eventResponse.data.attendees.forEach((obj, index) => {
-        if (!obj.organizer) {
-          wrikeBody.description += `<li><a href="mailto:${obj.email}">${obj.email}</a></li>`;
-        }
+        wrikeBody.description += `<li><a href="mailto:${obj.email}">${obj.email}</a></li>`;
       });
     } else {
-      wrikeBody.description += `<li>N/A</li>`;
+      wrikeBody.description += `<li><a href="mailto:${eventResponse.data.organizer.email}">${eventResponse.data.organizer.email}</a></li>`;
     }
-    wrikeBody.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4>Action Items</h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /><b>[ ASSIGNEE_NAME ]:</b>&nbsp;</label></li></ul>`;
+    wrikeBody.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4><b>Action Items</b></h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /></label></li></ul>`;
     wrikeBody.dates = {};
     wrikeBody.dates.type = "Planned";
     wrikeBody.dates.duration = differenceInMinutes(
