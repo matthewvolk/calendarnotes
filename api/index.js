@@ -331,6 +331,20 @@ router.post(
       next(err);
     }
 
+    let userTimeZone;
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/users/me/calendarList/${calendarId}`,
+        headers: {
+          Authorization: `Bearer ${req.user.googleAccessToken}`,
+        },
+      });
+      userTimeZone = response.data.timeZone;
+    } catch (err) {
+      next(err);
+    }
+
     /**
      * @todo below, handle case of all-day events where there is no datetime
      * @todo below, map days of the week and months of the year from index to string
@@ -341,13 +355,14 @@ router.post(
     let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
     /**
      * @todo is there an edge case where start timeZone is different than end timeZone?
+     * @todo instead of using the event's timezone, should I just use the current user's calendar timezone?
      */
     let eventTimeZone = eventResponse.data.start.timeZone;
 
     let momentStart = moment
-      .tz(eventStartTime, eventTimeZone)
+      .tz(eventStartTime, userTimeZone)
       .format("dddd, MMMM Do ⋅ h:mm a");
-    let momentEnd = moment.tz(eventEndTime, eventTimeZone).format("h:mm a");
+    let momentEnd = moment.tz(eventEndTime, userTimeZone).format("h:mm a");
 
     let eventStartDay = eventStartTime.getDay();
     let eventStartMonth = eventStartTime.getMonth();
@@ -363,11 +378,12 @@ router.post(
 
     console.dir({
       debug: "=======================================",
-      momentStart,
-      momentEnd,
-      formattedEventStartTime,
-      formattedEventEndTime,
-      eventTimeZone,
+      momentStart, // 'Tuesday, December 29th ⋅ 3:00 pm',
+      momentEnd, // '4:00 pm',
+      formattedEventStartTime, // '2:00pm',
+      formattedEventEndTime, // '3:00pm',
+      eventTimeZone, // 'Europe/Amsterdam'
+      userTimeZone,
     });
 
     const numToMonth = (num) => {
