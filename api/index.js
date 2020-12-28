@@ -347,87 +347,15 @@ router.post(
 
     /**
      * @todo below, handle case of all-day events where there is no datetime
-     * @todo below, map days of the week and months of the year from index to string
-     * @todo potentially turn logic below into function?
      */
 
     let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
     let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
-    /**
-     * @todo is there an edge case where start timeZone is different than end timeZone?
-     * @todo instead of using the event's timezone, should I just use the current user's calendar timezone?
-     */
-    let eventTimeZone = eventResponse.data.start.timeZone;
 
     let momentStart = moment
       .tz(eventStartTime, userTimeZone)
       .format("dddd, MMMM Do ⋅ h:mm a");
-    let momentEnd = moment.tz(eventEndTime, userTimeZone).format("h:mm a");
-
-    let eventStartDay = eventStartTime.getDay();
-    let eventStartMonth = eventStartTime.getMonth();
-    let eventStartDate = eventStartTime.getDate();
-    let formattedEventStartTime = eventStartTime
-      .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-      .toLowerCase()
-      .replace(/ /g, "");
-    let formattedEventEndTime = eventEndTime
-      .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-      .toLowerCase()
-      .replace(/ /g, "");
-
-    console.dir({
-      debug: "=======================================",
-      momentStart, // 'Tuesday, December 29th ⋅ 3:00 pm',
-      momentEnd, // '4:00 pm',
-      formattedEventStartTime, // '2:00pm',
-      formattedEventEndTime, // '3:00pm',
-      eventTimeZone, // 'Europe/Amsterdam'
-      userTimeZone,
-    });
-
-    const numToMonth = (num) => {
-      if (num < 0 || num > 11) {
-        return new Error("num must be a number between 0 and 11");
-        /**
-         * @todo res.json should reflect this
-         */
-      }
-      const monthMap = {
-        0: "January",
-        1: "February",
-        2: "March",
-        3: "April",
-        4: "May",
-        5: "June",
-        6: "July",
-        7: "August",
-        8: "September",
-        9: "October",
-        10: "November",
-        11: "December",
-      };
-      return monthMap[num];
-    };
-
-    const numToDay = (num) => {
-      if (num < 0 || num > 6) {
-        return new Error("num must be a number between 0 and 6");
-        /**
-         * @todo res.json should reflect this
-         */
-      }
-      const dayMap = {
-        0: "Sunday",
-        1: "Monday",
-        2: "Tuesday",
-        3: "Wednesday",
-        4: "Thursday",
-        5: "Friday",
-        6: "Saturday",
-      };
-      return dayMap[num];
-    };
+    let momentEnd = moment.tz(eventEndTime, userTimeZone).format("h:mm a z");
 
     let wrikeBody = {};
     wrikeBody.title = `${eventResponse.data.summary} - ${momentStart} - ${momentEnd}`;
