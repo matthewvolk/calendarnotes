@@ -9,7 +9,10 @@ function AuthProvider({ children }) {
     user: null,
   });
   React.useEffect(() => {
-    fetch("https://localhost:8443/api/user", { credentials: "include" })
+    /**
+     * @todo Setup process.env.API_URL
+     */
+    fetch("/api/user", { credentials: "include" })
       .then((response) => {
         if (response.status === 401) {
           setState({ status: "success", error: null, user: null });
