@@ -354,8 +354,8 @@ router.post(
 
     let momentStart = moment
       .tz(eventStartTime, userTimeZone)
-      .format("dddd, MMMM Do ⋅ h:mm a");
-    let momentEnd = moment.tz(eventEndTime, userTimeZone).format("h:mm a z");
+      .format("dddd, MMMM Do ⋅ h:mma");
+    let momentEnd = moment.tz(eventEndTime, userTimeZone).format("h:mma z");
 
     let wrikeBody = {};
     wrikeBody.title = `${eventResponse.data.summary} - ${momentStart} - ${momentEnd}`;
