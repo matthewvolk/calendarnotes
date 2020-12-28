@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
-import UserContext from "../context/UserContext";
+import React, { useEffect, useState } from "react";
+import { useAuthState } from "../context/Auth";
 import CalendarSelector from "../components/CalendarSelector";
 import Events from "../components/Events";
 import NotesLocation from "../components/NotesLocation";
 
 const Dashboard = () => {
-  const { userData } = useContext(UserContext);
+  const { user } = useAuthState();
   const [events, setEvents] = useState(null);
 
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
@@ -93,12 +93,12 @@ const Dashboard = () => {
     <>
       <div>
         <h3>
-          Welcome, {userData.user.firstName} {userData.user.lastName}
+          Welcome, {user.firstName} {user.lastName}
         </h3>
         <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
       </div>
       <br />
-      {userData.user.wrikeAccessToken ? (
+      {user.wrikeAccessToken ? (
         <button disabled>Login with Wrike</button>
       ) : (
         <button onClick={loginWithWrike}>Login with Wrike</button>

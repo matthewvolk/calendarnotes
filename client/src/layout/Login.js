@@ -1,9 +1,6 @@
-import React, { useContext } from "react";
-import UserContext from "../context/UserContext";
+import React from "react";
 
 const Login = () => {
-  const { userData } = useContext(UserContext);
-
   const logInWithGoogle = (e) => {
     e.preventDefault();
     window.location.assign("/api/google/auth");

@@ -1,8 +1,8 @@
-import UserContext from "../context/UserContext";
-const { useContext, useState, useEffect } = require("react");
+import { useState, useEffect } from "react";
+import { useAuthState } from "../context/Auth";
 
 const NotesLocation = ({ setWrikeFolderId }) => {
-  const { userData } = useContext(UserContext);
+  const { user } = useAuthState();
   const [wrikeFolders, setWrikeFolders] = useState([]);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const NotesLocation = ({ setWrikeFolderId }) => {
       setWrikeFolders(newData);
     };
 
-    if (userData.user.wrikeAccessToken) {
+    if (user.wrikeAccessToken) {
       getWrikeFolders();
     }
   }, []);
