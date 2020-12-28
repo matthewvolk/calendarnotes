@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const axios = require("axios");
 const passport = require("passport");
+const moment = require("moment-timezone");
 require("../config/passport")(passport);
 const { ensureAuthenticated } = require("../middlewares/auth");
 const {
@@ -338,6 +339,15 @@ router.post(
 
     let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
     let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
+    /**
+     * @todo is there an edge case where start timeZone is different than end timeZone?
+     */
+    let eventTimeZone = eventResponse.data.start.timeZone;
+
+    let momentStart = moment
+      .tz(eventStartTime, eventTimeZone)
+      .format("dddd, MMMM Do ⋅ h:mm a");
+    let momentEnd = moment.tz(eventEndTime, eventTimeZone).format("h:mm a");
 
     let eventStartDay = eventStartTime.getDay();
     let eventStartMonth = eventStartTime.getMonth();
@@ -395,11 +405,7 @@ router.post(
     };
 
     let wrikeBody = {};
-    wrikeBody.title = `${eventResponse.data.summary} - ${numToDay(
-      eventStartDay
-    )}, ${numToMonth(
-      eventStartMonth
-    )} ${eventStartDate} ⋅ ${formattedEventStartTime} - ${formattedEventEndTime}`;
+    wrikeBody.title = `${eventResponse.data.summary} - ${momentStart} - ${momentEnd}`;
     wrikeBody.description = `<h4><b>Attendees</b></h4><ul>`;
     if (eventResponse.data.attendees) {
       eventResponse.data.attendees.forEach((obj, index) => {

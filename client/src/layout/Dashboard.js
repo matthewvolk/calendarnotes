@@ -50,10 +50,6 @@ const Dashboard = () => {
   }, [currentCalendarId]);
 
   const createNotes = async (
-    /**
-     * @todo
-     * 1. Handle events without attendees
-     */
     currentEventId,
     currentCalendarId,
     wrikeFolderId
