@@ -361,6 +361,15 @@ router.post(
       .toLowerCase()
       .replace(/ /g, "");
 
+    console.dir({
+      debug: "=======================================",
+      momentStart,
+      momentEnd,
+      formattedEventStartTime,
+      formattedEventEndTime,
+      eventTimeZone,
+    });
+
     const numToMonth = (num) => {
       if (num < 0 || num > 11) {
         return new Error("num must be a number between 0 and 11");
