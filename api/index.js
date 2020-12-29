@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const UserService = require("../services/UserService");
 const axios = require("axios");
 const passport = require("passport");
 const moment = require("moment-timezone");
@@ -14,56 +15,26 @@ const {
   format,
 } = require("date-fns");
 
-router.get("/", (req, res) => {
-  if (req.user) {
-    res.json({
-      logged_in: true,
-      user: req.user,
-    });
-  } else {
-    res.json({
-      logged_in: false,
-    });
-  }
-});
-
 /**
- * @todo replace "/" with this
+ * @todo Refactor UserService (WIP)
+ * @todo Handle refresh tokens (WIP)
+ * @todo Add persistence in knowing which events have notes created for them
+ * @todo Refactor User Schema
+ * @todo Handle Notes Location folder tree
+ * @todo Add styles
  */
+
 router.get("/user", ensureAuthenticated, async (req, res) => {
   const user = req.user;
   res.json(user);
 });
 
 router.get("/delete/session", (req, res) => {
-  /**
-   * Input: req.session
-   * Output: void
-   */
-
   req.session.destroy();
   res.redirect("/");
 });
 
-router.get("/failure", (req, res) => {
-  /**
-   * Input: N/A
-   * Output: N/A
-   *
-   * Consider the Passport failureRedirect to go to React instead
-   */
-
-  res.send("Failed to Authenticate with Google OAuth2");
-});
-
 router.get(
-  /**
-   * Input: N/A
-   * Output: N/A
-   *
-   * Passport's middleware, serialize, and deserialization should use a UserService object
-   */
-
   "/google/auth",
   passport.authenticate("google", {
     scope: [
@@ -79,13 +50,6 @@ router.get(
 );
 
 router.get(
-  /**
-   * Input: N/A
-   * Output: N/A
-   *
-   * Passport's middleware, serialize, and deserialization should use a UserService object
-   */
-
   "/google/auth/callback",
   passport.authenticate("google", {
     failureRedirect: "/api/failure",
@@ -95,54 +59,47 @@ router.get(
   }
 );
 
-/**
- * @todo delete this, instead just have a UserService method that retries after refreshing
- */
-router.get("/google/auth/refresh", ensureAuthenticated, async (req, res) => {
-  /**
-   * Input: req.user, User Model
-   * Output: Update User Model with refreshed tokens
-   */
-
-  try {
-    const response = await axios({
-      method: "post",
-      url: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${req.user.googleRefreshToken}`,
-    });
-    const user = await User.findOneAndUpdate(
-      { googleId: req.user.googleId },
-      {
-        googleAccessToken: response.data.access_token,
-        googleTokenType: response.data.token_type,
-        googleTokenExpiresIn: response.data.expires_in,
-        googleScopes: response.data.scope,
-      }
-    ).exec();
-    res.redirect("/");
-  } catch (err) {
-    next(err);
-  }
+router.get("/failure", (req, res) => {
+  res.send("Failed to Authenticate with Google OAuth2");
 });
 
-router.get("/google/calendars", ensureAuthenticated, async (req, res, next) => {
-  /**
-   * Input: req.user.googleAccessToken
-   * Output: list of Google calendars
-   */
+router.get("/wrike/auth", ensureAuthenticated, (req, res) => {
+  res.redirect(
+    `https://login.wrike.com/oauth2/authorize/v4?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&response_type=code&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`
+  );
+});
 
-  try {
-    const response = await axios({
-      method: "get",
-      url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
-      headers: {
-        Authorization: `Bearer ${req.user.googleAccessToken}`,
-      },
-    });
-    let data = response.data;
-    res.json(data);
-  } catch (err) {
-    next(err);
+router.get(
+  "/wrike/auth/callback",
+  ensureAuthenticated,
+  async (req, res, next) => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: `https://login.wrike.com/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=authorization_code&code=${req.query.code}&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`,
+      });
+      const user = await User.findOneAndUpdate(
+        { googleId: req.user.googleId },
+        {
+          wrikeAccessToken: response.data.access_token,
+          wrikeRefreshToken: response.data.refresh_token,
+          wrikeHost: response.data.host,
+          wrikeTokenType: response.data.token_type,
+          wrikeTokenExpiresIn: response.data.expires_in,
+        }
+      ).exec();
+      res.redirect("/");
+    } catch (err) {
+      next(err);
+    }
   }
+);
+
+router.get("/google/calendars", ensureAuthenticated, async (req, res, next) => {
+  const { googleId: userId } = req.user;
+  const user = new UserService();
+  const calendars = await user.getUserCalendars(userId);
+  res.json(calendars);
 });
 
 router.get("/date/today", (req, res) => {
@@ -197,82 +154,6 @@ router.get(
   }
 );
 
-router.get("/wrike/auth", ensureAuthenticated, (req, res) => {
-  /**
-   * Input: N/A
-   * Output: N/A
-   */
-
-  res.redirect(
-    `https://login.wrike.com/oauth2/authorize/v4?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&response_type=code&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`
-  );
-});
-
-router.get(
-  "/wrike/auth/callback",
-  ensureAuthenticated,
-  async (req, res, next) => {
-    /**
-     * Input: N/A
-     * Output: update user object with Wrike tokens
-     */
-
-    try {
-      const response = await axios({
-        method: "post",
-        url: `https://login.wrike.com/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=authorization_code&code=${req.query.code}&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`,
-      });
-      const user = await User.findOneAndUpdate(
-        { googleId: req.user.googleId },
-        {
-          wrikeAccessToken: response.data.access_token,
-          wrikeRefreshToken: response.data.refresh_token,
-          wrikeHost: response.data.host,
-          wrikeTokenType: response.data.token_type,
-          wrikeTokenExpiresIn: response.data.expires_in,
-        }
-      ).exec();
-      res.redirect("/");
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-/**
- * @todo delete this, instead just have a UserService method that retries after refreshing
- */
-router.get(
-  "/wrike/auth/refresh",
-  ensureAuthenticated,
-  async (req, res, next) => {
-    /**
-     * Input: req.user.wrikeRefreshToken
-     * Output: update user object with refreshed wrike tokens
-     */
-
-    try {
-      const response = await axios({
-        method: "post",
-        url: `https://${req.user.wrikeHost}/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${req.user.wrikeRefreshToken}`,
-      });
-      const user = await User.findOneAndUpdate(
-        { googleId: req.user.googleId },
-        {
-          wrikeAccessToken: response.data.access_token,
-          wrikeRefreshToken: response.data.refresh_token,
-          wrikeHost: response.data.host,
-          wrikeTokenType: response.data.token_type,
-          wrikeTokenExpiresIn: response.data.expires_in,
-        }
-      ).exec();
-      res.redirect("/");
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
 /**
  * @todo modify this to be a UserService method that returns folders
  */
@@ -299,7 +180,6 @@ router.get("/wrike/folders", ensureAuthenticated, async (req, res, next) => {
 router.post(
   /**
    * @todo Refactor to req.body, use Joi to define schema of req.body object
-   * @todo After refactor, send client timezone in req.body
    */
   "/notes/create/calendar/:calendarId/event/:eventId/folder/:folderId",
   ensureAuthenticated,
@@ -311,7 +191,6 @@ router.post(
 
     /**
      * @todo Error handling for bad data supplied with URL above
-     * @todo Fix timezone bug, need to retrieve timezone from client, not use the one on the server
      */
 
     let { folderId, eventId, calendarId } = req.params;
