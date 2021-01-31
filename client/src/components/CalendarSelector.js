@@ -9,6 +9,11 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
       const res = await fetch("/api/google/calendars", {
         credentials: "include",
       });
+
+      /**
+       * @todo ERROR HANDLING
+       */
+
       const calendars = await res.json();
       let newOptions = [];
       calendars.forEach((calendar) => {
