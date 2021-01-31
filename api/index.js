@@ -22,6 +22,7 @@ const {
  * @todo Refactor User Schema
  * @todo Handle Notes Location folder tree
  * @todo Add styles
+ * @todo add "logout with wrike" so that you can change wrike accounts if needed
  */
 
 router.get("/user", ensureAuthenticated, async (req, res) => {
@@ -122,35 +123,13 @@ router.get("/date/today", (req, res) => {
 router.get(
   "/google/calendars/:calendarId/events",
   ensureAuthenticated,
-  async (req, res, next) => {
-    /**
-     * Input: Calendar ID, req.user.googleAccessToken, timeMin, timeMax
-     * Output: list of events for the week specified
-     */
-
-    let today = new Date();
-    let timeMin = startOfWeek(today).toISOString();
-    let timeMax = endOfWeek(today).toISOString();
-    let url;
+  async (req, res) => {
+    const { googleId: userId } = req.user;
     const { calendarId } = req.params;
-    if (timeMax && timeMin) {
-      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMax=${timeMax}&timeMin=${timeMin}&singleEvents=true`;
-    } else {
-      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
-    }
-    try {
-      const response = await axios({
-        method: "get",
-        url,
-        headers: {
-          Authorization: `Bearer ${req.user.googleAccessToken}`,
-        },
-      });
-      let data = response.data;
-      res.json(data);
-    } catch (err) {
-      res.json(err.response.data);
-    }
+
+    const user = new UserService();
+    const calendarEvents = await user.getCalendarEvents(userId, calendarId);
+    res.json(calendarEvents);
   }
 );
 

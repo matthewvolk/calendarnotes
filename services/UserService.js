@@ -1,5 +1,10 @@
 const UserModel = require("../models/User");
 const axios = require("axios");
+const { startOfWeek, endOfWeek } = require("date-fns");
+
+/**
+ * @todo Error handling, what do I return in the event there is an error?
+ */
 
 class UserService {
   async getUser(googleId) {
@@ -33,13 +38,111 @@ class UserService {
       });
       calendars = response.data.items;
     } catch (err) {
-      console.error("Failed to retrieve calendars in getUserCalendars()", err);
+      if (err.response && err.response.status === 401) {
+        let userWithRefreshedToken = await this.refreshGoogleToken(
+          userId,
+          user.googleRefreshToken
+        );
+
+        try {
+          const response = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+            },
+          });
+          calendars = response.data.items;
+        } catch (err) {
+          console.error(
+            "Failed to retrieve calendars in second try of getUserCalendars()",
+            err
+          );
+        }
+      } else {
+        console.error(
+          "Call to get calendars in getUserCalendars() failed for some other reason than 401",
+          err
+        );
+      }
     }
 
+    /**
+     * @todo ERROR HANDLING
+     * If calendars is empty, return something to trigger an error on client
+     */
     return calendars;
   }
 
-  async refreshToken(provider, userId, token, callback) {
+  async getCalendarEvents(userId, calendarId /* timeMin, timeMax */) {
+    let user;
+    let calendarEvents;
+    let today = new Date();
+    let timeMin = startOfWeek(today).toISOString();
+    let timeMax = endOfWeek(today).toISOString();
+    let url;
+
+    try {
+      user = await this.getUser(userId);
+    } catch (err) {
+      console.error(
+        "Failed to retrieve user document in getUserCalendars()",
+        err
+      );
+    }
+
+    if (timeMax && timeMin) {
+      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMax=${timeMax}&timeMin=${timeMin}&singleEvents=true`;
+    } else {
+      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
+    }
+    try {
+      const response = await axios({
+        method: "get",
+        url,
+        headers: {
+          Authorization: `Bearer ${user.googleAccessToken}`,
+        },
+      });
+      calendarEvents = response.data;
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        let userWithRefreshedToken = await this.refreshGoogleToken(
+          userId,
+          user.googleRefreshToken
+        );
+
+        try {
+          const response = await axios({
+            method: "get",
+            url,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+            },
+          });
+          calendarEvents = response.data;
+        } catch (err) {
+          console.error(
+            "Failed to retrieve calendars in second try of getCalendarEvents()",
+            err
+          );
+        }
+      } else {
+        console.error(
+          "Call to get calendars in getCalendarEvents() failed for some other reason than 401",
+          err
+        );
+      }
+    }
+
+    /**
+     * @todo ERROR HANDLING
+     * If calendars is empty, return something to trigger an error on client
+     */
+    return calendarEvents;
+  }
+
+  async refreshToken(provider, userId, token) {
     /**
      * @todo maybe don't need token if I can use userID to get token based on provider param
      */
@@ -56,7 +159,6 @@ class UserService {
       google: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${token}`,
       wrike: `https://${wrikeHost}/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${token}`,
     };
-    let url = urls[provider];
     try {
       const response = await axios({
         method: "post",
@@ -71,9 +173,10 @@ class UserService {
           // wrikeHost
           // wrike or googleTokenExpiresIn
           // googleScopes
-        }
+        },
+        { new: true }
       ).exec();
-      callback();
+      return userWithRefreshedToken;
     } catch (err) {}
   }
 
@@ -93,7 +196,8 @@ class UserService {
           googleTokenType: response.data.token_type,
           googleTokenExpiresIn: response.data.expires_in,
           googleScopes: response.data.scope,
-        }
+        },
+        { new: true }
       ).exec();
       return userWithRefreshedToken;
     } catch (err) {
@@ -101,6 +205,7 @@ class UserService {
        * @todo change to return error object?
        */
       console.error("Problem in refreshGoogleToken()", err);
+      return false;
     }
   }
 
@@ -118,7 +223,8 @@ class UserService {
           wrikeHost: response.data.host,
           wrikeTokenType: response.data.token_type,
           wrikeTokenExpiresIn: response.data.expires_in,
-        }
+        },
+        { new: true }
       ).exec();
       return userWithRefreshedToken;
     } catch (err) {
@@ -126,6 +232,7 @@ class UserService {
        * @todo
        */
       console.error("Problem in refreshGoogleToken()", err);
+      return false;
     }
   }
 }
