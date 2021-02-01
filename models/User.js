@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema({
   wrikeFirstName: String,
   wrikeLastName: String,
 });
-const User = mongoose.model("User", userSchema);
 
 // const newUserSchema = new mongoose.Schema({
 //   google: {
@@ -41,5 +40,6 @@ const User = mongoose.model("User", userSchema);
 //     tokenExpiresIn: Number,
 //   },
 // });
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;
