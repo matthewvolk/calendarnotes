@@ -9,12 +9,13 @@ const { ensureAuthenticated } = require("../middlewares/auth");
 const { startOfWeek, endOfWeek } = require("date-fns");
 
 /**
- * @todo Refactor UserService (WIP)
- * @todo Add persistence in knowing which events have notes created for them
- * @todo Refactor User Schema
  * @todo Handle Notes Location folder tree
- * @todo Add styles
+ * @todo Allow user to change weeks being viewed
+ * @todo Add persistence in knowing which events have notes created for them
  * @todo add "logout with wrike" so that you can change wrike accounts if needed
+ * @todo Add styles
+ * @todo Refactor UserService (WIP)
+ * @todo Refactor User Schema
  */
 
 router.get("/user", ensureAuthenticated, async (req, res) => {
