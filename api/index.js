@@ -142,18 +142,24 @@ router.get("/wrike/folders", ensureAuthenticated, async (req, res, next) => {
    * Output: list of Wrike folders
    */
 
-  try {
-    const response = await axios({
-      method: "get",
-      url: `https://${req.user._doc.wrikeHost}/api/v4/folders`,
-      headers: {
-        Authorization: `Bearer ${req.user.wrikeAccessToken}`,
-      },
-    });
-    res.json({ spaces: response.data });
-  } catch (err) {
-    next(err);
-  }
+  const { googleId: userId } = req.user;
+
+  const user = new UserService();
+  const folders = await user.getWrikeFolders(userId);
+  res.json(folders);
+
+  // try {
+  //   const response = await axios({
+  //     method: "get",
+  //     url: `https://${req.user._doc.wrikeHost}/api/v4/folders`,
+  //     headers: {
+  //       Authorization: `Bearer ${req.user.wrikeAccessToken}`,
+  //     },
+  //   });
+  //   res.json({ spaces: response.data });
+  // } catch (err) {
+  //   next(err);
+  // }
 });
 
 router.post(
