@@ -89,13 +89,17 @@ const Dashboard = () => {
     <>
       <div>
         <h3>
-          Welcome, {user.firstName} {user.lastName}
+          Welcome, {user.google.firstName} {user.google.lastName}
         </h3>
         <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
       </div>
       <br />
-      {user.wrikeAccessToken ? (
-        <button disabled>Login with Wrike</button>
+      {user.wrike ? (
+        user.wrike.accessToken ? (
+          <button disabled>Login with Wrike</button>
+        ) : (
+          <button onClick={loginWithWrike}>Login with Wrike</button>
+        )
       ) : (
         <button onClick={loginWithWrike}>Login with Wrike</button>
       )}

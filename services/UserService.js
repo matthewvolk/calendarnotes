@@ -16,7 +16,7 @@ const {
 class UserService {
   async getUser(googleId) {
     try {
-      const user = await UserModel.findOne({ googleId }).exec();
+      const user = await UserModel.findOne({ "google.id": googleId }).exec();
       return user;
     } catch (err) {
       return null;
@@ -40,7 +40,7 @@ class UserService {
         method: "get",
         url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
         headers: {
-          Authorization: `Bearer ${user.googleAccessToken}`,
+          Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
       calendars = response.data.items;
@@ -48,7 +48,7 @@ class UserService {
       if (err.response && err.response.status === 401) {
         let userWithRefreshedToken = await this.refreshGoogleToken(
           userId,
-          user.googleRefreshToken
+          user.google.refreshToken
         );
 
         try {
@@ -56,7 +56,7 @@ class UserService {
             method: "get",
             url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
           calendars = response.data.items;
@@ -108,7 +108,7 @@ class UserService {
         method: "get",
         url,
         headers: {
-          Authorization: `Bearer ${user.googleAccessToken}`,
+          Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
       calendarEvents = response.data;
@@ -116,7 +116,7 @@ class UserService {
       if (err.response && err.response.status === 401) {
         let userWithRefreshedToken = await this.refreshGoogleToken(
           userId,
-          user.googleRefreshToken
+          user.google.refreshToken
         );
 
         try {
@@ -124,7 +124,7 @@ class UserService {
             method: "get",
             url,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
           calendarEvents = response.data;
@@ -165,9 +165,9 @@ class UserService {
     try {
       const response = await axios({
         method: "get",
-        url: `https://${user.wrikeHost}/api/v4/folders`,
+        url: `https://${user.wrike.apiHost}/api/v4/folders`,
         headers: {
-          Authorization: `Bearer ${user.wrikeAccessToken}`,
+          Authorization: `Bearer ${user.wrike.accessToken}`,
         },
       });
       folders = { spaces: response.data };
@@ -175,15 +175,15 @@ class UserService {
       if (err.response && err.response.status === 401) {
         let userWithRefreshedToken = await this.refreshWrikeToken(
           userId,
-          user.wrikeRefreshToken
+          user.wrike.accessToken
         );
 
         try {
           const response = await axios({
             method: "get",
-            url: `https://${userWithRefreshedToken.wrikeHost}/api/v4/folders`,
+            url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders`,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.wrikeAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
             },
           });
           folders = { spaces: response.data };
@@ -227,7 +227,7 @@ class UserService {
         method: "get",
         url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
         headers: {
-          Authorization: `Bearer ${user.googleAccessToken}`,
+          Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
       console.log("Retrieved Google Calendar Event!");
@@ -235,7 +235,7 @@ class UserService {
       if (err.response && err.response.status === 401) {
         userWithRefreshedToken = await this.refreshGoogleToken(
           userId,
-          user.googleRefreshToken
+          user.google.refreshToken
         );
 
         try {
@@ -243,7 +243,7 @@ class UserService {
             method: "get",
             url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
           console.log("Retrieved Google Calendar Event!");
@@ -267,7 +267,7 @@ class UserService {
         method: "get",
         url: `https://www.googleapis.com/calendar/v3/users/me/calendarList/${calendarId}`,
         headers: {
-          Authorization: `Bearer ${user.googleAccessToken}`,
+          Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
       userTimeZone = userTimeZoneResponse.data.timeZone;
@@ -275,7 +275,7 @@ class UserService {
       if (err.response && err.response.status === 401) {
         userWithRefreshedToken = await this.refreshGoogleToken(
           userId,
-          user.googleRefreshToken
+          user.google.refreshToken
         );
 
         try {
@@ -283,7 +283,7 @@ class UserService {
             method: "get",
             url: `https://www.googleapis.com/calendar/v3/users/me/calendarList/${calendarId}`,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
           userTimeZone = secondUserTimeZoneResponse.data.timeZone;
@@ -344,9 +344,9 @@ class UserService {
     try {
       const wrikeContactResponse = await axios({
         method: "get",
-        url: `https://${user.wrikeHost}/api/v4/contacts?me=true`,
+        url: `https://${user.wrike.apiHost}/api/v4/contacts?me=true`,
         headers: {
-          Authorization: `Bearer ${user.wrikeAccessToken}`,
+          Authorization: `Bearer ${user.wrike.accessToken}`,
         },
       });
       wrikeBody.responsibles.push(wrikeContactResponse.data.data[0].id);
@@ -358,15 +358,15 @@ class UserService {
       if (err.response && err.response.status === 401) {
         userWithRefreshedToken = await this.refreshWrikeToken(
           userId,
-          user.wrikeRefreshToken
+          user.wrike.refreshToken
         );
 
         try {
           const secondWrikeContactResponse = await axios({
             method: "get",
-            url: `https://${userWithRefreshedToken.wrikeHost}/api/v4/contacts?me=true`,
+            url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/contacts?me=true`,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.wrikeAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
             },
           });
           wrikeBody.responsibles.push(
@@ -395,9 +395,9 @@ class UserService {
     try {
       wrikeResponse = await axios({
         method: "post",
-        url: `https://${user.wrikeHost}/api/v4/folders/${folderId}/tasks`,
+        url: `https://${user.wrike.apiHost}/api/v4/folders/${folderId}/tasks`,
         headers: {
-          Authorization: `Bearer ${user.wrikeAccessToken}`,
+          Authorization: `Bearer ${user.wrike.accessToken}`,
         },
         data: wrikeBody,
       });
@@ -406,15 +406,15 @@ class UserService {
       if (err.response && err.response.status === 401) {
         userWithRefreshedToken = await this.refreshWrikeToken(
           userId,
-          user.wrikeRefreshToken
+          user.wrike.refreshToken
         );
 
         try {
           wrikeResponse = await axios({
             method: "post",
-            url: `https://${userWithRefreshedToken.wrikeHost}/api/v4/folders/${folderId}/tasks`,
+            url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${folderId}/tasks`,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.wrikeAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
             },
             data: wrikeBody,
           });
@@ -435,14 +435,12 @@ class UserService {
 
     let googleEventCreationResponse;
 
-    // GOOD ABOVE HERE =============================================================================
-
     try {
       googleEventCreationResponse = await axios({
         method: "post",
         url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
         headers: {
-          Authorization: `Bearer ${user.googleAccessToken}`,
+          Authorization: `Bearer ${user.google.accessToken}`,
         },
         data: {
           summary: "_Notes",
@@ -465,7 +463,7 @@ class UserService {
       if (err.response && err.response.status === 401) {
         userWithRefreshedToken = await this.refreshGoogleToken(
           userId,
-          user.googleRefreshToken
+          user.google.refreshToken
         );
 
         try {
@@ -473,7 +471,7 @@ class UserService {
             method: "post",
             url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
             headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+              Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
             data: {
               summary: "_Notes",
@@ -517,12 +515,12 @@ class UserService {
         url: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${googleRefreshToken}`,
       });
       const userWithRefreshedToken = await UserModel.findOneAndUpdate(
-        { googleId: userId },
+        { "google.id": userId },
         {
-          googleAccessToken: response.data.access_token,
-          googleTokenType: response.data.token_type,
-          googleTokenExpiresIn: response.data.expires_in,
-          googleScopes: response.data.scope,
+          "google.accessToken": response.data.access_token,
+          "google.tokenType": response.data.token_type,
+          "google.tokenExpiresIn": response.data.expires_in,
+          "google.accessScopes": response.data.scope,
         },
         { new: true }
       ).exec();
@@ -551,16 +549,16 @@ class UserService {
     try {
       const response = await axios({
         method: "post",
-        url: `https://${user.wrikeHost}/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${wrikeRefreshToken}`,
+        url: `https://${user.wrike.apiHost}/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${wrikeRefreshToken}`,
       });
       const userWithRefreshedToken = await UserModel.findOneAndUpdate(
-        { googleId: userId },
+        { "google.id": userId },
         {
-          wrikeAccessToken: response.data.access_token,
-          wrikeRefreshToken: response.data.refresh_token,
-          wrikeHost: response.data.host,
-          wrikeTokenType: response.data.token_type,
-          wrikeTokenExpiresIn: response.data.expires_in,
+          "wrike.accessToken": response.data.access_token,
+          "wrike.refreshToken": response.data.refresh_token,
+          "wrike.apiHost": response.data.host,
+          "wrike.tokenType": response.data.token_type,
+          "wrike.tokenExpiresIn": response.data.expires_in,
         },
         { new: true }
       ).exec();

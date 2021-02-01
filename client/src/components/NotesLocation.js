@@ -21,8 +21,10 @@ const NotesLocation = ({ setWrikeFolderId }) => {
       setWrikeFolders(newData);
     };
 
-    if (user.wrikeAccessToken) {
-      getWrikeFolders();
+    if (user.wrike) {
+      if (user.wrike.accessToken) {
+        getWrikeFolders();
+      }
     }
   }, []);
 

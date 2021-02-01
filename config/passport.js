@@ -3,12 +3,12 @@ const User = require("../models/User");
 
 module.exports = function (passport) {
   passport.serializeUser(function (user, done) {
-    done(null, user.googleId);
+    done(null, user.google.id);
   });
 
   passport.deserializeUser(async function (id, done) {
     try {
-      const user = await User.findOne({ googleId: id }).exec();
+      const user = await User.findOne({ "google.id": id }).exec();
       if (!user) done(null, false);
       else done(null, user);
     } catch (err) {
@@ -26,7 +26,7 @@ module.exports = function (passport) {
       async function (accessToken, refreshToken, profile, done) {
         let user;
         try {
-          user = await User.findOne({ googleId: profile.id }).exec();
+          user = await User.findOne({ "google.id": profile.id }).exec();
         } catch (err) {
           done(err, false);
         }
@@ -35,11 +35,11 @@ module.exports = function (passport) {
           return done(null, user);
         } else {
           user = new User({
-            firstName: profile.name.givenName,
-            lastName: profile.name.familyName,
-            googleId: profile.id,
-            googleAccessToken: accessToken,
-            googleRefreshToken: refreshToken,
+            "google.id": profile.id,
+            "google.firstName": profile.name.givenName,
+            "google.lastName": profile.name.familyName,
+            "google.accessToken": accessToken,
+            "google.refreshToken": refreshToken,
           });
           await user.save();
           return done(null, user);

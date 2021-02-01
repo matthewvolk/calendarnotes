@@ -73,13 +73,13 @@ router.get(
         url: `https://login.wrike.com/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=authorization_code&code=${req.query.code}&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`,
       });
       const user = await User.findOneAndUpdate(
-        { googleId: req.user.googleId },
+        { "google.id": req.user.google.id },
         {
-          wrikeAccessToken: response.data.access_token,
-          wrikeRefreshToken: response.data.refresh_token,
-          wrikeHost: response.data.host,
-          wrikeTokenType: response.data.token_type,
-          wrikeTokenExpiresIn: response.data.expires_in,
+          "wrike.accessToken": response.data.access_token,
+          "wrike.refreshToken": response.data.refresh_token,
+          "wrike.apiHost": response.data.host,
+          "wrike.tokenType": response.data.token_type,
+          "wrike.tokenExpiresIn": response.data.expires_in,
         }
       ).exec();
       res.redirect("/");
@@ -90,7 +90,9 @@ router.get(
 );
 
 router.get("/google/calendars", ensureAuthenticated, async (req, res, next) => {
-  const { googleId: userId } = req.user;
+  const {
+    google: { id: userId },
+  } = req.user;
   const user = new UserService();
   const calendars = await user.getUserCalendars(userId);
   res.json(calendars);
@@ -117,7 +119,9 @@ router.get(
   "/google/calendars/:calendarId/events",
   ensureAuthenticated,
   async (req, res) => {
-    const { googleId: userId } = req.user;
+    const {
+      google: { id: userId },
+    } = req.user;
     const { calendarId } = req.params;
 
     const user = new UserService();
@@ -127,7 +131,9 @@ router.get(
 );
 
 router.get("/wrike/folders", ensureAuthenticated, async (req, res, next) => {
-  const { googleId: userId } = req.user;
+  const {
+    google: { id: userId },
+  } = req.user;
 
   const user = new UserService();
   const folders = await user.getWrikeFolders(userId);
@@ -145,7 +151,9 @@ router.post(
      * @todo Error handling for bad data supplied with URL above
      */
 
-    const { googleId: userId } = req.user;
+    const {
+      google: { id: userId },
+    } = req.user;
     let { folderId, eventId, calendarId } = req.params;
 
     const user = new UserService();
