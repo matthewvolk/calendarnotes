@@ -1,6 +1,13 @@
 const UserModel = require("../models/User");
 const axios = require("axios");
-const { startOfWeek, endOfWeek } = require("date-fns");
+const moment = require("moment-timezone");
+const {
+  startOfWeek,
+  endOfWeek,
+  differenceInMinutes,
+  parseISO,
+  format,
+} = require("date-fns");
 
 /**
  * @todo Error handling, what do I return in the event there is an error?
@@ -199,6 +206,305 @@ class UserService {
      * If folders is empty, return something to trigger an error on client
      */
     return folders;
+  }
+
+  async createNotesForEvent(userId, folderId, eventId, calendarId) {
+    let user;
+    let userWithRefreshedToken;
+
+    try {
+      user = await this.getUser(userId);
+    } catch (err) {
+      console.error(
+        "Failed to retrieve user document in createNotesForEvent()",
+        err
+      );
+    }
+
+    let eventResponse;
+    try {
+      eventResponse = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+        headers: {
+          Authorization: `Bearer ${user.googleAccessToken}`,
+        },
+      });
+      console.log("Retrieved Google Calendar Event!");
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        userWithRefreshedToken = await this.refreshGoogleToken(
+          userId,
+          user.googleRefreshToken
+        );
+
+        try {
+          eventResponse = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+            },
+          });
+          console.log("Retrieved Google Calendar Event!");
+        } catch (err) {
+          console.error(
+            "Failed to retrieve event in createNotesForEvent() for a second time",
+            err
+          );
+        }
+      } else {
+        console.error(
+          "Call to get event in createNotesForEvent() failed for some other reason than 401",
+          err
+        );
+      }
+    }
+
+    let userTimeZone;
+    try {
+      const userTimeZoneResponse = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/users/me/calendarList/${calendarId}`,
+        headers: {
+          Authorization: `Bearer ${user.googleAccessToken}`,
+        },
+      });
+      userTimeZone = userTimeZoneResponse.data.timeZone;
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        userWithRefreshedToken = await this.refreshGoogleToken(
+          userId,
+          user.googleRefreshToken
+        );
+
+        try {
+          const secondUserTimeZoneResponse = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/calendar/v3/users/me/calendarList/${calendarId}`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+            },
+          });
+          userTimeZone = secondUserTimeZoneResponse.data.timeZone;
+        } catch (err) {
+          console.error(
+            "Failed to retrieve userTimeZone in createNotesForEvent() for a second time",
+            err
+          );
+        }
+      } else {
+        console.error(
+          "Call to get userTimeZone in createNotesForEvent() failed for some other reason than 401",
+          err
+        );
+      }
+    }
+
+    /**
+     * @todo below, handle case of all-day events where there is no datetime
+     */
+
+    let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
+    let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
+
+    let momentStart = moment
+      .tz(eventStartTime, userTimeZone)
+      .format("dddd, MMMM Do ⋅ h:mma");
+    let momentEnd = moment.tz(eventEndTime, userTimeZone).format("h:mma z");
+
+    let wrikeBody = {};
+    wrikeBody.title = `${eventResponse.data.summary} - ${momentStart} - ${momentEnd}`;
+    wrikeBody.description = `<h4><b>Attendees</b></h4><ul>`;
+    if (eventResponse.data.attendees) {
+      eventResponse.data.attendees.forEach((obj, index) => {
+        wrikeBody.description += `<li><a href="mailto:${obj.email}">${obj.email}</a></li>`;
+      });
+    } else {
+      wrikeBody.description += `<li><a href="mailto:${eventResponse.data.organizer.email}">${eventResponse.data.organizer.email}</a></li>`;
+    }
+    wrikeBody.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4><b>Action Items</b></h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /></label></li></ul>`;
+    wrikeBody.dates = {};
+    wrikeBody.dates.type = "Planned";
+    wrikeBody.dates.duration = differenceInMinutes(
+      parseISO(eventResponse.data.end.dateTime),
+      parseISO(eventResponse.data.start.dateTime)
+    );
+    wrikeBody.dates.start = format(
+      parseISO(eventResponse.data.start.dateTime),
+      "yyyy-MM-dd'T'HH:mm:ss"
+    );
+    wrikeBody.dates.due = format(
+      parseISO(eventResponse.data.end.dateTime),
+      "yyyy-MM-dd'T'HH:mm:ss"
+    );
+
+    wrikeBody.responsibles = [];
+
+    try {
+      const wrikeContactResponse = await axios({
+        method: "get",
+        url: `https://${user.wrikeHost}/api/v4/contacts?me=true`,
+        headers: {
+          Authorization: `Bearer ${user.wrikeAccessToken}`,
+        },
+      });
+      wrikeBody.responsibles.push(wrikeContactResponse.data.data[0].id);
+      console.log(
+        "Retrieved Wrike Contact ID!",
+        wrikeContactResponse.data.data[0].id
+      );
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        userWithRefreshedToken = await this.refreshWrikeToken(
+          userId,
+          user.wrikeRefreshToken
+        );
+
+        try {
+          const secondWrikeContactResponse = await axios({
+            method: "get",
+            url: `https://${userWithRefreshedToken.wrikeHost}/api/v4/contacts?me=true`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.wrikeAccessToken}`,
+            },
+          });
+          wrikeBody.responsibles.push(
+            secondWrikeContactResponse.data.data[0].id
+          );
+          console.log(
+            "Retrieved Wrike Contact ID!",
+            secondWrikeContactResponse.data.data[0].id
+          );
+        } catch (err) {
+          console.error(
+            "Failed to retrieve wrikeContact in createNotesForEvent() for a second time",
+            err
+          );
+        }
+      } else {
+        console.error(
+          "Call to get wrikeContact in createNotesForEvent() failed for some other reason than 401",
+          err
+        );
+      }
+    }
+
+    let wrikeResponse;
+
+    try {
+      wrikeResponse = await axios({
+        method: "post",
+        url: `https://${user.wrikeHost}/api/v4/folders/${folderId}/tasks`,
+        headers: {
+          Authorization: `Bearer ${user.wrikeAccessToken}`,
+        },
+        data: wrikeBody,
+      });
+      console.log("Created Wrike Task!");
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        userWithRefreshedToken = await this.refreshWrikeToken(
+          userId,
+          user.wrikeRefreshToken
+        );
+
+        try {
+          wrikeResponse = await axios({
+            method: "post",
+            url: `https://${userWithRefreshedToken.wrikeHost}/api/v4/folders/${folderId}/tasks`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.wrikeAccessToken}`,
+            },
+            data: wrikeBody,
+          });
+          console.log("Created Wrike Task!");
+        } catch (err) {
+          console.error(
+            "Failed to create Wrike task in createNotesForEvent() for a second time",
+            err
+          );
+        }
+      } else {
+        console.error(
+          "Call to create Wrike task in createNotesForEvent() failed for some other reason than 401",
+          err
+        );
+      }
+    }
+
+    let googleEventCreationResponse;
+
+    // GOOD ABOVE HERE =============================================================================
+
+    try {
+      googleEventCreationResponse = await axios({
+        method: "post",
+        url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+        headers: {
+          Authorization: `Bearer ${user.googleAccessToken}`,
+        },
+        data: {
+          summary: "_Notes",
+          description: wrikeResponse.data.data[0].permalink,
+          start: {
+            dateTime: eventResponse.data.start.dateTime,
+          },
+          end: {
+            dateTime: eventResponse.data.end.dateTime,
+          },
+          reminders: {
+            useDefault: false,
+          },
+          colorId: "8",
+        },
+      });
+      console.log("Created Google Calendar Notes Task!");
+      return { status: 200, message: "Success!" };
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        userWithRefreshedToken = await this.refreshGoogleToken(
+          userId,
+          user.googleRefreshToken
+        );
+
+        try {
+          googleEventCreationResponse = await axios({
+            method: "post",
+            url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleAccessToken}`,
+            },
+            data: {
+              summary: "_Notes",
+              description: wrikeResponse.data.data[0].permalink,
+              start: {
+                dateTime: eventResponse.data.start.dateTime,
+              },
+              end: {
+                dateTime: eventResponse.data.end.dateTime,
+              },
+              reminders: {
+                useDefault: false,
+              },
+              colorId: "8",
+            },
+          });
+          console.log("Created Google Calendar Notes Task!");
+          return { status: 200, message: "Success!" };
+        } catch (err) {
+          console.error(
+            "Failed to create Google Notes event in createNotesForEvent() for a second time",
+            err
+          );
+        }
+      } else {
+        console.error(
+          "Call to create Google Notes event in createNotesForEvent() failed for some other reason than 401",
+          err
+        );
+      }
+    }
   }
 
   /**
