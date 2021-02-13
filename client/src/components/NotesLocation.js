@@ -18,6 +18,12 @@ const NotesLocation = ({ setWrikeFolderId }) => {
           label: currentValue.title,
         });
       });
+      // alphabetically sort options
+      newData.sort((a, b) => {
+        let textA = a.label.toUpperCase();
+        let textB = b.label.toUpperCase();
+        return textA < textB ? -1 : textA > textB ? 1 : 0;
+      });
       setWrikeFolders(newData);
     };
 
