@@ -15,7 +15,6 @@ const { startOfWeek, endOfWeek } = require("date-fns");
  * @todo add "logout with wrike" so that you can change wrike accounts if needed
  * @todo Add styles
  * @todo Refactor UserService (WIP)
- * @todo Refactor User Schema
  */
 
 router.get("/user", ensureAuthenticated, async (req, res) => {

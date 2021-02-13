@@ -175,7 +175,7 @@ class UserService {
       if (err.response && err.response.status === 401) {
         let userWithRefreshedToken = await this.refreshWrikeToken(
           userId,
-          user.wrike.accessToken
+          user.wrike.refreshToken
         );
 
         try {
