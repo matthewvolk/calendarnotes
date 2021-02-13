@@ -58,9 +58,6 @@ mongoose
  * [ ] https://stackoverflow.com/questions/44362205/passport-nodeerror-failed-to-deserialize-user-out-of-session
  * [ ] https://stackoverflow.com/questions/35359295/how-does-passport-js-stores-user-object-in-session
  * [ ] https://stackoverflow.com/questions/27637609/understanding-passport-serialize-deserialize
- *
- * [ ] When someone changes their response to "Not Going" or "Maybe", potentially update the meeting notes.
- *
  */
 
 app.use(express.static(path.join(__dirname, "client/build")));
