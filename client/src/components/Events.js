@@ -8,7 +8,7 @@ const Events = ({
   if (events) {
     return (
       <>
-        <h1>Events This Week</h1>
+        <h4>Events This Week</h4>
         <div className="table-responsive">
           <table className="table table-sm table-striped">
             <thead>
@@ -45,6 +45,7 @@ const Events = ({
                     <td>
                       {currentCalendarId && wrikeFolderId ? (
                         <button
+                          className="btn btn-secondary"
                           onClick={(e) => {
                             e.preventDefault();
                             setCurrentEventId(event.id);
@@ -58,7 +59,13 @@ const Events = ({
                           Create Meeting Notes
                         </button>
                       ) : (
-                        <button disabled>Create Meeting Notes</button>
+                        <button
+                          className="btn btn-secondary"
+                          disabled
+                          data-tip="You must first select a 'Notes Location' above!"
+                        >
+                          Create Meeting Notes
+                        </button>
                       )}
                     </td>
                   </tr>

@@ -87,34 +87,51 @@ const Dashboard = () => {
 
   return (
     <>
-      <div>
-        <h3>
-          Welcome, {user.google.firstName} {user.google.lastName}
+      <div className="container-fluid">
+        <h3 className="text-center mt-3">
+          Welcome, {user.google.firstName} {user.google.lastName}!
         </h3>
-        <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
-      </div>
-      <br />
-      {user.wrike ? (
-        user.wrike.accessToken ? (
-          <button disabled>Login with Wrike</button>
-        ) : (
-          <button onClick={loginWithWrike}>Login with Wrike</button>
-        )
-      ) : (
-        <button onClick={loginWithWrike}>Login with Wrike</button>
-      )}
-      <button onClick={logout}>Logout</button>
-      <br />
-      <NotesLocation setWrikeFolderId={setWrikeFolderId} />
-      <br />
-      <div>
-        <Events
-          events={events}
-          setCurrentEventId={setCurrentEventId}
-          currentCalendarId={currentCalendarId}
-          wrikeFolderId={wrikeFolderId}
-          createNotes={createNotes}
-        />
+        <div className="d-flex justify-content-between">
+          <div className="d-flex">
+            <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
+          </div>
+          {/* <button disabled class="btn btn-light">
+            Settings
+          </button> */}
+          <div>
+            {user.wrike ? (
+              user.wrike.accessToken ? (
+                <button className="btn btn-secondary" disabled>
+                  Login with Wrike
+                </button>
+              ) : (
+                <button className="btn btn-secondary" onClick={loginWithWrike}>
+                  Login with Wrike
+                </button>
+              )
+            ) : (
+              <button className="btn btn-secondary" onClick={loginWithWrike}>
+                Login with Wrike
+              </button>
+            )}
+            <button className="btn btn-secondary ml-1" onClick={logout}>
+              Logout
+            </button>
+          </div>
+        </div>
+        <div className="mt-4">
+          <NotesLocation setWrikeFolderId={setWrikeFolderId} />
+        </div>
+        <br />
+        <div>
+          <Events
+            events={events}
+            setCurrentEventId={setCurrentEventId}
+            currentCalendarId={currentCalendarId}
+            wrikeFolderId={wrikeFolderId}
+            createNotes={createNotes}
+          />
+        </div>
       </div>
     </>
   );

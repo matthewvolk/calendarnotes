@@ -45,33 +45,48 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
 
   if (options && options.length) {
     return (
-      <>
-        <div>
-          <b>Calendar:</b>&nbsp;
-        </div>
-        <select onChange={handleSelectChange}>
-          <option disabled selected value>
-            {" "}
-            Choose Calendar{" "}
-          </option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
+      <div>
+        <div className="input-group">
+          <label className="input-group-text" htmlFor="calendar-selector">
+            Calendar:
+          </label>
+          <select
+            className="form-select"
+            id="calendar-selector"
+            onChange={handleSelectChange}
+          >
+            <option disabled selected value>
+              {" "}
+              Choose Calendar{" "}
             </option>
-          ))}
-        </select>
-      </>
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
     );
   } else {
     return (
-      <>
-        <div>
-          <b>Calendar:</b>&nbsp;
+      <div>
+        <div className="input-group">
+          <label
+            className="input-group-text"
+            htmlFor="loading-calendar-selector"
+          >
+            Calendar:
+          </label>
+          <select
+            className="form-select"
+            id="loading-calendar-selector"
+            disabled
+          >
+            <option>Loading...</option>
+          </select>
         </div>
-        <select disabled>
-          <option>Loading...</option>
-        </select>
-      </>
+      </div>
     );
   }
 };

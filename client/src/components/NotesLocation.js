@@ -17,6 +17,7 @@ const NotesLocation = ({ setWrikeFolderId }) => {
           value: currentValue.id,
           label: currentValue.title,
         });
+        console.log(currentValue); // TODO: FIX API REQUEST
       });
       // alphabetically sort options
       newData.sort((a, b) => {
@@ -43,9 +44,15 @@ const NotesLocation = ({ setWrikeFolderId }) => {
 
   if (wrikeFolders && wrikeFolders.length) {
     return (
-      <div>
-        <b>Notes Location:</b>&nbsp;
-        <select onChange={handleSelectChange}>
+      <div className="input-group">
+        <label className="input-group-text" htmlFor="notes-location">
+          Notes Location:
+        </label>
+        <select
+          className="form-select"
+          id="notes-location"
+          onChange={handleSelectChange}
+        >
           <option disabled selected value>
             {" "}
             Choose Location{" "}
