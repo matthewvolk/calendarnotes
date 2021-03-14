@@ -141,6 +141,23 @@ router.get("/wrike/folders", ensureAuthenticated, async (req, res, next) => {
   res.json(folders);
 });
 
+router.get("/folders", ensureAuthenticated, async (req, res) => {
+  // wrikeFolderService takes request
+  // determines if response from Wrike is top level space or sub folder
+  // if top level space, wrikeFolderService needs to make another call immediately and uniquely for Wrike
+  // becuase initial wrike Spaces response doesn't give childFolders
+
+  const { clickedFolderId } = req.query;
+  const requestingUser = req.user;
+
+  const folderGetter = new UserService();
+  const folderData = await folderGetter.getFolders(
+    requestingUser,
+    clickedFolderId
+  );
+  res.json(folderData);
+});
+
 router.post(
   /**
    * @todo Refactor to req.body, use Joi to define schema of req.body object

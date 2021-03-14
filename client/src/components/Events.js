@@ -7,7 +7,7 @@ const Events = ({
 }) => {
   if (events) {
     return (
-      <>
+      <div style={{ padding: "15px" }}>
         <h4>Events This Week</h4>
         <div className="table-responsive">
           <table className="table table-sm table-striped">
@@ -22,7 +22,7 @@ const Events = ({
               {events.map((event) => {
                 return (
                   <tr key={event.id}>
-                    <td>{event.summary}</td>
+                    <td style={{ width: "35%" }}>{event.summary}</td>
                     <td>
                       {new Intl.DateTimeFormat("en-US", {
                         weekday: "long",
@@ -64,7 +64,7 @@ const Events = ({
                           disabled
                           data-tip="You must first select a 'Notes Location' above!"
                         >
-                          Create Meeting Notes
+                          Select Notes Location First
                         </button>
                       )}
                     </td>
@@ -74,14 +74,15 @@ const Events = ({
             </tbody>
           </table>
         </div>
-      </>
+      </div>
     );
   } else {
     return (
-      <div>
+      <div style={{ padding: "15px" }}>
+        <h4>Events This Week</h4>
         <p>
-          Either you haven't selected a calendar, or you do not have permission
-          to consume the events for the calendar you have chosen
+          Either you haven't selected a calendar above, or you do not have
+          permission to consume the events for the calendar you have chosen
         </p>
       </div>
     );

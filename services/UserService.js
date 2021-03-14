@@ -208,6 +208,161 @@ class UserService {
     return folders;
   }
 
+  async getFolders(requestingUser, clickedFolderId) {
+    let folderResponse = null;
+
+    if (!clickedFolderId) {
+      // Specifically for Wrike, if client does not provide folder ID, you need to ask wrike for both the top level spaces, then folder/spaceId/folders in order to return childFolders: true or false.
+      try {
+        const response = await axios({
+          method: "get",
+          url: `https://${requestingUser.wrike.apiHost}/api/v4/spaces`,
+          headers: {
+            Authorization: `Bearer ${requestingUser.wrike.accessToken}`,
+          },
+        });
+        folderResponse = { spaces: response.data };
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          let userWithRefreshedToken = await this.refreshWrikeToken(
+            requestingUser.google.id,
+            requestingUser.wrike.refreshToken
+          );
+
+          try {
+            const response = await axios({
+              method: "get",
+              url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/spaces`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+              },
+            });
+            folderResponse = { spaces: response.data };
+          } catch (err) {
+            console.error(
+              "Failed to retrieve Wrike folders in second try of getFolders()",
+              err
+            );
+            folderResponse = null;
+          }
+        } else {
+          console.error(
+            "Call to get Wrike folders in getFolders() failed for some other reason than 401",
+            err
+          );
+          folderResponse = null;
+        }
+      }
+
+      if (folderResponse) {
+        // refresh wrike token just in case its about to expire before Promise.all (if one promise fails, they all fail)
+        let userWithRefreshedToken = await this.refreshWrikeToken(
+          requestingUser.google.id,
+          requestingUser.wrike.refreshToken
+        );
+
+        let folderNamesAndIds = folderResponse.spaces.data.map((space) => {
+          return { name: space.title, id: space.id };
+        });
+
+        let spaceChildFolderRequests = folderResponse.spaces.data.map(
+          (space) => {
+            let url = `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${space.id}/folders`;
+            let promise = axios({
+              method: "get",
+              url,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+              },
+            });
+            return promise;
+          }
+        );
+        let spaceFolders = await Promise.all(spaceChildFolderRequests);
+        let spaceHasChildren = spaceFolders.map((spaceFolder) => {
+          return spaceFolder.data.data[0].childIds == 0 ? false : true;
+        });
+        folderResponse = folderNamesAndIds.map((folder, index) => {
+          return { ...folder, hasChildFolders: spaceHasChildren[index] };
+        });
+      }
+    }
+
+    if (clickedFolderId) {
+      try {
+        const response = await axios({
+          method: "get",
+          url: `https://${requestingUser.wrike.apiHost}/api/v4/folders/${clickedFolderId}/folders`,
+          headers: {
+            Authorization: `Bearer ${requestingUser.wrike.accessToken}`,
+          },
+        });
+        folderResponse = response.data.data[0].childIds;
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          let userWithRefreshedToken = await this.refreshWrikeToken(
+            requestingUser.google.id,
+            requestingUser.wrike.refreshToken
+          );
+
+          try {
+            const response = await axios({
+              method: "get",
+              url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${clickedFolderId}/folders`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+              },
+            });
+            folderResponse = response.data.data[0].childIds;
+          } catch (err) {
+            console.error(
+              "Failed to retrieve Wrike folders in second try of getFolders() WITH QUERY PARAM",
+              err
+            );
+            folderResponse = null;
+          }
+        } else {
+          console.error(
+            "Call to get Wrike folders in getFolders() WITH QUERY PARAM failed for some other reason than 401",
+            err
+          );
+          folderResponse = null;
+        }
+      }
+
+      if (folderResponse) {
+        let userWithRefreshedToken = await this.refreshWrikeToken(
+          requestingUser.google.id,
+          requestingUser.wrike.refreshToken
+        );
+
+        let getSpaceIdsAndNames = folderResponse.map((spaceId) => {
+          let url = `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${spaceId}/folders`;
+          let promise = axios({
+            method: "get",
+            url,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+            },
+          });
+          return promise;
+        });
+
+        let spaceIdsAndNames = await Promise.all(getSpaceIdsAndNames);
+        folderResponse = spaceIdsAndNames.map((spaceIdAndName) => {
+          return {
+            name: spaceIdAndName.data.data[0].title,
+            id: spaceIdAndName.data.data[0].id,
+            hasChildFolders:
+              spaceIdAndName.data.data[0].childIds == 0 ? false : true,
+          };
+        });
+      }
+    }
+
+    return folderResponse;
+  }
+
   async createNotesForEvent(userId, folderId, eventId, calendarId) {
     let user;
     let userWithRefreshedToken;

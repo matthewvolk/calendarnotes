@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAuthState } from "../context/Auth";
 import CalendarSelector from "../components/CalendarSelector";
 import Events from "../components/Events";
-import NotesLocation from "../components/NotesLocation";
+import Tree from "../components/Tree";
 
 const Dashboard = () => {
   const { user } = useAuthState();
   const [events, setEvents] = useState(null);
+  const [folderTree, setFolderTree] = useState(null);
 
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
   const [currentEventId, setCurrentEventId] = useState(null);
@@ -16,10 +17,6 @@ const Dashboard = () => {
     /**
      * @todo when currentCalendar is updated, write to Mongo with preferred Calendar
      * so I can persist when page reloads
-     */
-
-    /**
-     * @todo figure out refresh tokens
      */
 
     const getEvents = async (currentCalendarId) => {
@@ -85,6 +82,70 @@ const Dashboard = () => {
     window.location.assign("/api/wrike/auth");
   };
 
+  useEffect(() => {
+    const getTopLevelFoldersForNotesLocation = async () => {
+      const res = await fetch(`/api/folders`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      // sort alphabetically
+      data.sort(function (a, b) {
+        let textA = a.name.toUpperCase();
+        let textB = b.name.toUpperCase();
+        return textA < textB ? -1 : textA > textB ? 1 : 0;
+      });
+      setFolderTree(data);
+    };
+    getTopLevelFoldersForNotesLocation();
+  }, []);
+
+  const getChildFoldersForNotesLocation = async (clickedFolderId) => {
+    const res = await fetch(`/api/folders?clickedFolderId=${clickedFolderId}`, {
+      credentials: "include",
+    });
+    const data = await res.json();
+
+    // sort data alphabetically
+    data.sort(function (a, b) {
+      let textA = a.name.toUpperCase();
+      let textB = b.name.toUpperCase();
+      return textA < textB ? -1 : textA > textB ? 1 : 0;
+    });
+
+    let newFolderTree = [...folderTree];
+
+    let clickedFolderInNewFolderTree = newFolderTree.find(
+      (folder) => folder.id === clickedFolderId
+    );
+
+    if (clickedFolderInNewFolderTree) {
+      let clickedFolderInNewFolderTreeIndex = newFolderTree.findIndex(
+        (folder) => folder.id === clickedFolderId
+      );
+
+      // failing because it's only looking at top-level array nodes, it needs to traverse the entire array tree
+      newFolderTree[clickedFolderInNewFolderTreeIndex].childFolders = data;
+      setFolderTree(newFolderTree);
+    } else {
+      function findRecurisvely(tree, id) {
+        for (let i = 0; i < tree.length; i++) {
+          if (tree[i].id === id) {
+            tree[i].childFolders = data;
+          } else if (
+            tree[i].childFolders &&
+            tree[i].childFolders.length &&
+            typeof tree[i].childFolders === "object"
+          ) {
+            findRecurisvely(tree[i].childFolders, id);
+          }
+        }
+      }
+
+      findRecurisvely(newFolderTree, clickedFolderId);
+      setFolderTree(newFolderTree);
+    }
+  };
+
   return (
     <>
       <div className="container-fluid">
@@ -119,18 +180,23 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
-        <div className="mt-4">
-          <NotesLocation setWrikeFolderId={setWrikeFolderId} />
-        </div>
         <br />
-        <div>
-          <Events
-            events={events}
-            setCurrentEventId={setCurrentEventId}
-            currentCalendarId={currentCalendarId}
-            wrikeFolderId={wrikeFolderId}
-            createNotes={createNotes}
+        <div className="d-flex">
+          <Tree
+            folders={folderTree}
+            setFolderTree={setFolderTree}
+            getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
+            setWrikeFolderId={setWrikeFolderId}
           />
+          <div style={{ width: "90%" }}>
+            <Events
+              events={events}
+              setCurrentEventId={setCurrentEventId}
+              currentCalendarId={currentCalendarId}
+              wrikeFolderId={wrikeFolderId}
+              createNotes={createNotes}
+            />
+          </div>
         </div>
       </div>
     </>
