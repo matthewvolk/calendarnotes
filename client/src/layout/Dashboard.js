@@ -96,7 +96,12 @@ const Dashboard = () => {
       });
       setFolderTree(data);
     };
-    getTopLevelFoldersForNotesLocation();
+
+    if (user.wrike) {
+      if (user.wrike.accessToken) {
+        getTopLevelFoldersForNotesLocation();
+      }
+    }
   }, []);
 
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
@@ -182,12 +187,32 @@ const Dashboard = () => {
         </div>
         <br />
         <div className="d-flex">
-          <Tree
-            folders={folderTree}
-            setFolderTree={setFolderTree}
-            getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
-            setWrikeFolderId={setWrikeFolderId}
-          />
+          {user.wrike ? (
+            <Tree
+              folders={folderTree}
+              setFolderTree={setFolderTree}
+              getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
+              setWrikeFolderId={setWrikeFolderId}
+            />
+          ) : (
+            <div style={{ lineHeight: "1.5", padding: "15px" }}>
+              <h4>Notes Location</h4>
+              <p>
+                Please{" "}
+                <a
+                  onClick={loginWithWrike}
+                  style={{
+                    cursor: "pointer",
+                    color: "dodgerblue",
+                    textDecoration: "underline",
+                  }}
+                >
+                  log in with Wrike
+                </a>{" "}
+                first!
+              </p>
+            </div>
+          )}
           <div style={{ width: "90%" }}>
             <Events
               events={events}
