@@ -52,7 +52,7 @@ const Events = ({
                             createNotes(
                               event.id,
                               currentCalendarId,
-                              wrikeFolderId.id
+                              wrikeFolderId
                             );
                           }}
                         >

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthState } from "../context/Auth";
 import CalendarSelector from "../components/CalendarSelector";
 import Events from "../components/Events";
@@ -10,7 +10,7 @@ const Dashboard = () => {
   const [folderTree, setFolderTree] = useState(null);
 
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
-  const [currentEventId, setCurrentEventId] = useState(null);
+  const [setCurrentEventId] = useState(null);
   const [wrikeFolderId, setWrikeFolderId] = useState(null);
 
   useEffect(() => {
@@ -29,13 +29,15 @@ const Dashboard = () => {
       const data = await res.json();
       if (!data.error) {
         let removeCancelledEvents = data.items.filter((obj) => obj.start);
-        let orderByEarliestFirst = removeCancelledEvents.sort((a, b) => {
-          return (
-            new Date(a.start.dateTime).getTime() -
-            new Date(b.start.dateTime).getTime()
-          );
-        });
-        setEvents(orderByEarliestFirst);
+        let eventsOrderedByEarliestFirst = removeCancelledEvents.sort(
+          (a, b) => {
+            return (
+              new Date(a.start.dateTime).getTime() -
+              new Date(b.start.dateTime).getTime()
+            );
+          }
+        );
+        setEvents(eventsOrderedByEarliestFirst);
       } else {
         console.error("ERROR at getEvents()", data);
       }
@@ -61,16 +63,6 @@ const Dashboard = () => {
     const data = await res.json();
     console.log(data);
   };
-
-  useEffect(() => {
-    const logWrikeFolderId = (wrikeFolderId) => {
-      console.log("From <Dashboard />'s logWrikeFolderId()", wrikeFolderId);
-    };
-
-    if (wrikeFolderId) {
-      logWrikeFolderId(wrikeFolderId);
-    }
-  }, [wrikeFolderId]);
 
   const logout = (e) => {
     e.preventDefault();
@@ -102,7 +94,7 @@ const Dashboard = () => {
         getTopLevelFoldersForNotesLocation();
       }
     }
-  }, []);
+  }, [user.wrike]);
 
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
     const res = await fetch(`/api/folders?clickedFolderId=${clickedFolderId}`, {
@@ -119,36 +111,22 @@ const Dashboard = () => {
 
     let newFolderTree = [...folderTree];
 
-    let clickedFolderInNewFolderTree = newFolderTree.find(
-      (folder) => folder.id === clickedFolderId
-    );
-
-    if (clickedFolderInNewFolderTree) {
-      let clickedFolderInNewFolderTreeIndex = newFolderTree.findIndex(
-        (folder) => folder.id === clickedFolderId
-      );
-
-      // failing because it's only looking at top-level array nodes, it needs to traverse the entire array tree
-      newFolderTree[clickedFolderInNewFolderTreeIndex].childFolders = data;
-      setFolderTree(newFolderTree);
-    } else {
-      function findRecurisvely(tree, id) {
-        for (let i = 0; i < tree.length; i++) {
-          if (tree[i].id === id) {
-            tree[i].childFolders = data;
-          } else if (
-            tree[i].childFolders &&
-            tree[i].childFolders.length &&
-            typeof tree[i].childFolders === "object"
-          ) {
-            findRecurisvely(tree[i].childFolders, id);
-          }
+    function findRecurisvely(tree, id) {
+      for (let i = 0; i < tree.length; i++) {
+        if (tree[i].id === id) {
+          tree[i].childFolders = data;
+        } else if (
+          tree[i].childFolders &&
+          tree[i].childFolders.length &&
+          typeof tree[i].childFolders === "object"
+        ) {
+          findRecurisvely(tree[i].childFolders, id);
         }
       }
-
-      findRecurisvely(newFolderTree, clickedFolderId);
-      setFolderTree(newFolderTree);
     }
+
+    findRecurisvely(newFolderTree, clickedFolderId);
+    setFolderTree(newFolderTree);
   };
 
   return (
@@ -199,16 +177,19 @@ const Dashboard = () => {
               <h4>Notes Location</h4>
               <p>
                 Please{" "}
-                <a
+                <button
                   onClick={loginWithWrike}
                   style={{
                     cursor: "pointer",
                     color: "dodgerblue",
                     textDecoration: "underline",
+                    border: "none",
+                    backgroundColor: "inherit",
+                    padding: "0",
                   }}
                 >
                   log in with Wrike
-                </a>{" "}
+                </button>{" "}
                 first!
               </p>
             </div>

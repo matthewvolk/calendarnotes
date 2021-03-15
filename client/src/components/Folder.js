@@ -83,10 +83,7 @@ const Folder = ({
 
   const handleSelection = (e) => {
     console.log("Set Notes Location to:", e.target.id);
-    setWrikeFolderId({
-      id: e.target.id,
-      label: e.target.innerText,
-    });
+    setWrikeFolderId(e.target.id);
   };
 
   return (

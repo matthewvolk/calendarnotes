@@ -32,15 +32,12 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
      * @todo change state of <Dashboard /> selected calendar
      */
     if (selectedOption) {
-      setCurrentCalendarId(selectedOption.value);
+      setCurrentCalendarId(selectedOption);
     }
-  }, [selectedOption]);
+  }, [selectedOption, setCurrentCalendarId]);
 
   const handleSelectChange = (e) => {
-    setSelectedOption({
-      value: e.target.value,
-      label: e.target.options[e.target.selectedIndex].text,
-    });
+    setSelectedOption(e.target.value);
   };
 
   if (options && options.length) {
