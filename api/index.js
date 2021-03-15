@@ -151,6 +151,11 @@ router.get("/folders", ensureAuthenticated, async (req, res) => {
   const requestingUser = req.user;
 
   const folderGetter = new UserService();
+
+  /**
+   * @todo this needs to be prepared to catch Error object from services/UserService.js:352
+   * @todo then, needs to give client some notice to retry the action
+   */
   const folderData = await folderGetter.getFolders(
     requestingUser,
     clickedFolderId

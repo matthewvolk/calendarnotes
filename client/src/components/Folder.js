@@ -61,16 +61,27 @@ const Folder = ({
           e.target.style.fontWeight = "bold";
           e.target.innerText = "Loading...";
 
-          await getChildFoldersForNotesLocation(folderId);
+          /**
+           * @todo this needs to be changed when I change client/src/layout/Dashboard.js:108
+           */
+          let errorObj = await getChildFoldersForNotesLocation(folderId);
+          if (errorObj) {
+            // change folder text back from "Loading..."
+            e.target.style.fontWeight = "normal";
+            e.target.innerText = originalText;
 
-          setIsOpen(!isOpen);
+            // allow user to click folder again now that API request is resolved
+            e.target.parentNode.style.pointerEvents = "auto";
+          } else {
+            setIsOpen(!isOpen);
 
-          // change folder text back from "Loading..."
-          e.target.style.fontWeight = "normal";
-          e.target.innerText = originalText;
+            // change folder text back from "Loading..."
+            e.target.style.fontWeight = "normal";
+            e.target.innerText = originalText;
 
-          // allow user to click folder again now that API request is resolved
-          e.target.parentNode.style.pointerEvents = "auto";
+            // allow user to click folder again now that API request is resolved
+            e.target.parentNode.style.pointerEvents = "auto";
+          }
         } else {
           console.log("Folder already has child folders!");
           setIsOpen(!isOpen);

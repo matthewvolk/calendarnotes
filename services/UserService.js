@@ -348,15 +348,24 @@ class UserService {
           return promise;
         });
 
-        let spaceIdsAndNames = await Promise.all(getSpaceIdsAndNames);
-        folderResponse = spaceIdsAndNames.map((spaceIdAndName) => {
-          return {
-            name: spaceIdAndName.data.data[0].title,
-            id: spaceIdAndName.data.data[0].id,
-            hasChildFolders:
-              spaceIdAndName.data.data[0].childIds == 0 ? false : true,
-          };
-        });
+        /**
+         * @todo Catch needs to return an Error object
+         */
+
+        try {
+          let spaceIdsAndNames = await Promise.all(getSpaceIdsAndNames);
+          folderResponse = spaceIdsAndNames.map((spaceIdAndName) => {
+            return {
+              name: spaceIdAndName.data.data[0].title,
+              id: spaceIdAndName.data.data[0].id,
+              hasChildFolders:
+                spaceIdAndName.data.data[0].childIds == 0 ? false : true,
+            };
+          });
+        } catch (err) {
+          console.log("Promise.all() failed:", err);
+          return { error: true };
+        }
       }
     }
 

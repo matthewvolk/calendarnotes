@@ -100,36 +100,44 @@ const Dashboard = () => {
     const res = await fetch(`/api/folders?clickedFolderId=${clickedFolderId}`, {
       credentials: "include",
     });
+    console.log(res);
     if (res.ok) {
       const data = await res.json();
 
-      // sort data alphabetically
-      data.sort(function (a, b) {
-        let textA = a.name.toUpperCase();
-        let textB = b.name.toUpperCase();
-        return textA < textB ? -1 : textA > textB ? 1 : 0;
-      });
+      /**
+       * @todo this needs to be changed when I change api/index.js:157
+       */
+      if (data.error) {
+        return data;
+      } else {
+        // sort data alphabetically
+        data.sort(function (a, b) {
+          let textA = a.name.toUpperCase();
+          let textB = b.name.toUpperCase();
+          return textA < textB ? -1 : textA > textB ? 1 : 0;
+        });
 
-      let newFolderTree = [...folderTree];
+        let newFolderTree = [...folderTree];
 
-      function findRecurisvely(tree, id) {
-        for (let i = 0; i < tree.length; i++) {
-          if (tree[i].id === id) {
-            tree[i].childFolders = data;
-          } else if (
-            tree[i].childFolders &&
-            tree[i].childFolders.length &&
-            typeof tree[i].childFolders === "object"
-          ) {
-            findRecurisvely(tree[i].childFolders, id);
+        function findRecurisvely(tree, id) {
+          for (let i = 0; i < tree.length; i++) {
+            if (tree[i].id === id) {
+              tree[i].childFolders = data;
+            } else if (
+              tree[i].childFolders &&
+              tree[i].childFolders.length &&
+              typeof tree[i].childFolders === "object"
+            ) {
+              findRecurisvely(tree[i].childFolders, id);
+            }
           }
         }
-      }
 
-      findRecurisvely(newFolderTree, clickedFolderId);
-      setFolderTree(newFolderTree);
+        findRecurisvely(newFolderTree, clickedFolderId);
+        setFolderTree(newFolderTree);
+      }
     } else {
-      return;
+      /** Error handling if res not ok */
     }
   };
 
