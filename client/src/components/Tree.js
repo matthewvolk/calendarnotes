@@ -6,6 +6,9 @@ const StyledTree = styled.div`
   line-height: 1.5;
   padding: 15px;
   flex-basis: auto;
+  flex-grow: 1;
+  overflow: auto;
+  min-height: 0;
 `;
 
 const Tree = ({

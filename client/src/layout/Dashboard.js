@@ -143,40 +143,56 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="container-fluid">
-        <h3 className="text-center mt-3">
-          Welcome, {user.google.firstName} {user.google.lastName}!
-        </h3>
-        <div className="d-flex justify-content-between">
-          <div className="d-flex">
-            <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
-          </div>
-          {/* <button disabled class="btn btn-light">
+      <div
+        className="container-fluid d-flex flex-column"
+        style={{
+          position: "absolute",
+          top: "0",
+          bottom: "0",
+          left: "0",
+          width: "100vw",
+        }}
+      >
+        <div className="header mb-4">
+          <h3 className="text-center mt-3">
+            Welcome, {user.google.firstName} {user.google.lastName}!
+          </h3>
+          <div className="d-flex justify-content-between">
+            <div className="d-flex">
+              <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
+            </div>
+            {/* <button disabled class="btn btn-light">
             Settings
           </button> */}
-          <div>
-            {user.wrike ? (
-              user.wrike.accessToken ? (
-                <button className="btn btn-secondary" disabled>
-                  Login with Wrike
-                </button>
+            <div>
+              {user.wrike ? (
+                user.wrike.accessToken ? (
+                  <button className="btn btn-secondary" disabled>
+                    Login with Wrike
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={loginWithWrike}
+                  >
+                    Login with Wrike
+                  </button>
+                )
               ) : (
                 <button className="btn btn-secondary" onClick={loginWithWrike}>
                   Login with Wrike
                 </button>
-              )
-            ) : (
-              <button className="btn btn-secondary" onClick={loginWithWrike}>
-                Login with Wrike
+              )}
+              <button className="btn btn-secondary ml-1" onClick={logout}>
+                Logout
               </button>
-            )}
-            <button className="btn btn-secondary ml-1" onClick={logout}>
-              Logout
-            </button>
+            </div>
           </div>
         </div>
-        <br />
-        <div className="d-flex">
+        <div
+          className="body-content d-flex"
+          style={{ flexGrow: "1", minHeight: "0" }}
+        >
           {user.wrike ? (
             <Tree
               folders={folderTree}
@@ -206,7 +222,14 @@ const Dashboard = () => {
               </p>
             </div>
           )}
-          <div style={{ flexBasis: "80%" }}>
+          <div
+            style={{
+              flexBasis: "80%",
+              flexGrow: 1,
+              overflow: "auto",
+              minHeight: "0",
+            }}
+          >
             <Events
               events={events}
               setCurrentEventId={setCurrentEventId}
