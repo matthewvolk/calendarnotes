@@ -1,13 +1,18 @@
 import { useState } from "react";
 import styled from "styled-components";
+import { FaFolder, FaFolderOpen } from "react-icons/fa";
 
 const StyledFolder = styled.div`
   padding-left: 20px;
 
   input {
     float: left;
-    margin: 5px 0 5px 0;
+    margin: 5px 5px 5px 0;
     cursor: pointer;
+  }
+
+  input:checked {
+    border: 6px solid black;
   }
 
   .folder--label {
@@ -24,11 +29,6 @@ const Collapsible = styled.div`
   height: ${(p) => (p.isOpen ? "auto" : "0")};
   /* hide the excess content */
   overflow: hidden;
-`;
-const StyledInput = styled.input`
-  -webkit-appearance: checkbox; /* Chrome, Safari, Opera */
-  -moz-appearance: checkbox; /* Firefox */
-  -ms-appearance: checkbox; /* not currently supported */
 `;
 
 const Folder = ({
@@ -91,13 +91,14 @@ const Folder = ({
 
   return (
     <StyledFolder>
-      <StyledInput
+      <input
         type="radio"
         name="folderSelection"
         id={id}
         onClick={handleSelection}
       />
       <div className="folder--label" onClick={handleOpen}>
+        {!isOpen ? <FaFolder /> : <FaFolderOpen />}
         <span id={id}>{name}</span>
       </div>
       <Collapsible isOpen={isOpen}>{children}</Collapsible>

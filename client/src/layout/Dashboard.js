@@ -213,7 +213,7 @@ const Dashboard = () => {
               </p>
             </div>
           )}
-          <div style={{ width: "90%" }}>
+          <div style={{ width: "80%" }}>
             <Events
               events={events}
               setCurrentEventId={setCurrentEventId}
