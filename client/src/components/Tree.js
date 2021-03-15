@@ -5,6 +5,7 @@ import TreeRecursive from "./TreeRecursive";
 const StyledTree = styled.div`
   line-height: 1.5;
   padding: 15px;
+  flex-basis: auto;
 `;
 
 const Tree = ({

@@ -206,7 +206,7 @@ const Dashboard = () => {
               </p>
             </div>
           )}
-          <div style={{ width: "80%" }}>
+          <div style={{ flexBasis: "80%" }}>
             <Events
               events={events}
               setCurrentEventId={setCurrentEventId}
