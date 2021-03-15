@@ -100,33 +100,37 @@ const Dashboard = () => {
     const res = await fetch(`/api/folders?clickedFolderId=${clickedFolderId}`, {
       credentials: "include",
     });
-    const data = await res.json();
+    if (res.ok) {
+      const data = await res.json();
 
-    // sort data alphabetically
-    data.sort(function (a, b) {
-      let textA = a.name.toUpperCase();
-      let textB = b.name.toUpperCase();
-      return textA < textB ? -1 : textA > textB ? 1 : 0;
-    });
+      // sort data alphabetically
+      data.sort(function (a, b) {
+        let textA = a.name.toUpperCase();
+        let textB = b.name.toUpperCase();
+        return textA < textB ? -1 : textA > textB ? 1 : 0;
+      });
 
-    let newFolderTree = [...folderTree];
+      let newFolderTree = [...folderTree];
 
-    function findRecurisvely(tree, id) {
-      for (let i = 0; i < tree.length; i++) {
-        if (tree[i].id === id) {
-          tree[i].childFolders = data;
-        } else if (
-          tree[i].childFolders &&
-          tree[i].childFolders.length &&
-          typeof tree[i].childFolders === "object"
-        ) {
-          findRecurisvely(tree[i].childFolders, id);
+      function findRecurisvely(tree, id) {
+        for (let i = 0; i < tree.length; i++) {
+          if (tree[i].id === id) {
+            tree[i].childFolders = data;
+          } else if (
+            tree[i].childFolders &&
+            tree[i].childFolders.length &&
+            typeof tree[i].childFolders === "object"
+          ) {
+            findRecurisvely(tree[i].childFolders, id);
+          }
         }
       }
-    }
 
-    findRecurisvely(newFolderTree, clickedFolderId);
-    setFolderTree(newFolderTree);
+      findRecurisvely(newFolderTree, clickedFolderId);
+      setFolderTree(newFolderTree);
+    } else {
+      return;
+    }
   };
 
   return (
