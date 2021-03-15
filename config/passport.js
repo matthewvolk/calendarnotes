@@ -35,6 +35,7 @@ module.exports = function (passport) {
           return done(null, user);
         } else {
           user = new User({
+            name: `${profile.name.givenName} ${profile.name.familyName}`,
             "google.id": profile.id,
             "google.firstName": profile.name.givenName,
             "google.lastName": profile.name.familyName,
