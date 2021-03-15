@@ -10,7 +10,7 @@ const Dashboard = () => {
   const [folderTree, setFolderTree] = useState(null);
 
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
-  const [setCurrentEventId] = useState(null);
+  const [, setCurrentEventId] = useState(null);
   const [wrikeFolderId, setWrikeFolderId] = useState(null);
 
   useEffect(() => {
