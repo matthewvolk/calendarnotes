@@ -7,7 +7,14 @@ const Events = ({
 }) => {
   if (events) {
     return (
-      <div style={{ padding: "15px" }}>
+      <div
+        style={{
+          padding: "15px",
+          margin: "10px 10px 10px 0px",
+          backgroundColor: "white",
+          borderRadius: "10px",
+        }}
+      >
         <h4>Events This Week</h4>
         <div className="table-responsive">
           <table className="table table-sm table-striped">
@@ -78,7 +85,14 @@ const Events = ({
     );
   } else {
     return (
-      <div style={{ padding: "15px" }}>
+      <div
+        style={{
+          padding: "15px",
+          margin: "10px 10px 10px 0px",
+          backgroundColor: "white",
+          borderRadius: "10px",
+        }}
+      >
         <h4>Events This Week</h4>
         <p>
           Either you haven't selected a calendar above, or you do not have

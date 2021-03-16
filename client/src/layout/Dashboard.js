@@ -151,9 +151,19 @@ const Dashboard = () => {
           bottom: "0",
           left: "0",
           width: "100vw",
+          backgroundColor: "#F0F0F0",
+          paddingLeft: "0px",
+          paddingRight: "0px",
         }}
       >
-        <div className="header d-flex pb-4 pt-2 justify-content-between align-items-center">
+        <div
+          className="header d-flex pb-2 pt-2 justify-content-between align-items-center"
+          style={{
+            backgroundColor: "white",
+            paddingRight: "15px",
+            paddingLeft: "15px",
+          }}
+        >
           <h3>🗓 CalendarNotes</h3>
           <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
           {/* <button disabled class="btn btn-light">
@@ -193,7 +203,15 @@ const Dashboard = () => {
               setWrikeFolderId={setWrikeFolderId}
             />
           ) : (
-            <div style={{ lineHeight: "1.5", padding: "15px" }}>
+            <div
+              style={{
+                lineHeight: "1.5",
+                padding: "15px",
+                backgroundColor: "white",
+                margin: "10px",
+                borderRadius: "10px",
+              }}
+            >
               <h4>Notes Location</h4>
               <p>
                 Please{" "}
