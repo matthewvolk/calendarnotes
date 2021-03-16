@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { FaFolder, FaFolderOpen } from "react-icons/fa";
+import { MdKeyboardArrowRight, MdKeyboardArrowDown } from "react-icons/md";
 
 const StyledFolder = styled.div`
   padding-left: 20px;
@@ -106,6 +107,7 @@ const Folder = ({
         onClick={handleSelection}
       />
       <div className="folder--label" onClick={handleOpen}>
+        {!isOpen ? <MdKeyboardArrowRight /> : <MdKeyboardArrowDown />}
         {!isOpen ? <FaFolder /> : <FaFolderOpen />}
         <span id={id}>{name}</span>
       </div>
