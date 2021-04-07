@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "heroku-postbuild": "cd client && npm install && npm run build",
-    "dev": "NODE_ENV=development nodemon server.js"
+    "develop": "concurrently --names \"HTTP,REACT\" -c \"bgMagenta.bold,bgBlue.bold\" \"NODE_ENV=development node server.js\" \"npm start --prefix client/\"",
+    "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
@@ -25,5 +25,8 @@
     "passport": "^0.4.1",
     "passport-google-oauth": "^2.0.0",
     "redis": "^3.0.2"
+  },
+  "devDependencies": {
+    "concurrently": "^6.0.1"
   }
 }
