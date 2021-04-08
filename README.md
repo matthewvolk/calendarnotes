@@ -6,7 +6,8 @@
 2. `cd calendarnotes`
 3. `npm install && cd client && npm install && cd ..`
 4. `cp .env.sample .env` and then enter environment variables in .env
-5. `npm run develop`
+5. Generate localhost self-signed certificate: [Example](https://stackoverflow.com/a/32169444) (required to interact with Wrike API)
+6. `npm run develop`
 
 ## 🗂 Folder structure
 
