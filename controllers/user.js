@@ -7,22 +7,20 @@ module.exports = {
   },
 
   getGoogleCals: async (request, response) => {
-    const {
-      google: { id: userId },
-    } = request.user;
-    const user = new UserService();
-    const calendars = await user.getUserCalendars(userId);
+    const user = request.user;
+    const userServiceInstance = new UserService();
+    const calendars = await userServiceInstance.getUserCalendars(user);
     response.json(calendars);
   },
 
   getGoogleCalEvents: async (request, response) => {
-    const {
-      google: { id: userId },
-    } = request.user;
+    const user = request.user;
     const { calendarId } = request.params;
-
-    const user = new UserService();
-    const calendarEvents = await user.getCalendarEvents(userId, calendarId);
+    const userServiceInstance = new UserService();
+    const calendarEvents = await userServiceInstance.getCalendarEvents(
+      user,
+      calendarId
+    );
     response.json(calendarEvents);
   },
 
@@ -33,16 +31,15 @@ module.exports = {
     // becuase initial wrike Spaces response doesn't give childFolders
 
     const { clickedFolderId } = request.query;
-    const requestingUser = request.user;
-
-    const folderGetter = new UserService();
+    const user = request.user;
+    const userServiceInstance = new UserService();
 
     /**
      * @todo this needs to be prepared to catch Error object from services/UserService.js:352
      * @todo then, needs to give client some notice to retry the action
      */
-    const folderData = await folderGetter.getFolders(
-      requestingUser,
+    const folderData = await userServiceInstance.getFolders(
+      user,
       clickedFolderId
     );
     response.json(folderData);
@@ -53,14 +50,12 @@ module.exports = {
      * @todo Error handling for bad data supplied with URL above
      */
 
-    const {
-      google: { id: userId },
-    } = request.user;
+    const user = request.user;
     let { folderId, eventId, calendarId } = request.params;
 
-    const user = new UserService();
-    const status = await user.createNotesForEvent(
-      userId,
+    const userServiceInstance = new UserService();
+    const status = await userServiceInstance.createNotesForEvent(
+      user,
       folderId,
       eventId,
       calendarId
