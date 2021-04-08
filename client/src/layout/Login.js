@@ -3,7 +3,7 @@ import React from "react";
 const Login = () => {
   const logInWithGoogle = (e) => {
     e.preventDefault();
-    window.location.assign("/api/google/auth");
+    window.location.assign(process.env.REACT_APP_GOOGLE_AUTH_URL);
   };
 
   return (

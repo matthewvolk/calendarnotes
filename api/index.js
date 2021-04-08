@@ -26,7 +26,7 @@ router.get("/user", ensureAuthenticated, async (req, res) => {
 
 router.get("/delete/session", (req, res) => {
   req.session.destroy();
-  res.redirect("/");
+  res.redirect(process.env.LOGOUT_REDIRECT);
 });
 
 router.get(
@@ -47,10 +47,10 @@ router.get(
 router.get(
   "/google/auth/callback",
   passport.authenticate("google", {
-    failureRedirect: "/api/failure",
+    failureRedirect: process.env.GOOGLE_OAUTH_FAILURE_REDIRECT,
   }),
   (req, res) => {
-    res.redirect("/");
+    res.redirect(process.env.GOOGLE_OAUTH_REDIRECT);
   }
 );
 
@@ -83,7 +83,7 @@ router.get(
           "wrike.tokenExpiresIn": response.data.expires_in,
         }
       ).exec();
-      res.redirect("/");
+      res.redirect(process.env.WRIKE_OAUTH_REDIRECT);
     } catch (err) {
       next(err);
     }

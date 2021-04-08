@@ -66,12 +66,12 @@ const Dashboard = () => {
 
   const logout = (e) => {
     e.preventDefault();
-    window.location.assign("/api/delete/session");
+    window.location.assign(process.env.REACT_APP_LOGOUT_URL);
   };
 
   const loginWithWrike = (e) => {
     e.preventDefault();
-    window.location.assign("/api/wrike/auth");
+    window.location.assign(process.env.REACT_APP_WRIKE_AUTH_URL);
   };
 
   useEffect(() => {
