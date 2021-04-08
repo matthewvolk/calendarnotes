@@ -3,6 +3,55 @@ import { useAuthState } from "../context/Auth";
 import CalendarSelector from "../components/CalendarSelector";
 import Events from "../components/Events";
 import Tree from "../components/Tree";
+import Container from "react-bootstrap/Container";
+import Button from "react-bootstrap/Button";
+import styled from "styled-components";
+
+const StyledDashboardContainer = styled(Container)`
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background-color: #f0f0f0;
+  padding-left: 0px;
+  padding-right: 0px;
+`;
+
+const LogoutButton = styled(Button)`
+  margin-left: 0.25rem;
+`;
+
+const StyledHeader = styled.div`
+  display: flex;
+  padding-bottom: 0.65rem;
+  padding-top: 0.65rem;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding-right: 15px;
+  padding-left: 15px;
+`;
+
+const AccountButtonGroup = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const StyledBody = styled.div`
+  display: flex;
+  flex-grow: 1;
+  min-height: 0;
+`;
+
+const EventsContainer = styled.div`
+  flex-basis: 80%;
+  flex-grow: 1;
+  overflow: auto;
+  min-height: 0;
+`;
 
 const Dashboard = () => {
   const { user } = useAuthState();
@@ -148,113 +197,51 @@ const Dashboard = () => {
 
   return (
     <>
-      <div
-        className="container-fluid d-flex flex-column"
-        style={{
-          position: "absolute",
-          top: "0",
-          bottom: "0",
-          left: "0",
-          width: "100vw",
-          backgroundColor: "#F0F0F0",
-          paddingLeft: "0px",
-          paddingRight: "0px",
-        }}
-      >
-        <div
-          className="header d-flex pb-2 pt-2 justify-content-between align-items-center"
-          style={{
-            backgroundColor: "white",
-            paddingRight: "15px",
-            paddingLeft: "15px",
-          }}
-        >
+      <StyledDashboardContainer fluid>
+        <StyledHeader>
           <h3>🗓 CalendarNotes</h3>
           <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
           {/* <button disabled class="btn btn-light">
             Settings
           </button> */}
-          <div className="d-flex align-items-center">
+          <AccountButtonGroup>
             <div className="mr-1">Hi, {user.google.firstName}!</div>
             {user.wrike ? (
               user.wrike.accessToken ? (
-                <button className="btn btn-secondary" disabled>
+                <Button variant="secondary" disabled>
                   Login with Wrike
-                </button>
+                </Button>
               ) : (
-                <button className="btn btn-secondary" onClick={loginWithWrike}>
+                <Button variant="secondary" onClick={loginWithWrike}>
                   Login with Wrike
-                </button>
+                </Button>
               )
             ) : (
-              <button className="btn btn-secondary" onClick={loginWithWrike}>
+              <Button variant="secondary" onClick={loginWithWrike}>
                 Login with Wrike
-              </button>
+              </Button>
             )}
-            <button className="btn btn-secondary ml-1" onClick={logout}>
+            <LogoutButton variant="secondary" onClick={logout}>
               Logout
-            </button>
-          </div>
-        </div>
-        <div
-          className="body-content d-flex"
-          style={{ flexGrow: "1", minHeight: "0" }}
-        >
-          {user.wrike ? (
-            <Tree
-              folders={folderTree}
-              setFolderTree={setFolderTree}
-              getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
-              setWrikeFolderId={setWrikeFolderId}
-            />
-          ) : (
-            <div
-              style={{
-                lineHeight: "1.5",
-                padding: "15px",
-                backgroundColor: "white",
-                margin: "10px",
-                borderRadius: "10px",
-              }}
-            >
-              <h4>Notes Location</h4>
-              <p>
-                Please{" "}
-                <button
-                  onClick={loginWithWrike}
-                  style={{
-                    cursor: "pointer",
-                    color: "dodgerblue",
-                    textDecoration: "underline",
-                    border: "none",
-                    backgroundColor: "inherit",
-                    padding: "0",
-                  }}
-                >
-                  log in with Wrike
-                </button>{" "}
-                first!
-              </p>
-            </div>
-          )}
-          <div
-            style={{
-              flexBasis: "80%",
-              flexGrow: 1,
-              overflow: "auto",
-              minHeight: "0",
-            }}
-          >
-            <Events
-              events={events}
-              setCurrentEventId={setCurrentEventId}
-              currentCalendarId={currentCalendarId}
-              wrikeFolderId={wrikeFolderId}
-              createNotes={createNotes}
-            />
-          </div>
-        </div>
-      </div>
+            </LogoutButton>
+          </AccountButtonGroup>
+        </StyledHeader>
+        <StyledBody>
+          <Tree
+            folders={folderTree}
+            setFolderTree={setFolderTree}
+            getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
+            setWrikeFolderId={setWrikeFolderId}
+          />
+          <Events
+            events={events}
+            setCurrentEventId={setCurrentEventId}
+            currentCalendarId={currentCalendarId}
+            wrikeFolderId={wrikeFolderId}
+            createNotes={createNotes}
+          />
+        </StyledBody>
+      </StyledDashboardContainer>
     </>
   );
 };

@@ -1,3 +1,4 @@
+import { useAuthState } from "../context/Auth";
 import styled from "styled-components";
 import Folder from "./Folder";
 import TreeRecursive from "./TreeRecursive";
@@ -20,26 +21,66 @@ const Tree = ({
   getChildFoldersForNotesLocation,
   setWrikeFolderId,
 }) => {
-  if (!folders) {
+  const { user } = useAuthState();
+
+  const loginWithWrike = (e) => {
+    e.preventDefault();
+    window.location.assign(process.env.REACT_APP_WRIKE_AUTH_URL);
+  };
+
+  if (user.wrike) {
+    if (!folders) {
+      return (
+        <StyledTree>
+          <h4>Notes Location</h4>
+          <p style={{ fontWeight: "700" }}>Loading...</p>
+        </StyledTree>
+      );
+    }
+
     return (
       <StyledTree>
         <h4>Notes Location</h4>
-        <p style={{ fontWeight: "700" }}>Loading...</p>
+        <TreeRecursive
+          folders={folders}
+          setFolderTree={setFolderTree}
+          getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
+          setWrikeFolderId={setWrikeFolderId}
+        />
       </StyledTree>
     );
+  } else {
+    return (
+      <div
+        style={{
+          lineHeight: "1.5",
+          padding: "15px",
+          backgroundColor: "white",
+          margin: "10px",
+          borderRadius: "10px",
+        }}
+      >
+        <h4>Notes Location</h4>
+        <p>
+          Please{" "}
+          <button
+            onClick={loginWithWrike}
+            style={{
+              cursor: "pointer",
+              color: "dodgerblue",
+              textDecoration: "underline",
+              border: "none",
+              backgroundColor: "inherit",
+              padding: "0",
+            }}
+          >
+            log in with Wrike
+          </button>{" "}
+          first!
+        </p>
+      </div>
+    );
   }
-
-  return (
-    <StyledTree>
-      <h4>Notes Location</h4>
-      <TreeRecursive
-        folders={folders}
-        setFolderTree={setFolderTree}
-        getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
-        setWrikeFolderId={setWrikeFolderId}
-      />
-    </StyledTree>
-  );
 };
 
 Tree.Folder = Folder;
