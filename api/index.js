@@ -8,17 +8,6 @@ require("../config/passport")(passport);
 const { ensureAuthenticated } = require("../middlewares/auth");
 const { startOfWeek, endOfWeek } = require("date-fns");
 
-/**
- * @todo Handle Notes Location folder tree
- * @todo Allow user to change weeks being viewed
- * @todo Add persistence in knowing which events have notes created for them
- * @todo Save user preferences in browser cookie
- * @todo add "logout with wrike" so that you can change wrike accounts if needed
- * @todo Add styles
- * @todo Refactor UserService (WIP)
- * @todo When someone changes their response to "Not Going" or "Maybe", potentially update the meeting notes.
- */
-
 router.get("/user", ensureAuthenticated, async (req, res) => {
   const user = req.user;
   res.json(user);

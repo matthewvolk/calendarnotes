@@ -1,6 +1,6 @@
 # 🗓 CalendarNotes
 
-## Getting Started
+## 💻 Getting Started
 
 1. `git clone https://github.com/matthewvolk/calendarnotes.git`
 2. `cd calendarnotes`
@@ -8,7 +8,7 @@
 4. `cp .env.sample .env` and then enter environment variables in .env
 5. `npm run develop`
 
-## Folder structure
+## 🗂 Folder structure
 
 ```
 calendarnotes/
@@ -19,3 +19,7 @@ calendarnotes/
 ├── models/        # Mongoose.js models
 ├── services/      # Business logic for Express.js routes
 ```
+
+## 🛣 Roadmap
+
+[View Public Trello Board](https://trello.com/b/DtfoFkpD/%F0%9F%97%93-calendarnotes)
