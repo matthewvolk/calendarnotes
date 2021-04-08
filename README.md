@@ -14,12 +14,13 @@
 
 ```
 calendarnotes/
-├── api/           # Express.js routes
 ├── client/        # Frontend create-react-app
 ├── config/        # Passport.js config
+├── controllers/   # Controllers for Express.js routes
 ├── middlewares/   # Express.js middleware handlers
 ├── models/        # Mongoose.js models
-├── services/      # Business logic for Express.js routes
+├── router/        # Express.js routes
+├── services/      # Business logic for Express.js controllers
 ```
 
 ## 🛣 Roadmap

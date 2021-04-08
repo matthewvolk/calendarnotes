@@ -149,65 +149,6 @@ class UserService {
     return calendarEvents;
   }
 
-  async getWrikeFolders(userId) {
-    let user;
-    let folders;
-
-    try {
-      user = await this.getUser(userId);
-    } catch (err) {
-      console.error(
-        "Failed to retrieve user document in getWrikeFolders()",
-        err
-      );
-    }
-
-    try {
-      const response = await axios({
-        method: "get",
-        url: `https://${user.wrike.apiHost}/api/v4/folders`,
-        headers: {
-          Authorization: `Bearer ${user.wrike.accessToken}`,
-        },
-      });
-      folders = { spaces: response.data };
-    } catch (err) {
-      if (err.response && err.response.status === 401) {
-        let userWithRefreshedToken = await this.refreshWrikeToken(
-          userId,
-          user.wrike.refreshToken
-        );
-
-        try {
-          const response = await axios({
-            method: "get",
-            url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders`,
-            headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
-            },
-          });
-          folders = { spaces: response.data };
-        } catch (err) {
-          console.error(
-            "Failed to retrieve Wrike folders in second try of getWrikeFolders()",
-            err
-          );
-        }
-      } else {
-        console.error(
-          "Call to get Wrike folders in getWrikeFolders() failed for some other reason than 401",
-          err
-        );
-      }
-    }
-
-    /**
-     * @todo ERROR HANDLING
-     * If folders is empty, return something to trigger an error on client
-     */
-    return folders;
-  }
-
   async getFolders(requestingUser, clickedFolderId) {
     let folderResponse = null;
 
