@@ -29,10 +29,6 @@ module.exports = {
     response.redirect(process.env.GOOGLE_OAUTH_REDIRECT);
   },
 
-  googleFailure: (request, response) => {
-    response.send("Failed to Authenticate with Google OAuth2");
-  },
-
   wrikeAuth: (request, response) => {
     response.redirect(
       `https://login.wrike.com/oauth2/authorize/v4?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&response_type=code&redirect_uri=${process.env.WRIKE_OAUTH2_REDIRECT_URI}`

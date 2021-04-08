@@ -6,7 +6,7 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
 
   useEffect(() => {
     const getCalendarData = async () => {
-      const res = await fetch("/api/google/calendars", {
+      const res = await fetch("/api/user/google/calendars", {
         credentials: "include",
       });
 

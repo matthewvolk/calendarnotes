@@ -21,7 +21,9 @@ const Dashboard = () => {
 
     const getEvents = async (currentCalendarId) => {
       const res = await fetch(
-        `/api/google/calendars/${encodeURIComponent(currentCalendarId)}/events`,
+        `/api/user/google/calendars/${encodeURIComponent(
+          currentCalendarId
+        )}/events`,
         {
           credentials: "include",
         }
@@ -54,7 +56,7 @@ const Dashboard = () => {
     wrikeFolderId
   ) => {
     const res = await fetch(
-      `/api/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`,
+      `/api/user/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`,
       {
         method: "POST",
         credentials: "include",
@@ -76,7 +78,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const getTopLevelFoldersForNotesLocation = async () => {
-      const res = await fetch(`/api/folders`, {
+      const res = await fetch(`/api/user/folders`, {
         credentials: "include",
       });
       const data = await res.json();
@@ -97,9 +99,12 @@ const Dashboard = () => {
   }, [user.wrike]);
 
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
-    const res = await fetch(`/api/folders?clickedFolderId=${clickedFolderId}`, {
-      credentials: "include",
-    });
+    const res = await fetch(
+      `/api/user/folders?clickedFolderId=${clickedFolderId}`,
+      {
+        credentials: "include",
+      }
+    );
     console.log(res);
     if (res.ok) {
       const data = await res.json();
