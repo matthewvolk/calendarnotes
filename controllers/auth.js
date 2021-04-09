@@ -22,12 +22,9 @@ module.exports = {
   }),
 
   googleAuthCallback: passport.authenticate("google", {
+    successRedirect: process.env.GOOGLE_OAUTH_REDIRECT,
     failureRedirect: process.env.GOOGLE_OAUTH_FAILURE_REDIRECT,
   }),
-
-  googleAuthRedirect: (request, response) => {
-    response.redirect(process.env.GOOGLE_OAUTH_REDIRECT);
-  },
 
   wrikeAuth: (request, response) => {
     response.redirect(
