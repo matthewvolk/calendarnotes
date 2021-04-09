@@ -1,4 +1,5 @@
 import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
 import styled from "styled-components";
 
 const EventsWrapper = styled.div`
@@ -9,6 +10,36 @@ const EventsWrapper = styled.div`
   flex-grow: 7;
   flex-basis: auto;
   overflow: auto;
+`;
+
+const StyledButton = styled(Button)`
+  background-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+  border-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+
+  &:hover {
+    background-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
+    border-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
+  }
+
+  &:disabled {
+    background-color: ${(props) => {
+      if (props.disabled) return "#e76b62";
+    }};
+    border-color: ${(props) => {
+      if (props.disabled) return "#e76b62";
+    }};
+    cursor: not-allowed;
+  }
 `;
 
 const Events = ({
@@ -54,8 +85,8 @@ const Events = ({
                   </td>
                   <td>
                     {currentCalendarId && wrikeFolderId ? (
-                      <button
-                        className="btn btn-secondary"
+                      <StyledButton
+                        variant="danger"
                         onClick={(e) => {
                           e.preventDefault();
                           setCurrentEventId(event.id);
@@ -67,15 +98,11 @@ const Events = ({
                         }}
                       >
                         Create Meeting Notes
-                      </button>
+                      </StyledButton>
                     ) : (
-                      <button
-                        className="btn btn-secondary"
-                        disabled
-                        data-tip="You must first select a 'Notes Location' above!"
-                      >
-                        Select Notes Location First
-                      </button>
+                      <StyledButton variant="danger" disabled>
+                        Select "Notes Location" First
+                      </StyledButton>
                     )}
                   </td>
                 </tr>

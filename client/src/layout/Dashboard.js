@@ -5,6 +5,7 @@ import Events from "../components/Events";
 import Tree from "../components/Tree";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
+import calendarIcon from "../images/calendar-icon.png";
 import styled from "styled-components";
 
 const StyledDashboardContainer = styled(Container)`
@@ -15,7 +16,7 @@ const StyledDashboardContainer = styled(Container)`
   bottom: 0;
   left: 0;
   width: 100vw;
-  background-color: #f0f0f0;
+  background-color: #e2473b;
   padding-left: 0px;
   padding-right: 0px;
 `;
@@ -26,8 +27,8 @@ const LogoutButton = styled(Button)`
 
 const StyledHeader = styled.div`
   display: flex;
-  padding-bottom: 0.65rem;
-  padding-top: 0.65rem;
+  padding-bottom: 0.35rem;
+  padding-top: 0.35rem;
   justify-content: space-between;
   align-items: center;
   background-color: white;
@@ -46,11 +47,49 @@ const StyledBody = styled.div`
   min-height: 0;
 `;
 
-const EventsContainer = styled.div`
-  flex-basis: 80%;
-  flex-grow: 1;
-  overflow: auto;
-  min-height: 0;
+const CalendarIcon = styled.img`
+  width: 2.5rem;
+  height: 100%;
+`;
+
+const Logo = styled.div`
+  display: flex;
+  align-content: center;
+`;
+
+const LogoText = styled.h3`
+  margin-bottom: 0;
+  margin-top: 3px;
+`;
+
+const StyledButton = styled(Button)`
+  background-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+  border-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+
+  &:hover {
+    background-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
+    border-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
+  }
+
+  &:disabled {
+    background-color: ${(props) => {
+      if (props.disabled) return "#e76b62";
+    }};
+    border-color: ${(props) => {
+      if (props.disabled) return "#e76b62";
+    }};
+    cursor: not-allowed;
+  }
 `;
 
 const Dashboard = () => {
@@ -199,7 +238,10 @@ const Dashboard = () => {
     <>
       <StyledDashboardContainer fluid>
         <StyledHeader>
-          <h3>🗓 CalendarNotes</h3>
+          <Logo>
+            <CalendarIcon src={calendarIcon} alt="Calendar Icon" />{" "}
+            <LogoText>CalendarNotes</LogoText>
+          </Logo>
           <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
           {/* <button disabled class="btn btn-light">
             Settings
@@ -208,20 +250,20 @@ const Dashboard = () => {
             <div className="mr-1">Hi, {user.google.firstName}!</div>
             {user.wrike ? (
               user.wrike.accessToken ? (
-                <Button variant="secondary" disabled>
+                <StyledButton variant="danger" disabled>
                   Login with Wrike
-                </Button>
+                </StyledButton>
               ) : (
-                <Button variant="secondary" onClick={loginWithWrike}>
+                <StyledButton variant="danger" onClick={loginWithWrike}>
                   Login with Wrike
-                </Button>
+                </StyledButton>
               )
             ) : (
-              <Button variant="secondary" onClick={loginWithWrike}>
+              <StyledButton variant="danger" onClick={loginWithWrike}>
                 Login with Wrike
-              </Button>
+              </StyledButton>
             )}
-            <LogoutButton variant="secondary" onClick={logout}>
+            <LogoutButton variant="danger" onClick={logout}>
               Logout
             </LogoutButton>
           </AccountButtonGroup>
