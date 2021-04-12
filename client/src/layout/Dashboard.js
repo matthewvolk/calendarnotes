@@ -138,6 +138,28 @@ const Dashboard = () => {
     }
   }, [currentCalendarId]);
 
+  useEffect(() => {
+    const getTopLevelFoldersForNotesLocation = async () => {
+      const res = await fetch(`/api/user/folders`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      // sort alphabetically
+      data.sort(function (a, b) {
+        let textA = a.name.toUpperCase();
+        let textB = b.name.toUpperCase();
+        return textA < textB ? -1 : textA > textB ? 1 : 0;
+      });
+      setFolderTree(data);
+    };
+
+    if (user.wrike) {
+      if (user.wrike.accessToken) {
+        getTopLevelFoldersForNotesLocation();
+      }
+    }
+  }, [user.wrike]);
+
   const createNotes = async (
     currentEventId,
     currentCalendarId,
@@ -163,28 +185,6 @@ const Dashboard = () => {
     e.preventDefault();
     window.location.assign(process.env.REACT_APP_WRIKE_AUTH_URL);
   };
-
-  useEffect(() => {
-    const getTopLevelFoldersForNotesLocation = async () => {
-      const res = await fetch(`/api/user/folders`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      // sort alphabetically
-      data.sort(function (a, b) {
-        let textA = a.name.toUpperCase();
-        let textB = b.name.toUpperCase();
-        return textA < textB ? -1 : textA > textB ? 1 : 0;
-      });
-      setFolderTree(data);
-    };
-
-    if (user.wrike) {
-      if (user.wrike.accessToken) {
-        getTopLevelFoldersForNotesLocation();
-      }
-    }
-  }, [user.wrike]);
 
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
     const res = await fetch(
