@@ -546,10 +546,6 @@ class UserService {
       );
     }
 
-    console.log(
-      `RERESHING ${provider} TOKEN IN refreshToken() for user ${user}`
-    );
-
     const urls = {
       GOOGLE: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${user.google.refreshToken}`,
       WRIKE: `https://${user.wrike.apiHost}/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${user.wrike.refreshToken}`,
@@ -574,9 +570,6 @@ class UserService {
           },
           { new: true }
         ).exec();
-        console.log(
-          `REFRESHED ${provider} TOKEN IN refreshToken() for user ${userWithRefreshedToken}`
-        );
       } else if (provider === "WRIKE") {
         userWithRefreshedToken = await UserModel.findOneAndUpdate(
           { "google.id": user.google.id },
@@ -589,9 +582,6 @@ class UserService {
           },
           { new: true }
         ).exec();
-        console.log(
-          `REFRESHED ${provider} TOKEN IN refreshToken() for user ${userWithRefreshedToken}`
-        );
       }
 
       return userWithRefreshedToken;
