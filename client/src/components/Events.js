@@ -12,6 +12,20 @@ const EventsWrapper = styled.div`
   overflow: auto;
 `;
 
+const EventsHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+`;
+
+const Arrow = styled.div`
+  cursor: pointer;
+  margin: 0 1rem 0 1rem;
+`;
+
+const WeekOf = styled.h5`
+  font-weight: 400;
+`;
+
 const StyledButton = styled(Button)`
   background-color: ${(props) => {
     if (props.variant === "danger") return "#e2473b";
@@ -50,9 +64,23 @@ const Events = ({
   createNotes,
 }) => {
   if (events) {
+    const getFirstDayOfWeek = (d) => {
+      d = new Date(d);
+      let day = d.getDay();
+      let diff = d.getDate() - day + (day == 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    };
+
     return (
       <EventsWrapper>
-        <h4>Events This Week</h4>
+        <EventsHeader>
+          <h4>Events</h4>
+          <Arrow>&lang;</Arrow>
+          <WeekOf>
+            Week of {getFirstDayOfWeek(new Date()).toDateString()}
+          </WeekOf>
+          <Arrow>&rang;</Arrow>
+        </EventsHeader>
         <Table responsive striped bordered hover size="sm">
           <thead>
             <tr>

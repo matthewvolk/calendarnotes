@@ -10,7 +10,11 @@ module.exports = {
     const user = request.user;
     const userServiceInstance = new UserService();
     const calendars = await userServiceInstance.getUserCalendars(user);
-    response.json(calendars);
+    if (calendars) {
+      response.json(calendars);
+    } else {
+      response.status(500).send();
+    }
   },
 
   getGoogleCalEvents: async (request, response) => {

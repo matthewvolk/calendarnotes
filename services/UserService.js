@@ -13,9 +13,28 @@ const {
  * @todo Error handling, what do I return in the event there is an error?
  */
 
+const logAxiosErrors = (err) => {
+  if (err.response) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    console.log(err.response.data);
+    console.log(err.response.status);
+    console.log(err.response.headers);
+  } else if (err.request) {
+    // The request was made but no response was received
+    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+    // http.ClientRequest in node.js
+    console.log(err.request);
+  } else {
+    // Something happened in setting up the request that triggered an Error
+    console.log("Error", err.message);
+  }
+  console.log(err.config);
+};
+
 class UserService {
   async getUserCalendars(user) {
-    let calendars;
+    let calendars = null;
 
     try {
       const response = await axios({
@@ -40,23 +59,13 @@ class UserService {
           });
           calendars = response.data.items;
         } catch (err) {
-          console.error(
-            "Failed to retrieve calendars in second try of getUserCalendars()",
-            err
-          );
+          logAxiosErrors(err);
         }
       } else {
-        console.error(
-          "Call to get calendars in getUserCalendars() failed for some other reason than 401",
-          err
-        );
+        logAxiosErrors(err);
       }
     }
 
-    /**
-     * @todo ERROR HANDLING
-     * If calendars is empty, return something to trigger an error on client
-     */
     return calendars;
   }
 

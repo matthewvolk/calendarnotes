@@ -96,7 +96,6 @@ const Dashboard = () => {
   const { user } = useAuthState();
   const [events, setEvents] = useState(null);
   const [folderTree, setFolderTree] = useState(null);
-
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
   const [, setCurrentEventId] = useState(null);
   const [wrikeFolderId, setWrikeFolderId] = useState(null);

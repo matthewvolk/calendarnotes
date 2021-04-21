@@ -10,19 +10,19 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
         credentials: "include",
       });
 
-      /**
-       * @todo ERROR HANDLING
-       */
-
-      const calendars = await res.json();
-      let newOptions = [];
-      calendars.forEach((calendar) => {
-        newOptions.push({
-          value: calendar.id,
-          label: calendar.summary,
+      if (res.ok) {
+        const calendars = await res.json();
+        let newOptions = [];
+        calendars.forEach((calendar) => {
+          newOptions.push({
+            value: calendar.id,
+            label: calendar.summary,
+          });
         });
-      });
-      setOptions(newOptions);
+        setOptions(newOptions);
+      } else {
+        setOptions(null);
+      }
     };
     getCalendarData();
   }, []);
@@ -63,6 +63,14 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
             ))}
           </select>
         </div>
+      </div>
+    );
+  } else if (options === null) {
+    return (
+      <div>
+        <p style={{ color: "red", marginBottom: 0 }}>
+          Could not load calendars, refresh to try again.
+        </p>
       </div>
     );
   } else {
