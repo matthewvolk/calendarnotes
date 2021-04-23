@@ -101,11 +101,6 @@ const Dashboard = () => {
   const [wrikeFolderId, setWrikeFolderId] = useState(null);
 
   useEffect(() => {
-    /**
-     * @todo when currentCalendar is updated, write to Mongo with preferred Calendar
-     * so I can persist when page reloads
-     */
-
     const getEvents = async (currentCalendarId) => {
       const res = await fetch(
         `/api/user/google/calendars/${encodeURIComponent(
@@ -242,9 +237,6 @@ const Dashboard = () => {
             <LogoText>CalendarNotes</LogoText>
           </Logo>
           <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
-          {/* <button disabled class="btn btn-light">
-            Settings
-          </button> */}
           <AccountButtonGroup>
             <div className="mr-1">Hi, {user.google.firstName}!</div>
             {user.wrike ? (

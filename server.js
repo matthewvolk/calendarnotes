@@ -25,42 +25,6 @@ mongoose
     console.log(`MongoDB Connection Error: ${err.message}`);
   });
 
-/**
- * @notes
- * - Flush Heroku Redis Cache: $ heroku redis:cli, $ flushall
- */
-
-/**
- * @todo create Wrike and Google Axios clients
- * const myClient = axios.create({
- *    baseUrl: "https://api.example.com",
- *    headers: {
- *      Authorization: "Bearer ..."
- *    }
- * })
- *
- * try {
- *    const res = await myClient.get("/test")
- *    const data = res.data
- * } catch (err) {
- *    handleError(err)
- * }
- *
- * @todo
- * Bulletproof Architecture: https://softwareontheroad.com/ideal-nodejs-project-structure/#architecture
- *     - https://mannhowie.com/clean-architecture-node
- *     - https://www.codementor.io/@evanbechtol/node-service-oriented-architecture-12vjt9zs9i
- *     - https://stackoverflow.com/a/42164174
- * Dependency injection: https://cdn-media-1.freecodecamp.org/images/1*TF-VdAgPfcD497kAW77Ukg.png
- * [ ] https://support.google.com/cloud/answer/9110914?hl=en
- * [ ] https://www.indiehackers.com/forum/how-to-handle-user-sessions-in-a-node-and-react-app-e7b467048b
- * [ ] https://stackoverflow.com/questions/61126689/how-to-override-express-api-routes-with-react-router
- * [ ] https://stackoverflow.com/questions/41069593/how-do-i-handle-errors-in-passport-deserializeuser
- * [ ] https://stackoverflow.com/questions/44362205/passport-nodeerror-failed-to-deserialize-user-out-of-session
- * [ ] https://stackoverflow.com/questions/35359295/how-does-passport-js-stores-user-object-in-session
- * [ ] https://stackoverflow.com/questions/27637609/understanding-passport-serialize-deserialize
- */
-
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(
   session({

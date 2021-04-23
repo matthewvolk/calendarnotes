@@ -14,9 +14,6 @@ router.get(
   userController.getGoogleCalEvents
 );
 router.post(
-  /**
-   * @todo Refactor to req.body, use Joi to define schema of req.body object
-   */
   "/notes/create/calendar/:calendarId/event/:eventId/folder/:folderId",
   checkAuth,
   userController.createNotes

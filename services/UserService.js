@@ -9,10 +9,6 @@ const {
   format,
 } = require("date-fns");
 
-/**
- * @todo Error handling, what do I return in the event there is an error?
- */
-
 const logAxiosErrors = (err) => {
   if (err.response) {
     // The request was made and the server responded with a status code
@@ -117,10 +113,6 @@ class UserService {
       }
     }
 
-    /**
-     * @todo ERROR HANDLING
-     * If calendarEvents is empty, return something to trigger an error on client
-     */
     return calendarEvents;
   }
 
@@ -252,10 +244,6 @@ class UserService {
           return promise;
         });
 
-        /**
-         * @todo Catch needs to return an Error object
-         */
-
         try {
           let spaceIdsAndNames = await Promise.all(getSpaceIdsAndNames);
           folderResponse = spaceIdsAndNames.map((spaceIdAndName) => {
@@ -354,7 +342,7 @@ class UserService {
     }
 
     /**
-     * @todo below, handle case of all-day events where there is no datetime
+     * @todo https://trello.com/c/1kMb0WAt/18-in-userservicejs-createnotesforevent-handle-case-of-all-day-events-where-there-is-no-datetime
      */
 
     let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
