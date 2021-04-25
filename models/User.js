@@ -12,6 +12,13 @@ const userSchema = new mongoose.Schema({
     tokenType: String,
     accessScopes: String,
   },
+  googleDrive: {
+    accessToken: String,
+    expiresIn: Number,
+    refreshToken: String,
+    scope: String,
+    tokenType: String,
+  },
   wrike: {
     firstName: String,
     lastName: String,

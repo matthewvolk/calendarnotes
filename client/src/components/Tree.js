@@ -20,13 +20,9 @@ const Tree = ({
   setFolderTree,
   getChildFoldersForNotesLocation,
   setWrikeFolderId,
+  openSettings,
 }) => {
   const { user } = useAuthState();
-
-  const loginWithWrike = (e) => {
-    e.preventDefault();
-    window.location.assign(process.env.REACT_APP_WRIKE_AUTH_URL);
-  };
 
   if (user.wrike) {
     if (!folders) {
@@ -64,7 +60,7 @@ const Tree = ({
         <p>
           Please{" "}
           <button
-            onClick={loginWithWrike}
+            onClick={openSettings}
             style={{
               cursor: "pointer",
               color: "dodgerblue",
@@ -74,7 +70,7 @@ const Tree = ({
               padding: "0",
             }}
           >
-            log in with Wrike
+            choose notes location
           </button>{" "}
           first!
         </p>

@@ -13,19 +13,19 @@ const logAxiosErrors = (err) => {
   if (err.response) {
     // The request was made and the server responded with a status code
     // that falls out of the range of 2xx
-    console.log(err.response.data);
-    console.log(err.response.status);
-    console.log(err.response.headers);
+    console.error(err.response.data);
+    console.error(err.response.status);
+    console.error(err.response.headers);
   } else if (err.request) {
     // The request was made but no response was received
     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
     // http.ClientRequest in node.js
-    console.log(err.request);
+    console.error(err.request);
   } else {
     // Something happened in setting up the request that triggered an Error
-    console.log("Error", err.message);
+    console.error("Error", err.message);
   }
-  console.log(err.config);
+  console.error(err.config);
 };
 
 class UserService {
@@ -114,6 +114,117 @@ class UserService {
     }
 
     return calendarEvents;
+  }
+
+  async listGoogleDrives(user) {
+    /**
+     * @todo
+     * the code below queries for the top level FOLDERS in the "My Drive"
+     * the https://developers.google.com/drive/api/v3/reference/drives/list endpoint lists top level DRIVES in the "Shared Drives"
+     * I need to "fake" a "My Drive" folder in the Shared Drives Drive response, then use the code below for the next level folder response
+     */
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/drive/v2/files/root/children?q=${encodeURIComponent(
+          "mimeType = 'application/vnd.google-apps.folder'"
+        )}`,
+        headers: {
+          Authorization: `Bearer ${user.googleDrive.accessToken}`,
+        },
+      });
+      /**
+       * @todo handle case in which there is pagination
+       */
+
+      console.log(response.data);
+      if (!response.data.nextPageToken) {
+        let folderIds = [];
+
+        response.data.items.forEach((el) => {
+          folderIds.push(el.id);
+        });
+
+        const foldersToFetch = folderIds.map((folderId) => {
+          let url = `https://www.googleapis.com/drive/v2/files/${folderId}`;
+          let promise = axios({
+            method: "get",
+            url,
+            headers: {
+              Authorization: `Bearer ${user.googleDrive.accessToken}`,
+            },
+          });
+          return promise;
+        });
+
+        const promiseAllResponse = await Promise.all(foldersToFetch);
+
+        const folders = promiseAllResponse.map((promiseResponse) => {
+          return promiseResponse.data;
+        });
+
+        console.dir(folders);
+
+        return folders;
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        let userWithRefreshedToken = await this.refreshToken(
+          user,
+          "GOOGLE",
+          "DRIVE"
+        );
+
+        try {
+          const response = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/drive/v2/files/root/children?q=${encodeURIComponent(
+              "mimeType = 'application/vnd.google-apps.folder'"
+            )}`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+            },
+          });
+          /**
+           * @todo handle case in which there is pagination
+           */
+          console.log(response.data);
+          if (!response.data.nextPageToken) {
+            let folderIds = [];
+
+            response.data.items.forEach((el) => {
+              folderIds.push(el.id);
+            });
+
+            const foldersToFetch = folderIds.map((folderId) => {
+              let url = `https://www.googleapis.com/drive/v2/files/${folderId}`;
+              let promise = axios({
+                method: "get",
+                url,
+                headers: {
+                  Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+                },
+              });
+              return promise;
+            });
+
+            const promiseAllResponse = await Promise.all(foldersToFetch);
+
+            const folders = promiseAllResponse.map((promiseResponse) => {
+              return promiseResponse.data;
+            });
+
+            console.dir(folders);
+
+            return folders;
+          }
+        } catch (err) {
+          logAxiosErrors(err);
+        }
+      } else {
+        logAxiosErrors(err);
+      }
+    }
   }
 
   async getFolders(user, clickedFolderId) {
@@ -536,15 +647,24 @@ class UserService {
     }
   }
 
-  async refreshToken(user, provider) {
+  async refreshToken(user, provider, resource = "AUTH") {
     if (!provider) {
       return new RangeError(
         "Paramater 'provider' must be provided as a string and equal to either 'GOOGLE' or 'WRIKE'"
       );
     }
 
+    let googleRefreshToken = null;
+
+    if (resource === "AUTH") {
+      googleRefreshToken = user.google.refreshToken;
+    }
+    if (resource === "DRIVE") {
+      googleRefreshToken = user.googleDrive.refreshToken;
+    }
+
     const urls = {
-      GOOGLE: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${user.google.refreshToken}`,
+      GOOGLE: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${googleRefreshToken}`,
       WRIKE: `https://${user.wrike.apiHost}/oauth2/token?client_id=${process.env.WRIKE_OAUTH2_CLIENT_ID}&client_secret=${process.env.WRIKE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${user.wrike.refreshToken}`,
     };
 
@@ -556,7 +676,7 @@ class UserService {
 
       let userWithRefreshedToken = null;
 
-      if (provider === "GOOGLE") {
+      if (provider === "GOOGLE" && resource === "AUTH") {
         userWithRefreshedToken = await UserModel.findOneAndUpdate(
           { "google.id": user.google.id },
           {
@@ -567,7 +687,22 @@ class UserService {
           },
           { new: true }
         ).exec();
-      } else if (provider === "WRIKE") {
+      }
+
+      if (provider === "GOOGLE" && resource === "DRIVE") {
+        userWithRefreshedToken = await UserModel.findOneAndUpdate(
+          { "google.id": user.google.id },
+          {
+            "googleDrive.accessToken": response.data.access_token,
+            "googleDrive.expiresIn": response.data.expires_in,
+            "googleDrive.scope": response.data.scope,
+            "googleDrive.tokenType": response.data.token_type,
+          },
+          { new: true }
+        ).exec();
+      }
+
+      if (provider === "WRIKE") {
         userWithRefreshedToken = await UserModel.findOneAndUpdate(
           { "google.id": user.google.id },
           {

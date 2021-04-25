@@ -17,6 +17,13 @@ module.exports = {
     }
   },
 
+  listGoogleDrives: async (request, response) => {
+    const user = request.user;
+    const userServiceInstance = new UserService();
+    const googleDrives = await userServiceInstance.listGoogleDrives(user);
+    response.json(googleDrives);
+  },
+
   getGoogleCalEvents: async (request, response) => {
     const user = request.user;
     const { calendarId } = request.params;

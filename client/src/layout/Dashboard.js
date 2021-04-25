@@ -7,6 +7,7 @@ import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import calendarIcon from "../images/calendar-icon.png";
 import styled from "styled-components";
+import SettingsModal from "../components/SettingsModal";
 
 const StyledDashboardContainer = styled(Container)`
   display: flex;
@@ -23,6 +24,24 @@ const StyledDashboardContainer = styled(Container)`
 
 const LogoutButton = styled(Button)`
   margin-left: 0.25rem;
+
+  background-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+  border-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+
+  &:hover {
+    background-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
+    border-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
+  }
 `;
 
 const StyledHeader = styled.div`
@@ -94,11 +113,12 @@ const StyledButton = styled(Button)`
 
 const Dashboard = () => {
   const { user } = useAuthState();
-  const [events, setEvents] = useState(null);
-  const [folderTree, setFolderTree] = useState(null);
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
+  const [events, setEvents] = useState(null);
   const [, setCurrentEventId] = useState(null);
+  const [folderTree, setFolderTree] = useState(null);
   const [wrikeFolderId, setWrikeFolderId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const getEvents = async (currentCalendarId) => {
@@ -175,9 +195,9 @@ const Dashboard = () => {
     window.location.assign(process.env.REACT_APP_LOGOUT_URL);
   };
 
-  const loginWithWrike = (e) => {
+  const openSettings = (e) => {
     e.preventDefault();
-    window.location.assign(process.env.REACT_APP_WRIKE_AUTH_URL);
+    setModalOpen(true);
   };
 
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
@@ -228,9 +248,22 @@ const Dashboard = () => {
     }
   };
 
+  const listGoogleDrives = async (e) => {
+    e.preventDefault();
+    const res = await fetch(`/api/user/google/drives`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const data = await res.json();
+    console.log(data);
+  };
+
   return (
     <>
       <StyledDashboardContainer fluid>
+        {modalOpen ? (
+          <SettingsModal isOpen={modalOpen} close={setModalOpen} />
+        ) : null}
         <StyledHeader>
           <Logo>
             <CalendarIcon src={calendarIcon} alt="Calendar Icon" />{" "}
@@ -238,22 +271,17 @@ const Dashboard = () => {
           </Logo>
           <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
           <AccountButtonGroup>
-            <div className="mr-1">Hi, {user.google.firstName}!</div>
-            {user.wrike ? (
-              user.wrike.accessToken ? (
-                <StyledButton variant="danger" disabled>
-                  Login with Wrike
-                </StyledButton>
+            {user ? (
+              user.googleDrive ? (
+                <button onClick={listGoogleDrives}>Drives</button>
               ) : (
-                <StyledButton variant="danger" onClick={loginWithWrike}>
-                  Login with Wrike
-                </StyledButton>
+                <button disabled>Drives</button>
               )
-            ) : (
-              <StyledButton variant="danger" onClick={loginWithWrike}>
-                Login with Wrike
-              </StyledButton>
-            )}
+            ) : null}
+            <div className="mr-1">Hi, {user.google.firstName}!</div>
+            <StyledButton variant="danger" onClick={openSettings}>
+              Settings
+            </StyledButton>
             <LogoutButton variant="danger" onClick={logout}>
               Logout
             </LogoutButton>
@@ -261,6 +289,7 @@ const Dashboard = () => {
         </StyledHeader>
         <StyledBody>
           <Tree
+            openSettings={openSettings}
             folders={folderTree}
             setFolderTree={setFolderTree}
             getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
