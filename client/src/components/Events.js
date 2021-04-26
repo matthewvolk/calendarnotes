@@ -64,10 +64,10 @@ const Events = ({
   createNotes,
 }) => {
   const nextWeek = () => {
-    console.log(events.usersGoogleCalendarTimeNow);
+    console.log(events.startOfWeekISO);
   };
   const prevWeek = () => {
-    console.log(events.usersGoogleCalendarTimeNow);
+    console.log(events.startOfWeekISO);
   };
 
   if (events) {

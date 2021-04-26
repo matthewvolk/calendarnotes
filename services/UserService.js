@@ -85,7 +85,7 @@ class UserService {
      * Solution: Display Time Zone in Client
      *
      * Problem: If the user is using the app at 11:30PM Sunday, which time do we send to the server to get events?
-     * Solution: When calendarId is selected by user, make a
+     * Solution: Time is determined by the user's Google Calendar settings
      */
 
     let calendarServiceInstance = new CalendarService();
@@ -104,8 +104,8 @@ class UserService {
       usersGoogleCalendarTimeNow
     );
     /**
-     * @todo if (dateString), skip the steps above and instead
-     * get the previous or next week relative to dateString
+     * @todo if (dateString), skip the steps above and instead,
+     * get the previous or next week relative to dateString.
      */
     let userFriendlyStartOfWeek = dateServiceInstance.getUserFriendlyStartOfWeek(
       usersGoogleCalendarTimeNow
@@ -133,7 +133,7 @@ class UserService {
           );
         }
       );
-      eventsResponse.usersGoogleCalendarTimeNow = usersGoogleCalendarTimeNow;
+      eventsResponse.startOfWeekISO = startOfWeek;
       eventsResponse.startOfWeek = userFriendlyStartOfWeek;
       eventsResponse.events = eventsOrderedByEarliestFirst;
     } catch (err) {
@@ -160,7 +160,7 @@ class UserService {
               );
             }
           );
-          eventsResponse.usersGoogleCalendarTimeNow = usersGoogleCalendarTimeNow;
+          eventsResponse.startOfWeekISO = startOfWeek;
           eventsResponse.startOfWeek = userFriendlyStartOfWeek;
           eventsResponse.events = eventsOrderedByEarliestFirst;
         } catch (err) {
