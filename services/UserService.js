@@ -72,6 +72,10 @@ class UserService {
     calendarId /* [, {dateString, prev, next }] */
   ) {
     let eventsResponse = {};
+    console.log(
+      ">>>>> eventsResponse UserService Declaration:",
+      eventsResponse
+    );
     let url;
 
     /**
@@ -136,6 +140,7 @@ class UserService {
       eventsResponse.startOfWeekISO = startOfWeek;
       eventsResponse.startOfWeek = userFriendlyStartOfWeek;
       eventsResponse.events = eventsOrderedByEarliestFirst;
+      console.log(">>>>> eventsResponse UserService Axios #1:", eventsResponse);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         let userWithRefreshedToken = await this.refreshToken(user, "GOOGLE");
@@ -163,6 +168,10 @@ class UserService {
           eventsResponse.startOfWeekISO = startOfWeek;
           eventsResponse.startOfWeek = userFriendlyStartOfWeek;
           eventsResponse.events = eventsOrderedByEarliestFirst;
+          console.log(
+            ">>>>> eventsResponse UserService Axios #1:",
+            eventsResponse
+          );
         } catch (err) {
           console.error(
             "Failed to retrieve calendar events in second try of getCalendarEvents()",
@@ -176,7 +185,7 @@ class UserService {
         );
       }
     }
-
+    console.log(">>>>> eventsResponse return value:", eventsResponse);
     return eventsResponse;
   }
 
