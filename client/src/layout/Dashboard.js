@@ -130,20 +130,11 @@ const Dashboard = () => {
           credentials: "include",
         }
       );
-      const data = await res.json();
-      if (!data.error) {
-        let removeCancelledEvents = data.items.filter((obj) => obj.start);
-        let eventsOrderedByEarliestFirst = removeCancelledEvents.sort(
-          (a, b) => {
-            return (
-              new Date(a.start.dateTime).getTime() -
-              new Date(b.start.dateTime).getTime()
-            );
-          }
-        );
-        setEvents(eventsOrderedByEarliestFirst);
+      const calendarEvents = await res.json();
+      if (res.ok) {
+        setEvents(calendarEvents);
       } else {
-        console.error("ERROR at getEvents()", data);
+        console.error("ERROR at getEvents()", res);
       }
     };
 
@@ -260,6 +251,7 @@ const Dashboard = () => {
 
   return (
     <>
+      {console.log(events)}
       <StyledDashboardContainer fluid>
         {modalOpen ? (
           <SettingsModal isOpen={modalOpen} close={setModalOpen} />

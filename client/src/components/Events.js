@@ -63,23 +63,21 @@ const Events = ({
   wrikeFolderId,
   createNotes,
 }) => {
-  if (events) {
-    const getFirstDayOfWeek = (d) => {
-      d = new Date(d);
-      let day = d.getDay();
-      let diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      return new Date(d.setDate(diff));
-    };
+  const nextWeek = () => {
+    console.log(events.usersGoogleCalendarTimeNow);
+  };
+  const prevWeek = () => {
+    console.log(events.usersGoogleCalendarTimeNow);
+  };
 
+  if (events) {
     return (
       <EventsWrapper>
         <EventsHeader>
           <h4>Events</h4>
-          <Arrow>&lang;</Arrow>
-          <WeekOf>
-            Week of {getFirstDayOfWeek(new Date()).toDateString()}
-          </WeekOf>
-          <Arrow>&rang;</Arrow>
+          <Arrow onClick={prevWeek}>&lang;</Arrow>
+          <WeekOf>Week of {events.startOfWeek}</WeekOf>
+          <Arrow onClick={nextWeek}>&rang;</Arrow>
         </EventsHeader>
         <Table responsive striped bordered hover size="sm">
           <thead>
@@ -90,7 +88,7 @@ const Events = ({
             </tr>
           </thead>
           <tbody>
-            {events.map((event) => {
+            {events.events.map((event) => {
               return (
                 <tr key={event.id}>
                   <td style={{ width: "35%" }}>{event.summary}</td>

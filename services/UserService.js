@@ -8,6 +8,8 @@ const {
   parseISO,
   format,
 } = require("date-fns");
+const CalendarService = require("./CalendarService");
+const DateService = require("./DateService");
 
 const logAxiosErrors = (err) => {
   if (err.response) {
@@ -65,18 +67,52 @@ class UserService {
     return calendars;
   }
 
-  async getCalendarEvents(user, calendarId /* timeMin, timeMax */) {
-    let calendarEvents;
-    let today = new Date();
-    let timeMin = startOfWeek(today).toISOString();
-    let timeMax = endOfWeek(today).toISOString();
+  async getCalendarEvents(
+    user,
+    calendarId /* [, {dateString, prev, next }] */
+  ) {
+    let eventsResponse = {};
     let url;
 
-    if (timeMax && timeMin) {
-      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMax=${timeMax}&timeMin=${timeMin}&singleEvents=true`;
-    } else {
-      url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
-    }
+    /**
+     * Let's say user is in PST
+     * Calendar is in CST
+     * They can:
+     * 1) Update Google Calendar to also be in PST, meaning client and server are in sync
+     * 2) They can leave Google Calendar as CST, meaning client is 2 hours behind
+     *
+     * Problem: User may not know what time zone the Date/Time table is referring to
+     * Solution: Display Time Zone in Client
+     *
+     * Problem: If the user is using the app at 11:30PM Sunday, which time do we send to the server to get events?
+     * Solution: When calendarId is selected by user, make a
+     */
+
+    let calendarServiceInstance = new CalendarService();
+    let userTimeZone = await calendarServiceInstance.getCalendarTimeZone(
+      user,
+      calendarId
+    );
+    let dateServiceInstance = new DateService();
+    let usersGoogleCalendarTimeNow = dateServiceInstance.getDateTimeForTimezone(
+      userTimeZone
+    );
+    let {
+      startOfWeek,
+      endOfWeek,
+    } = dateServiceInstance.getWeekStartAndEndForDate(
+      usersGoogleCalendarTimeNow
+    );
+    /**
+     * @todo if (dateString), skip the steps above and instead
+     * get the previous or next week relative to dateString
+     */
+    let userFriendlyStartOfWeek = dateServiceInstance.getUserFriendlyStartOfWeek(
+      usersGoogleCalendarTimeNow
+    );
+
+    url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${startOfWeek}&timeMax=${endOfWeek}&singleEvents=true`;
+
     try {
       const response = await axios({
         method: "get",
@@ -85,7 +121,21 @@ class UserService {
           Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
-      calendarEvents = response.data;
+      let calendarEventsResponse = response.data;
+      let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
+        (obj) => obj.start
+      );
+      let eventsOrderedByEarliestFirst = eventsResponseMinusCancelledEvents.sort(
+        (a, b) => {
+          return (
+            new Date(a.start.dateTime).getTime() -
+            new Date(b.start.dateTime).getTime()
+          );
+        }
+      );
+      eventsResponse.usersGoogleCalendarTimeNow = usersGoogleCalendarTimeNow;
+      eventsResponse.startOfWeek = userFriendlyStartOfWeek;
+      eventsResponse.events = eventsOrderedByEarliestFirst;
     } catch (err) {
       if (err.response && err.response.status === 401) {
         let userWithRefreshedToken = await this.refreshToken(user, "GOOGLE");
@@ -98,7 +148,21 @@ class UserService {
               Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
-          calendarEvents = response.data;
+          let calendarEventsResponse = response.data;
+          let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
+            (obj) => obj.start
+          );
+          let eventsOrderedByEarliestFirst = eventsResponseMinusCancelledEvents.sort(
+            (a, b) => {
+              return (
+                new Date(a.start.dateTime).getTime() -
+                new Date(b.start.dateTime).getTime()
+              );
+            }
+          );
+          eventsResponse.usersGoogleCalendarTimeNow = usersGoogleCalendarTimeNow;
+          eventsResponse.startOfWeek = userFriendlyStartOfWeek;
+          eventsResponse.events = eventsOrderedByEarliestFirst;
         } catch (err) {
           console.error(
             "Failed to retrieve calendar events in second try of getCalendarEvents()",
@@ -113,7 +177,7 @@ class UserService {
       }
     }
 
-    return calendarEvents;
+    return eventsResponse;
   }
 
   async listGoogleDrives(user) {
