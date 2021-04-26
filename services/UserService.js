@@ -181,7 +181,7 @@ class UserService {
       } else {
         console.error(
           "Call to get calendar events in getCalendarEvents() failed for some other reason than 401",
-          err.response.data.errors
+          err.response.data.error
         );
       }
     }
