@@ -32,7 +32,6 @@ module.exports = {
       user,
       calendarId
     );
-    console.log(">>>>> eventsResponse user controller:", calendarEvents);
     response.json(calendarEvents);
   },
 

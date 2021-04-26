@@ -72,10 +72,6 @@ class UserService {
     calendarId /* [, {dateString, prev, next }] */
   ) {
     let eventsResponse = {};
-    console.log(
-      ">>>>> eventsResponse UserService Declaration:",
-      eventsResponse
-    );
     let url;
 
     /**
@@ -115,7 +111,9 @@ class UserService {
       usersGoogleCalendarTimeNow
     );
 
-    url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${startOfWeek}&timeMax=${endOfWeek}&singleEvents=true`;
+    url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${encodeURIComponent(
+      startOfWeek
+    )}&timeMax=${encodeURIComponent(endOfWeek)}&singleEvents=true`;
 
     try {
       const response = await axios({
@@ -140,7 +138,6 @@ class UserService {
       eventsResponse.startOfWeekISO = startOfWeek;
       eventsResponse.startOfWeek = userFriendlyStartOfWeek;
       eventsResponse.events = eventsOrderedByEarliestFirst;
-      console.log(">>>>> eventsResponse UserService Axios #1:", eventsResponse);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         let userWithRefreshedToken = await this.refreshToken(user, "GOOGLE");
@@ -168,10 +165,6 @@ class UserService {
           eventsResponse.startOfWeekISO = startOfWeek;
           eventsResponse.startOfWeek = userFriendlyStartOfWeek;
           eventsResponse.events = eventsOrderedByEarliestFirst;
-          console.log(
-            ">>>>> eventsResponse UserService Axios #1:",
-            eventsResponse
-          );
         } catch (err) {
           console.error(
             "Failed to retrieve calendar events in second try of getCalendarEvents()",
@@ -181,11 +174,10 @@ class UserService {
       } else {
         console.error(
           "Call to get calendar events in getCalendarEvents() failed for some other reason than 401",
-          err.response.data.error
+          err
         );
       }
     }
-    console.log(">>>>> eventsResponse return value:", eventsResponse);
     return eventsResponse;
   }
 
