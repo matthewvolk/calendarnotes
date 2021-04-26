@@ -19,7 +19,12 @@ const EventsHeader = styled.div`
 
 const Arrow = styled.div`
   cursor: pointer;
-  margin: 0 1rem 0 1rem;
+  padding: 0.5rem;
+`;
+
+const TodayButton = styled.button`
+  cursor: pointer;
+  margin: 0 0.5rem 0 1rem;
 `;
 
 const WeekOf = styled.h5`
@@ -58,16 +63,44 @@ const StyledButton = styled(Button)`
 
 const Events = ({
   events,
+  setEvents,
   setCurrentEventId,
   currentCalendarId,
   wrikeFolderId,
   createNotes,
 }) => {
-  const nextWeek = () => {
-    console.log(events.startOfWeekISO);
+  const nextWeek = async () => {
+    const response = await fetch(
+      `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${events.startOfWeekISO}&prevOrNext=next`
+    );
+    const calendarEvents = await response.json();
+    if (response.ok) {
+      setEvents(calendarEvents);
+    } else {
+      console.error("ERROR at getEvents()", response);
+    }
   };
-  const prevWeek = () => {
-    console.log(events.startOfWeekISO);
+  const prevWeek = async () => {
+    const response = await fetch(
+      `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${events.startOfWeekISO}&prevOrNext=prev`
+    );
+    const calendarEvents = await response.json();
+    if (response.ok) {
+      setEvents(calendarEvents);
+    } else {
+      console.error("ERROR at getEvents()", response);
+    }
+  };
+  const goToToday = async () => {
+    const response = await fetch(
+      `/api/user/google/calendars/${currentCalendarId}/events`
+    );
+    const calendarEvents = await response.json();
+    if (response.ok) {
+      setEvents(calendarEvents);
+    } else {
+      console.error("ERROR at getEvents()", response);
+    }
   };
 
   if (events) {
@@ -75,6 +108,7 @@ const Events = ({
       <EventsWrapper>
         <EventsHeader>
           <h4>Events</h4>
+          <TodayButton onClick={goToToday}>Today</TodayButton>
           <Arrow onClick={prevWeek}>&lang;</Arrow>
           <WeekOf>Week of {events.startOfWeek}</WeekOf>
           <Arrow onClick={nextWeek}>&rang;</Arrow>

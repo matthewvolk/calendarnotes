@@ -251,7 +251,6 @@ const Dashboard = () => {
 
   return (
     <>
-      {console.log(events)}
       <StyledDashboardContainer fluid>
         {modalOpen ? (
           <SettingsModal isOpen={modalOpen} close={setModalOpen} />
@@ -289,6 +288,7 @@ const Dashboard = () => {
           />
           <Events
             events={events}
+            setEvents={setEvents}
             setCurrentEventId={setCurrentEventId}
             currentCalendarId={currentCalendarId}
             wrikeFolderId={wrikeFolderId}

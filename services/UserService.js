@@ -1,15 +1,8 @@
 const UserModel = require("../models/User");
+const DateService = require("./DateService");
 const axios = require("axios");
 const moment = require("moment-timezone");
-const {
-  startOfWeek,
-  endOfWeek,
-  differenceInMinutes,
-  parseISO,
-  format,
-} = require("date-fns");
-const CalendarService = require("./CalendarService");
-const DateService = require("./DateService");
+const { differenceInMinutes, parseISO, format } = require("date-fns");
 
 const logAxiosErrors = (err) => {
   if (err.response) {
@@ -67,48 +60,20 @@ class UserService {
     return calendars;
   }
 
-  async getCalendarEvents(
-    user,
-    calendarId /* [, {dateString, prev, next }] */
-  ) {
+  async getCalEventsForWeek(user, calendarId, weekOf) {
     let eventsResponse = {};
     let url;
-
-    /**
-     * Let's say user is in PST
-     * Calendar is in CST
-     * They can:
-     * 1) Update Google Calendar to also be in PST, meaning client and server are in sync
-     * 2) They can leave Google Calendar as CST, meaning client is 2 hours behind
-     *
-     * Problem: User may not know what time zone the Date/Time table is referring to
-     * Solution: Display Time Zone in Client
-     *
-     * Problem: If the user is using the app at 11:30PM Sunday, which time do we send to the server to get events?
-     * Solution: Time is determined by the user's Google Calendar settings
-     */
-
-    let calendarServiceInstance = new CalendarService();
-    let userTimeZone = await calendarServiceInstance.getCalendarTimeZone(
-      user,
-      calendarId
-    );
     let dateServiceInstance = new DateService();
-    let usersGoogleCalendarTimeNow = dateServiceInstance.getDateTimeForTimezone(
-      userTimeZone
-    );
     let {
       startOfWeek,
       endOfWeek,
-    } = dateServiceInstance.getWeekStartAndEndForDate(
-      usersGoogleCalendarTimeNow
-    );
+    } = dateServiceInstance.getWeekStartAndEndForDate(weekOf);
     /**
      * @todo if (dateString), skip the steps above and instead,
      * get the previous or next week relative to dateString.
      */
     let userFriendlyStartOfWeek = dateServiceInstance.getUserFriendlyStartOfWeek(
-      usersGoogleCalendarTimeNow
+      weekOf
     );
 
     url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${encodeURIComponent(
@@ -167,13 +132,13 @@ class UserService {
           eventsResponse.events = eventsOrderedByEarliestFirst;
         } catch (err) {
           console.error(
-            "Failed to retrieve calendar events in second try of getCalendarEvents()",
+            "Failed to retrieve calendar events in second try of getCalEventsForWeek()",
             err
           );
         }
       } else {
         console.error(
-          "Call to get calendar events in getCalendarEvents() failed for some other reason than 401",
+          "Call to get calendar events in getCalEventsForWeek() failed for some other reason than 401",
           err
         );
       }

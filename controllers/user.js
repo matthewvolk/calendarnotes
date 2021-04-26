@@ -1,3 +1,5 @@
+const CalendarService = require("../services/CalendarService");
+const DateService = require("../services/DateService");
 const UserService = require("../services/UserService");
 
 module.exports = {
@@ -27,12 +29,53 @@ module.exports = {
   getGoogleCalEvents: async (request, response) => {
     const user = request.user;
     const { calendarId } = request.params;
+    let { weekOf, prevOrNext } = request.query;
     const userServiceInstance = new UserService();
-    const calendarEvents = await userServiceInstance.getCalendarEvents(
-      user,
-      calendarId
-    );
-    response.json(calendarEvents);
+    const calendarServiceInstance = new CalendarService();
+    const dateServiceInstance = new DateService();
+
+    if (!weekOf) {
+      let userCalTz = await calendarServiceInstance.getCalendarTimeZone(
+        user,
+        calendarId
+      );
+      weekOf = dateServiceInstance.getDateTimeForTimezone(userCalTz);
+      const calendarEvents = await userServiceInstance.getCalEventsForWeek(
+        user,
+        calendarId,
+        weekOf
+      );
+      response.json(calendarEvents);
+      return;
+    }
+
+    if (weekOf) {
+      if (!prevOrNext) {
+        response
+          .status(400)
+          .send("Must provide query param prevOrNext if weekOf is specified");
+      }
+
+      if (["next", "prev"].indexOf(prevOrNext) === -1) {
+        response.status(400).send("prevOrNext must be one of 'prev' or 'next'");
+      }
+
+      if (prevOrNext === "prev") {
+        weekOf = dateServiceInstance.oneWeekBack(weekOf);
+      }
+
+      if (prevOrNext === "next") {
+        weekOf = dateServiceInstance.oneWeekForward(weekOf);
+      }
+
+      const calendarEvents = await userServiceInstance.getCalEventsForWeek(
+        user,
+        calendarId,
+        weekOf
+      );
+      response.json(calendarEvents);
+      return;
+    }
   },
 
   getFolders: async (request, response) => {

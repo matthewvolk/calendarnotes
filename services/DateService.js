@@ -11,7 +11,6 @@ class DateService {
   };
 
   /**
-   *
    * @param {string} date an ISO 8601-compliant string representation of Luxon's DateTime e.g., '1982-05-25T00:00:00.000Z'
    * @returns {object} an object with two properties containing ISO 8601-compliant string representations of Luxon's DateTime
    */
@@ -25,7 +24,6 @@ class DateService {
   };
 
   /**
-   *
    * @param {string} date an ISO 8601-compliant string representation of Luxon's DateTime e.g., '1982-05-25T00:00:00.000Z'
    * @returns {string} user friendly start of week e.g., 'Thursday, December 20, 2012'
    */
@@ -36,6 +34,22 @@ class DateService {
       day: "2-digit",
       year: "numeric",
     });
+  };
+
+  /**
+   * @param {string} date an ISO 8601-compliant string representation of Luxon's DateTime e.g., '1982-05-25T00:00:00.000Z'
+   * @returns an ISO 8601-compliant string representation of Luxon's DateTime one week ago from date parameter
+   */
+  oneWeekBack = (date) => {
+    return DateTime.fromISO(date).minus({ weeks: 1 }).toISO();
+  };
+
+  /**
+   * @param {string} date an ISO 8601-compliant string representation of Luxon's DateTime e.g., '1982-05-25T00:00:00.000Z'
+   * @returns an ISO 8601-compliant string representation of Luxon's DateTime one week ago from date parameter
+   */
+  oneWeekForward = (date) => {
+    return DateTime.fromISO(date).plus({ weeks: 1 }).toISO();
   };
 }
 

@@ -70,9 +70,9 @@ const Tree = ({
               padding: "0",
             }}
           >
-            choose notes location
+            choose somewhere
           </button>{" "}
-          first!
+          to <br /> store your notes first!
         </p>
       </div>
     );
