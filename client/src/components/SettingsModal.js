@@ -118,9 +118,7 @@ const SettingsModal = ({ close, notesStorage, setNotesStorage }) => {
 
         <div style={{ display: "flex" }}>
           <div style={{ margin: "1rem" }}>
-            <h5 style={{ fontSize: "1.15rem" }}>
-              1. Connect to a notes storage location(s):
-            </h5>
+            <h5>1. Connect to a notes storage location(s):</h5>
             {user ? (
               user.googleDrive ? (
                 <StyledButton disabled variant="danger">
