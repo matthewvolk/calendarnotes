@@ -37,13 +37,15 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
      * Replace with actual data
      *
      * const listGoogleDrives = async (e) => {
-     *   e.preventDefault();
+     *   setIsLoading(true);
      *   const res = await fetch(`/api/user/google/drives`, {
      *     method: "GET",
      *     credentials: "include",
      *   });
      *   const data = await res.json();
      *   console.log(data);
+     * setFolderTree(data);
+     *   setIsLoading(false);
      * };
      */
     const getTopLevelFoldersForNotesLocation2 = async () => {
@@ -126,7 +128,48 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
   };
 
   if (notesStorage.available) {
-    if (isLoading) {
+    if (notesStorage.available.length >= 1) {
+      if (isLoading) {
+        return (
+          <StyledTree>
+            <h4>Notes Location</h4>
+            <div
+              style={{
+                display: "flex",
+                fontSize: "0.85rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div style={{ fontWeight: "500" }}>
+                {
+                  notesStorage.available[
+                    notesStorage.available
+                      .map((el) => el.id)
+                      .indexOf(notesStorage.current)
+                  ].name
+                }
+                {console.log(notesStorage)}
+              </div>
+              <div
+                onClick={openSettings}
+                style={{
+                  cursor: "pointer",
+                  color: "dodgerblue",
+                  textDecoration: "underline",
+                  border: "none",
+                  backgroundColor: "inherit",
+                  padding: "0",
+                  marginLeft: "0.25rem",
+                }}
+              >
+                Change
+              </div>
+            </div>
+            <p style={{ fontWeight: "700" }}>Loading...</p>
+          </StyledTree>
+        );
+      }
+
       return (
         <StyledTree>
           <h4>Notes Location</h4>
@@ -162,50 +205,15 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
               Change
             </div>
           </div>
-          <p style={{ fontWeight: "700" }}>Loading...</p>
+          <TreeRecursive
+            folders={folderTree}
+            setFolderTree={setFolderTree}
+            getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
+            setWrikeFolderId={setWrikeFolderId}
+          />
         </StyledTree>
       );
     }
-
-    return (
-      <StyledTree>
-        <h4>Notes Location</h4>
-        <div
-          style={{ display: "flex", fontSize: "0.85rem", marginBottom: "1rem" }}
-        >
-          <div style={{ fontWeight: "500" }}>
-            {
-              notesStorage.available[
-                notesStorage.available
-                  .map((el) => el.id)
-                  .indexOf(notesStorage.current)
-              ].name
-            }
-            {console.log(notesStorage)}
-          </div>
-          <div
-            onClick={openSettings}
-            style={{
-              cursor: "pointer",
-              color: "dodgerblue",
-              textDecoration: "underline",
-              border: "none",
-              backgroundColor: "inherit",
-              padding: "0",
-              marginLeft: "0.25rem",
-            }}
-          >
-            Change
-          </div>
-        </div>
-        <TreeRecursive
-          folders={folderTree}
-          setFolderTree={setFolderTree}
-          getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
-          setWrikeFolderId={setWrikeFolderId}
-        />
-      </StyledTree>
-    );
   } else {
     return (
       <div
