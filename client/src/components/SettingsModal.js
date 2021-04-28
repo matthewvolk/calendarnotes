@@ -45,24 +45,8 @@ const loginWithGoogleDrive = (e) => {
   window.location.assign(process.env.REACT_APP_GOOGLE_DRIVE_AUTH_URL);
 };
 
-const SettingsModal = ({ close }) => {
+const SettingsModal = ({ close, notesStorage, setNotesStorage }) => {
   const { user } = useAuthState();
-  const [notesStorage, setNotesStorage] = useState({
-    current: null,
-    available: null,
-  });
-
-  useEffect(() => {
-    const getNotesStorage = async () => {
-      const res = await fetch(`/api/user/notes/storage`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setNotesStorage(data);
-    };
-
-    getNotesStorage();
-  }, []);
 
   const handleNotesLocationChange = async (e) => {
     notesStorage.current = e.target.value;
@@ -75,7 +59,15 @@ const SettingsModal = ({ close }) => {
     });
     const data = await res.json();
     setNotesStorage(data);
-    // this has to force the folderTree to re-render
+
+    /**
+     * Move the top level and child folder api calls to within the Tree component
+     * The tree should receive the "notesStorage.current" data and then make
+     * the api call to get the appropriate folders based on that. That way,
+     * when the notesStore.current data field changes, it changes Dashboard
+     * which then changes the tree. This means that the useEffect in the Tree
+     * component would be something like [notesStorage.current]
+     */
   };
 
   return (

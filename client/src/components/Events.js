@@ -177,7 +177,6 @@ const Events = ({
     return (
       <EventsWrapper>
         <h4>Events This Week</h4>
-        <hr />
         <p>
           Either you haven't selected a calendar above, or you do not have
           permission to consume the events for the calendar you have chosen

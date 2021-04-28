@@ -1,4 +1,5 @@
 import { useAuthState } from "../context/Auth";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import Folder from "./Folder";
 import TreeRecursive from "./TreeRecursive";
@@ -15,38 +16,137 @@ const StyledTree = styled.div`
   border-radius: 10px;
 `;
 
-const Tree = ({
-  folders,
-  setFolderTree,
-  getChildFoldersForNotesLocation,
-  setWrikeFolderId,
-  openSettings,
-}) => {
+const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
   const { user } = useAuthState();
+  const [folderTree, setFolderTree] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (user.wrike) {
-    if (!folders) {
+  useEffect(() => {
+    const getTopLevelFoldersForNotesLocation = async () => {
+      setIsLoading(true);
+      const res = await fetch(`/api/user/folders`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setFolderTree(data);
+      setIsLoading(false);
+    };
+
+    /**
+     * @todo
+     * Replace with actual data
+     *
+     * const listGoogleDrives = async (e) => {
+     *   e.preventDefault();
+     *   const res = await fetch(`/api/user/google/drives`, {
+     *     method: "GET",
+     *     credentials: "include",
+     *   });
+     *   const data = await res.json();
+     *   console.log(data);
+     * };
+     */
+    const getTopLevelFoldersForNotesLocation2 = async () => {
+      setIsLoading(true);
+      const data = [
+        {
+          id: "1",
+          name: "Google Test 1",
+          hasChildFolders: false,
+        },
+        {
+          id: "2",
+          name: "Google Test 2",
+          hasChildFolders: false,
+        },
+      ];
+      setFolderTree(data);
+      setIsLoading(false);
+    };
+
+    if (notesStorage.current === "wrike") {
+      if (user.wrike) {
+        if (user.wrike.accessToken) {
+          getTopLevelFoldersForNotesLocation();
+        }
+      }
+    }
+
+    if (notesStorage.current === "googleDrive") {
+      getTopLevelFoldersForNotesLocation2();
+    }
+  }, [user, notesStorage.current]);
+
+  const getChildFoldersForNotesLocation = async (clickedFolderId) => {
+    const res = await fetch(
+      `/api/user/folders?clickedFolderId=${clickedFolderId}`,
+      {
+        credentials: "include",
+      }
+    );
+    console.log(res);
+    if (res.ok) {
+      const data = await res.json();
+
+      /**
+       * @todo this needs to be changed when I change api/index.js:157
+       */
+      if (data.error) {
+        return data;
+      } else {
+        // sort data alphabetically
+        data.sort(function (a, b) {
+          let textA = a.name.toUpperCase();
+          let textB = b.name.toUpperCase();
+          return textA < textB ? -1 : textA > textB ? 1 : 0;
+        });
+
+        let newFolderTree = [...folderTree];
+
+        function findRecurisvely(tree, id) {
+          for (let i = 0; i < tree.length; i++) {
+            if (tree[i].id === id) {
+              tree[i].childFolders = data;
+            } else if (
+              tree[i].childFolders &&
+              tree[i].childFolders.length &&
+              typeof tree[i].childFolders === "object"
+            ) {
+              findRecurisvely(tree[i].childFolders, id);
+            }
+          }
+        }
+
+        findRecurisvely(newFolderTree, clickedFolderId);
+        setFolderTree(newFolderTree);
+      }
+    } else {
+      /** Error handling if res not ok */
+    }
+  };
+
+  if (notesStorage.available) {
+    if (isLoading) {
       return (
         <StyledTree>
           <h4>Notes Location</h4>
-          <hr />
-          <p style={{ fontWeight: "700" }}>Loading...</p>
-        </StyledTree>
-      );
-    }
-
-    return (
-      <StyledTree>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-          }}
-        >
-          <h4>Notes Location</h4>
-          <div style={{ display: "flex", fontSize: "0.85rem" }}>
-            <div style={{ fontWeight: "500" }}>Wrike</div>
+          <div
+            style={{
+              display: "flex",
+              fontSize: "0.85rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <div style={{ fontWeight: "500" }}>
+              {
+                notesStorage.available[
+                  notesStorage.available
+                    .map((el) => el.id)
+                    .indexOf(notesStorage.current)
+                ].name
+              }
+              {console.log(notesStorage)}
+            </div>
             <div
               onClick={openSettings}
               style={{
@@ -62,10 +162,44 @@ const Tree = ({
               Change
             </div>
           </div>
+          <p style={{ fontWeight: "700" }}>Loading...</p>
+        </StyledTree>
+      );
+    }
+
+    return (
+      <StyledTree>
+        <h4>Notes Location</h4>
+        <div
+          style={{ display: "flex", fontSize: "0.85rem", marginBottom: "1rem" }}
+        >
+          <div style={{ fontWeight: "500" }}>
+            {
+              notesStorage.available[
+                notesStorage.available
+                  .map((el) => el.id)
+                  .indexOf(notesStorage.current)
+              ].name
+            }
+            {console.log(notesStorage)}
+          </div>
+          <div
+            onClick={openSettings}
+            style={{
+              cursor: "pointer",
+              color: "dodgerblue",
+              textDecoration: "underline",
+              border: "none",
+              backgroundColor: "inherit",
+              padding: "0",
+              marginLeft: "0.25rem",
+            }}
+          >
+            Change
+          </div>
         </div>
-        <hr />
         <TreeRecursive
-          folders={folders}
+          folders={folderTree}
           setFolderTree={setFolderTree}
           getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
           setWrikeFolderId={setWrikeFolderId}
@@ -84,7 +218,6 @@ const Tree = ({
         }}
       >
         <h4>Notes Location</h4>
-        <hr />
         <p>
           Please{" "}
           <button

@@ -116,9 +116,24 @@ const Dashboard = () => {
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
   const [events, setEvents] = useState(null);
   const [, setCurrentEventId] = useState(null);
-  const [folderTree, setFolderTree] = useState(null);
   const [wrikeFolderId, setWrikeFolderId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [notesStorage, setNotesStorage] = useState({
+    current: null,
+    available: null,
+  });
+
+  useEffect(() => {
+    const getNotesStorage = async () => {
+      const res = await fetch(`/api/user/notes/storage`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setNotesStorage(data);
+    };
+
+    getNotesStorage();
+  }, []);
 
   useEffect(() => {
     const getEvents = async (currentCalendarId) => {
@@ -142,76 +157,6 @@ const Dashboard = () => {
       getEvents(currentCalendarId);
     }
   }, [currentCalendarId]);
-
-  useEffect(() => {
-    const getTopLevelFoldersForNotesLocation = async () => {
-      const res = await fetch(`/api/user/folders`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      // sort alphabetically
-      data.sort(function (a, b) {
-        let textA = a.name.toUpperCase();
-        let textB = b.name.toUpperCase();
-        return textA < textB ? -1 : textA > textB ? 1 : 0;
-      });
-      setFolderTree(data);
-    };
-
-    if (user.wrike) {
-      if (user.wrike.accessToken) {
-        getTopLevelFoldersForNotesLocation();
-      }
-    }
-  }, [user.wrike]);
-
-  const getChildFoldersForNotesLocation = async (clickedFolderId) => {
-    const res = await fetch(
-      `/api/user/folders?clickedFolderId=${clickedFolderId}`,
-      {
-        credentials: "include",
-      }
-    );
-    console.log(res);
-    if (res.ok) {
-      const data = await res.json();
-
-      /**
-       * @todo this needs to be changed when I change api/index.js:157
-       */
-      if (data.error) {
-        return data;
-      } else {
-        // sort data alphabetically
-        data.sort(function (a, b) {
-          let textA = a.name.toUpperCase();
-          let textB = b.name.toUpperCase();
-          return textA < textB ? -1 : textA > textB ? 1 : 0;
-        });
-
-        let newFolderTree = [...folderTree];
-
-        function findRecurisvely(tree, id) {
-          for (let i = 0; i < tree.length; i++) {
-            if (tree[i].id === id) {
-              tree[i].childFolders = data;
-            } else if (
-              tree[i].childFolders &&
-              tree[i].childFolders.length &&
-              typeof tree[i].childFolders === "object"
-            ) {
-              findRecurisvely(tree[i].childFolders, id);
-            }
-          }
-        }
-
-        findRecurisvely(newFolderTree, clickedFolderId);
-        setFolderTree(newFolderTree);
-      }
-    } else {
-      /** Error handling if res not ok */
-    }
-  };
 
   const createNotes = async (
     currentEventId,
@@ -239,21 +184,16 @@ const Dashboard = () => {
     setModalOpen(true);
   };
 
-  const listGoogleDrives = async (e) => {
-    e.preventDefault();
-    const res = await fetch(`/api/user/google/drives`, {
-      method: "GET",
-      credentials: "include",
-    });
-    const data = await res.json();
-    console.log(data);
-  };
-
   return (
     <>
       <StyledDashboardContainer fluid>
         {modalOpen ? (
-          <SettingsModal isOpen={modalOpen} close={setModalOpen} />
+          <SettingsModal
+            isOpen={modalOpen}
+            close={setModalOpen}
+            notesStorage={notesStorage}
+            setNotesStorage={setNotesStorage}
+          />
         ) : null}
         <StyledHeader>
           <Logo>
@@ -262,13 +202,6 @@ const Dashboard = () => {
           </Logo>
           <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
           <AccountButtonGroup>
-            {user ? (
-              user.googleDrive ? (
-                <button onClick={listGoogleDrives}>Drives</button>
-              ) : (
-                <button disabled>Drives</button>
-              )
-            ) : null}
             <div className="mr-1">Hi, {user.google.firstName}!</div>
             <StyledButton variant="danger" onClick={openSettings}>
               Settings
@@ -280,10 +213,8 @@ const Dashboard = () => {
         </StyledHeader>
         <StyledBody>
           <Tree
+            notesStorage={notesStorage}
             openSettings={openSettings}
-            folders={folderTree}
-            setFolderTree={setFolderTree}
-            getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
             setWrikeFolderId={setWrikeFolderId}
           />
           <Events
