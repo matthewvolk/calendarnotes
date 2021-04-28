@@ -113,6 +113,7 @@ const Events = ({
           <WeekOf>Week of {events.startOfWeek}</WeekOf>
           <Arrow onClick={nextWeek}>&rang;</Arrow>
         </EventsHeader>
+
         <Table responsive striped bordered hover size="sm">
           <thead>
             <tr>
@@ -176,6 +177,7 @@ const Events = ({
     return (
       <EventsWrapper>
         <h4>Events This Week</h4>
+        <hr />
         <p>
           Either you haven't selected a calendar above, or you do not have
           permission to consume the events for the calendar you have chosen

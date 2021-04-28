@@ -29,6 +29,7 @@ const Tree = ({
       return (
         <StyledTree>
           <h4>Notes Location</h4>
+          <hr />
           <p style={{ fontWeight: "700" }}>Loading...</p>
         </StyledTree>
       );
@@ -36,7 +37,33 @@ const Tree = ({
 
     return (
       <StyledTree>
-        <h4>Notes Location</h4>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+          }}
+        >
+          <h4>Notes Location</h4>
+          <div style={{ display: "flex", fontSize: "0.85rem" }}>
+            <div style={{ fontWeight: "500" }}>Wrike</div>
+            <div
+              onClick={openSettings}
+              style={{
+                cursor: "pointer",
+                color: "dodgerblue",
+                textDecoration: "underline",
+                border: "none",
+                backgroundColor: "inherit",
+                padding: "0",
+                marginLeft: "0.25rem",
+              }}
+            >
+              Change
+            </div>
+          </div>
+        </div>
+        <hr />
         <TreeRecursive
           folders={folders}
           setFolderTree={setFolderTree}
@@ -57,6 +84,7 @@ const Tree = ({
         }}
       >
         <h4>Notes Location</h4>
+        <hr />
         <p>
           Please{" "}
           <button

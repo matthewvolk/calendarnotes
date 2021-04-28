@@ -60,6 +60,19 @@ class UserService {
     return calendars;
   }
 
+  async getNotesStorageInfo(user) {
+    const userDoc = await UserModel.findOne({ "google.id": user.google.id });
+    const { notesStorage: notesStorageInfo } = userDoc;
+    return notesStorageInfo;
+  }
+
+  async updateNotesStorageInfo(user, notesStorageUpdate) {
+    const userDoc = await UserModel.findOne({ "google.id": user.google.id });
+    userDoc.notesStorage.current = notesStorageUpdate.current;
+    await userDoc.save();
+    return userDoc.notesStorage;
+  }
+
   async getCalEventsForWeek(user, calendarId, weekOf) {
     let eventsResponse = {};
     let url;

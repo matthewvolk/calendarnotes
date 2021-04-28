@@ -19,6 +19,26 @@ module.exports = {
     }
   },
 
+  getNotesStorageInfo: async (request, response) => {
+    const user = request.user;
+    const userServiceInstance = new UserService();
+    const notesStorageInfo = await userServiceInstance.getNotesStorageInfo(
+      user
+    );
+    response.json(notesStorageInfo);
+  },
+
+  updateNotesStorageInfo: async (request, response) => {
+    const user = request.user;
+    const notesStorageUpdate = request.body;
+    const userServiceInstance = new UserService();
+    const updatedNotesStorageInfo = await userServiceInstance.updateNotesStorageInfo(
+      user,
+      notesStorageUpdate
+    );
+    response.json(updatedNotesStorageInfo);
+  },
+
   listGoogleDrives: async (request, response) => {
     const user = request.user;
     const userServiceInstance = new UserService();

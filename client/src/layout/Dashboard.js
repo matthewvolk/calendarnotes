@@ -165,32 +165,6 @@ const Dashboard = () => {
     }
   }, [user.wrike]);
 
-  const createNotes = async (
-    currentEventId,
-    currentCalendarId,
-    wrikeFolderId
-  ) => {
-    const res = await fetch(
-      `/api/user/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`,
-      {
-        method: "POST",
-        credentials: "include",
-      }
-    );
-    const data = await res.json();
-    console.log(data);
-  };
-
-  const logout = (e) => {
-    e.preventDefault();
-    window.location.assign(process.env.REACT_APP_LOGOUT_URL);
-  };
-
-  const openSettings = (e) => {
-    e.preventDefault();
-    setModalOpen(true);
-  };
-
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
     const res = await fetch(
       `/api/user/folders?clickedFolderId=${clickedFolderId}`,
@@ -237,6 +211,32 @@ const Dashboard = () => {
     } else {
       /** Error handling if res not ok */
     }
+  };
+
+  const createNotes = async (
+    currentEventId,
+    currentCalendarId,
+    wrikeFolderId
+  ) => {
+    const res = await fetch(
+      `/api/user/notes/create/calendar/${currentCalendarId}/event/${currentEventId}/folder/${wrikeFolderId}`,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
+    const data = await res.json();
+    console.log(data);
+  };
+
+  const logout = (e) => {
+    e.preventDefault();
+    window.location.assign(process.env.REACT_APP_LOGOUT_URL);
+  };
+
+  const openSettings = (e) => {
+    e.preventDefault();
+    setModalOpen(true);
   };
 
   const listGoogleDrives = async (e) => {

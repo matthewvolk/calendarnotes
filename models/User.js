@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     tokenType: String,
     apiHost: String,
   },
+  notesStorage: {
+    current: String,
+    available: [{ id: String, name: String }],
+  },
 });
 const User = mongoose.model("User", userSchema);
 

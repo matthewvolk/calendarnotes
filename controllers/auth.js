@@ -52,17 +52,18 @@ module.exports = {
           process.env.GOOGLE_DRIVE_OAUTH_REDIRECT_URI
         )}`,
       });
-      await User.findOneAndUpdate(
-        { "google.id": request.user.google.id },
-        {
-          "googleDrive.accessToken": googleDriveCreds.data.access_token,
-          "googleDrive.expiresIn": googleDriveCreds.data.expires_in,
-          "googleDrive.refreshToken": googleDriveCreds.data.refresh_token,
-          "googleDrive.scope": googleDriveCreds.data.scope,
-          "googleDrive.tokenType": googleDriveCreds.data.token_type,
-        },
-        { new: true }
-      ).exec();
+      const user = await User.findOne({ "google.id": request.user.google.id });
+      user.googleDrive.accessToken = googleDriveCreds.data.access_token;
+      user.googleDrive.expiresIn = googleDriveCreds.data.expires_in;
+      user.googleDrive.refreshToken = googleDriveCreds.data.refresh_token;
+      user.googleDrive.scope = googleDriveCreds.data.scope;
+      user.googleDrive.tokenType = googleDriveCreds.data.token_type;
+      user.notesStorage.current = "googleDrive";
+      user.notesStorage.available.push({
+        id: "googleDrive",
+        name: "Google Drive",
+      });
+      await user.save();
       response.redirect(process.env.GOOGLE_OAUTH_REDIRECT);
     }
 
@@ -108,16 +109,17 @@ module.exports = {
             process.env.WRIKE_OAUTH2_REDIRECT_URI
           )}`,
         });
-        await User.findOneAndUpdate(
-          { "google.id": request.user.google.id },
-          {
-            "wrike.accessToken": wrikeResponse.data.access_token,
-            "wrike.refreshToken": wrikeResponse.data.refresh_token,
-            "wrike.apiHost": wrikeResponse.data.host,
-            "wrike.tokenType": wrikeResponse.data.token_type,
-            "wrike.tokenExpiresIn": wrikeResponse.data.expires_in,
-          }
-        ).exec();
+        const user = await User.findOne({
+          "google.id": request.user.google.id,
+        });
+        user.wrike.accessToken = wrikeResponse.data.access_token;
+        user.wrike.refreshToken = wrikeResponse.data.refresh_token;
+        user.wrike.apiHost = wrikeResponse.data.host;
+        user.wrike.tokenType = wrikeResponse.data.token_type;
+        user.wrike.tokenExpiresIn = wrikeResponse.data.expires_in;
+        user.notesStorage.current = "wrike";
+        user.notesStorage.available.push({ id: "wrike", name: "Wrike" });
+        await user.save();
         response.redirect(process.env.WRIKE_OAUTH_REDIRECT);
       } catch (err) {
         next(err);

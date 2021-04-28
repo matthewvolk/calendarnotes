@@ -19,5 +19,7 @@ router.post(
   checkAuth,
   userController.createNotes
 );
+router.get("/notes/storage", checkAuth, userController.getNotesStorageInfo);
+router.post("/notes/storage", checkAuth, userController.updateNotesStorageInfo);
 
 module.exports = router;
