@@ -115,29 +115,11 @@ const SettingsModal = ({ close, notesStorage, setNotesStorage }) => {
             X
           </StyledButton>
         </div>
-        <div style={{ margin: "1rem" }}>
-          <h5>Current Notes Storage Location:</h5>
-          <select
-            value={notesStorage?.current ? notesStorage.current : ""}
-            onChange={handleNotesLocationChange}
-            disabled={notesStorage?.current ? false : true}
-            name=""
-            id=""
-            style={{ minWidth: "150px" }}
-          >
-            {notesStorage?.available
-              ? notesStorage.available.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
-                  </option>
-                ))
-              : null}
-          </select>
-        </div>
+
         <div style={{ display: "flex" }}>
           <div style={{ margin: "1rem" }}>
             <h5 style={{ fontSize: "1.15rem" }}>
-              Connect To Additional Notes Storage Locations:
+              1. Connect to a notes storage location(s):
             </h5>
             {user ? (
               user.googleDrive ? (
@@ -162,6 +144,25 @@ const SettingsModal = ({ close, notesStorage, setNotesStorage }) => {
               )
             ) : null}
           </div>
+        </div>
+        <div style={{ margin: "1rem" }}>
+          <h5>2. Choose where to store your notes:</h5>
+          <select
+            value={notesStorage?.current ? notesStorage.current : ""}
+            onChange={handleNotesLocationChange}
+            disabled={notesStorage?.current ? false : true}
+            name=""
+            id=""
+            style={{ minWidth: "150px" }}
+          >
+            {notesStorage?.available
+              ? notesStorage.available.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.name}
+                  </option>
+                ))
+              : null}
+          </select>
         </div>
       </div>
     </div>
