@@ -247,20 +247,17 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
     }
   } else {
     return (
-      <div
-        style={{
-          lineHeight: "1.5",
-          padding: "15px",
-          backgroundColor: "white",
-          margin: "10px",
-          borderRadius: "10px",
-        }}
-      >
+      <StyledTree>
         <h4>Notes Location</h4>
-        <p>
-          Please{" "}
-          <button
-            onClick={openSettings}
+        <div
+          style={{
+            display: "flex",
+            fontSize: "0.85rem",
+            marginBottom: "1rem",
+          }}
+        >
+          <div style={{ fontWeight: "500" }}>Loading...</div>
+          <div
             style={{
               cursor: "pointer",
               color: "dodgerblue",
@@ -268,13 +265,14 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
               border: "none",
               backgroundColor: "inherit",
               padding: "0",
+              marginLeft: "0.25rem",
             }}
           >
-            choose somewhere
-          </button>{" "}
-          to <br /> store your notes first!
-        </p>
-      </div>
+            Loading...
+          </div>
+        </div>
+        <p style={{ fontWeight: "700" }}>Loading...</p>
+      </StyledTree>
     );
   }
 };
