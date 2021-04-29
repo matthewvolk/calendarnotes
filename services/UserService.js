@@ -957,7 +957,7 @@ class UserService {
       try {
         moveGoogleDocResponse = await axios({
           method: "patch",
-          url: `https://www.googleapis.com/drive/v3/files/${googleDocFileInfo.id}?removeParents=${parents[0]}&addParents=${folderId}`,
+          url: `https://www.googleapis.com/drive/v3/files/${googleDocFileInfo.id}?supportsAllDrives=true&removeParents=${parents[0]}&addParents=${folderId}`,
           headers: {
             Authorization: `Bearer ${user.googleDrive.accessToken}`,
           },
@@ -973,7 +973,7 @@ class UserService {
           try {
             moveGoogleDocResponse = await axios({
               method: "patch",
-              url: `https://www.googleapis.com/drive/v3/files/${googleDocFileInfo.id}?removeParents=${parents[0]}&addParents=${folderId}`,
+              url: `https://www.googleapis.com/drive/v3/files/${googleDocFileInfo.id}?supportsAllDrives=true&removeParents=${parents[0]}&addParents=${folderId}`,
               headers: {
                 Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
               },
