@@ -41,8 +41,12 @@ module.exports = {
 
   listGoogleDrives: async (request, response) => {
     const user = request.user;
+    const { folderId } = request.query;
     const userServiceInstance = new UserService();
-    const googleDrives = await userServiceInstance.listGoogleDrives(user);
+    const googleDrives = await userServiceInstance.listGoogleDrives(
+      user,
+      folderId
+    );
     response.json(googleDrives);
   },
 

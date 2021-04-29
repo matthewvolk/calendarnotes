@@ -32,37 +32,15 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
       setIsLoading(false);
     };
 
-    /**
-     * @todo
-     * Replace with actual data
-     *
-     * const listGoogleDrives = async (e) => {
-     *   setIsLoading(true);
-     *   const res = await fetch(`/api/user/google/drives`, {
-     *     method: "GET",
-     *     credentials: "include",
-     *   });
-     *   const data = await res.json();
-     *   console.log(data);
-     * setFolderTree(data);
-     *   setIsLoading(false);
-     * };
-     */
     const getTopLevelFoldersForNotesLocation2 = async () => {
       setIsLoading(true);
-      const data = [
-        {
-          id: "1",
-          name: "Google Test 1",
-          hasChildFolders: false,
-        },
-        {
-          id: "2",
-          name: "Google Test 2",
-          hasChildFolders: false,
-        },
-      ];
-      setFolderTree(data);
+      const res2 = await fetch(`/api/user/google/drives`, {
+        method: "GET",
+        credentials: "include",
+      });
+      let data2 = await res2.json();
+      console.log(data2);
+      setFolderTree(data2);
       setIsLoading(false);
     };
 
@@ -80,22 +58,63 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
   }, [user, notesStorage.current]);
 
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
-    const res = await fetch(
-      `/api/user/folders?clickedFolderId=${clickedFolderId}`,
-      {
-        credentials: "include",
-      }
-    );
-    console.log(res);
-    if (res.ok) {
-      const data = await res.json();
+    if (notesStorage.current === "wrike") {
+      const res = await fetch(
+        `/api/user/folders?clickedFolderId=${clickedFolderId}`,
+        {
+          credentials: "include",
+        }
+      );
+      console.log(res);
+      if (res.ok) {
+        const data = await res.json();
 
-      /**
-       * @todo this needs to be changed when I change api/index.js:157
-       */
-      if (data.error) {
-        return data;
+        /**
+         * @todo this needs to be changed when I change api/index.js:157
+         */
+        if (data.error) {
+          return data;
+        } else {
+          // sort data alphabetically
+          data.sort(function (a, b) {
+            let textA = a.name.toUpperCase();
+            let textB = b.name.toUpperCase();
+            return textA < textB ? -1 : textA > textB ? 1 : 0;
+          });
+
+          let newFolderTree = [...folderTree];
+
+          function findRecurisvely(tree, id) {
+            for (let i = 0; i < tree.length; i++) {
+              if (tree[i].id === id) {
+                tree[i].childFolders = data;
+              } else if (
+                tree[i].childFolders &&
+                tree[i].childFolders.length &&
+                typeof tree[i].childFolders === "object"
+              ) {
+                findRecurisvely(tree[i].childFolders, id);
+              }
+            }
+          }
+
+          findRecurisvely(newFolderTree, clickedFolderId);
+          setFolderTree(newFolderTree);
+        }
       } else {
+        /** Error handling if res not ok */
+      }
+    }
+
+    if (notesStorage.current === "googleDrive") {
+      const res = await fetch(
+        `/api/user/google/drives?folderId=${clickedFolderId}`,
+        {
+          credentials: "include",
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
         // sort data alphabetically
         data.sort(function (a, b) {
           let textA = a.name.toUpperCase();
@@ -122,8 +141,6 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
         findRecurisvely(newFolderTree, clickedFolderId);
         setFolderTree(newFolderTree);
       }
-    } else {
-      /** Error handling if res not ok */
     }
   };
 
