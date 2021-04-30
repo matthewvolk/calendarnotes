@@ -1,6 +1,7 @@
-const CalendarService = require("../services/CalendarService");
 const DateService = require("../services/DateService");
-const UserService = require("../services/UserService");
+const NotesService = require("../services/NotesService");
+const StorageService = require("../services/StorageService");
+const CalendarService = require("../services/CalendarService");
 
 module.exports = {
   getUser: async (request, response) => {
@@ -21,18 +22,16 @@ module.exports = {
 
   getNotesStorageInfo: async (request, response) => {
     const user = request.user;
-    const userServiceInstance = new UserService();
-    const notesStorageInfo = await userServiceInstance.getNotesStorageInfo(
-      user
-    );
+    const storageService = new StorageService();
+    const notesStorageInfo = await storageService.getNotesStorageInfo(user);
     response.json(notesStorageInfo);
   },
 
   updateNotesStorageInfo: async (request, response) => {
     const user = request.user;
     const notesStorageUpdate = request.body;
-    const userServiceInstance = new UserService();
-    const updatedNotesStorageInfo = await userServiceInstance.updateNotesStorageInfo(
+    const storageService = new StorageService();
+    const updatedNotesStorageInfo = await storageService.updateNotesStorageInfo(
       user,
       notesStorageUpdate
     );
@@ -42,11 +41,8 @@ module.exports = {
   listGoogleDrives: async (request, response) => {
     const user = request.user;
     const { folderId } = request.query;
-    const userServiceInstance = new UserService();
-    const googleDrives = await userServiceInstance.listGoogleDrives(
-      user,
-      folderId
-    );
+    const storageService = new StorageService();
+    const googleDrives = await storageService.listGoogleDrives(user, folderId);
     response.json(googleDrives);
   },
 
@@ -54,7 +50,6 @@ module.exports = {
     const user = request.user;
     const { calendarId } = request.params;
     let { weekOf, prevOrNext } = request.query;
-    const userServiceInstance = new UserService();
     const calendarServiceInstance = new CalendarService();
     const dateServiceInstance = new DateService();
 
@@ -110,16 +105,13 @@ module.exports = {
 
     const { clickedFolderId } = request.query;
     const user = request.user;
-    const userServiceInstance = new UserService();
+    const storageService = new StorageService();
 
     /**
-     * @todo this needs to be prepared to catch Error object from services/UserService.js:352
+     * @todo this needs to be prepared to catch Error object from services/StorageService.js
      * @todo then, needs to give client some notice to retry the action
      */
-    const folderData = await userServiceInstance.getFolders(
-      user,
-      clickedFolderId
-    );
+    const folderData = await storageService.getFolders(user, clickedFolderId);
     // sort alphabetically
     folderData.sort(function (a, b) {
       let nameA = a.name.toUpperCase();
@@ -137,8 +129,8 @@ module.exports = {
     const user = request.user;
     let { folderId, eventId, calendarId } = request.params;
 
-    const userServiceInstance = new UserService();
-    const status = await userServiceInstance.createNotesForEvent(
+    const notesService = new NotesService();
+    const status = await notesService.createNotesForEvent(
       user,
       folderId,
       eventId,

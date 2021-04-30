@@ -1,6 +1,6 @@
 const axios = require("axios");
-const UserService = require("./UserService");
 const DateService = require("./DateService");
+const TokenService = require("./TokenService");
 
 const logAxiosErrors = (err) => {
   if (err.response) {
@@ -22,11 +22,6 @@ const logAxiosErrors = (err) => {
 };
 
 class CalendarService {
-  /**
-   * @param {object} user deserialized user object from Passport.js
-   * @param {string} calendarId Google calendar ID
-   * @returns {string} timezone string e.g., "America/Chicago"
-   */
   async getUserCalendars(user) {
     let calendars = null;
 
@@ -41,8 +36,8 @@ class CalendarService {
       calendars = response.data.items;
     } catch (err) {
       if (err.response && err.response.status === 401) {
-        let userServiceInstance = new UserService();
-        let userWithRefreshedToken = await userServiceInstance.refreshToken(
+        const tokenService = new TokenService();
+        const userWithRefreshedToken = await tokenService.refreshToken(
           user,
           "GOOGLE"
         );
@@ -67,6 +62,11 @@ class CalendarService {
     return calendars;
   }
 
+  /**
+   * @param {object} user deserialized user object from Passport.js
+   * @param {string} calendarId Google calendar ID
+   * @returns {string} timezone string e.g., "America/Chicago"
+   */
   async getCalendarTimeZone(user, calendarId) {
     try {
       let response = await axios({
@@ -80,8 +80,8 @@ class CalendarService {
       return calendarTimeZone;
     } catch (err) {
       if (err.response && err.response.status === 401) {
-        let userServiceInstance = new UserService();
-        let userWithRefreshedToken = await userServiceInstance.refreshToken(
+        const tokenService = new TokenService();
+        const userWithRefreshedToken = await tokenService.refreshToken(
           user,
           "GOOGLE"
         );
@@ -149,8 +149,8 @@ class CalendarService {
       eventsResponse.events = eventsOrderedByEarliestFirst;
     } catch (err) {
       if (err.response && err.response.status === 401) {
-        let userServiceInstance = new UserService();
-        let userWithRefreshedToken = await userServiceInstance.refreshToken(
+        const tokenService = new TokenService();
+        const userWithRefreshedToken = await tokenService.refreshToken(
           user,
           "GOOGLE"
         );
