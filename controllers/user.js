@@ -64,7 +64,7 @@ module.exports = {
         calendarId
       );
       weekOf = dateServiceInstance.getDateTimeForTimezone(userCalTz);
-      const calendarEvents = await userServiceInstance.getCalEventsForWeek(
+      const calendarEvents = await calendarServiceInstance.getCalEventsForWeek(
         user,
         calendarId,
         weekOf
@@ -92,7 +92,7 @@ module.exports = {
         weekOf = dateServiceInstance.oneWeekForward(weekOf);
       }
 
-      const calendarEvents = await userServiceInstance.getCalEventsForWeek(
+      const calendarEvents = await calendarServiceInstance.getCalEventsForWeek(
         user,
         calendarId,
         weekOf
