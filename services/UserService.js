@@ -1,9 +1,7 @@
 const UserModel = require("../models/User");
 const DateService = require("./DateService");
-const axios = require("axios");
-const moment = require("moment-timezone");
-const { differenceInMinutes, parseISO, format } = require("date-fns");
 const { DateTime } = require("luxon");
+const axios = require("axios");
 
 const logAxiosErrors = (err) => {
   if (err.response) {
@@ -591,57 +589,15 @@ class UserService {
         }
       }
 
-      let userTimeZone;
-      try {
-        const userTimeZoneResponse = await axios({
-          method: "get",
-          url: `https://www.googleapis.com/calendar/v3/users/me/calendarList/${calendarId}`,
-          headers: {
-            Authorization: `Bearer ${user.google.accessToken}`,
-          },
-        });
-        userTimeZone = userTimeZoneResponse.data.timeZone;
-      } catch (err) {
-        if (err.response && err.response.status === 401) {
-          userWithRefreshedToken = await this.refreshToken(user, "GOOGLE");
-
-          try {
-            const secondUserTimeZoneResponse = await axios({
-              method: "get",
-              url: `https://www.googleapis.com/calendar/v3/users/me/calendarList/${calendarId}`,
-              headers: {
-                Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
-              },
-            });
-            userTimeZone = secondUserTimeZoneResponse.data.timeZone;
-          } catch (err) {
-            console.error(
-              "Failed to retrieve userTimeZone in createNotesForEvent() for a second time",
-              err
-            );
-          }
-        } else {
-          console.error(
-            "Call to get userTimeZone in createNotesForEvent() failed for some other reason than 401",
-            err
-          );
-        }
-      }
-
-      /**
-       * @todo https://trello.com/c/1kMb0WAt/18-in-userservicejs-createnotesforevent-handle-case-of-all-day-events-where-there-is-no-datetime
-       */
-
-      let eventStartTime = new Date(eventResponse.data.start.dateTime); // "2020-12-21T13:00:00-06:00"
-      let eventEndTime = new Date(eventResponse.data.end.dateTime); // "2020-12-21T13:30:00-06:00"
-
-      let momentStart = moment
-        .tz(eventStartTime, userTimeZone)
-        .format("dddd, MMMM Do ⋅ h:mma");
-      let momentEnd = moment.tz(eventEndTime, userTimeZone).format("h:mma z");
+      let isoStartDateTime = DateTime.fromISO(
+        eventResponse.data.start.dateTime
+      ).toFormat("cccc, LLLL d ⋅ h:mm a");
+      let isoEndDateTime = DateTime.fromISO(
+        eventResponse.data.end.dateTime
+      ).toFormat("h:mm a ZZZZ");
 
       let wrikeBody = {};
-      wrikeBody.title = `${eventResponse.data.summary} - ${momentStart} - ${momentEnd}`;
+      wrikeBody.title = `${eventResponse.data.summary} - ${isoStartDateTime} - ${isoEndDateTime}`;
       wrikeBody.description = `<h4><b>Attendees</b></h4><ul>`;
       if (eventResponse.data.attendees) {
         eventResponse.data.attendees.forEach((obj, index) => {
@@ -653,18 +609,19 @@ class UserService {
       wrikeBody.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4><b>Action Items</b></h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /></label></li></ul>`;
       wrikeBody.dates = {};
       wrikeBody.dates.type = "Planned";
-      wrikeBody.dates.duration = differenceInMinutes(
-        parseISO(eventResponse.data.end.dateTime),
-        parseISO(eventResponse.data.start.dateTime)
-      );
-      wrikeBody.dates.start = format(
-        parseISO(eventResponse.data.start.dateTime),
-        "yyyy-MM-dd'T'HH:mm:ss"
-      );
-      wrikeBody.dates.due = format(
-        parseISO(eventResponse.data.end.dateTime),
-        "yyyy-MM-dd'T'HH:mm:ss"
-      );
+      wrikeBody.dates.duration = DateTime.fromISO(
+        eventResponse.data.end.dateTime
+      )
+        .diff(DateTime.fromISO(eventResponse.data.start.dateTime), "minutes")
+        .toObject().minutes;
+      wrikeBody.dates.start = DateTime.fromISO(
+        eventResponse.data.start.dateTime
+      )
+        .toISO({ includeOffset: false })
+        .slice(0, -4);
+      wrikeBody.dates.due = DateTime.fromISO(eventResponse.data.end.dateTime)
+        .toISO({ includeOffset: false })
+        .slice(0, -4);
 
       wrikeBody.responsibles = [];
 
