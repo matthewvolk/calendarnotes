@@ -1,29 +1,32 @@
+import { useAuthState } from "../context/Auth";
 import React, { useEffect, useState } from "react";
 
 const CalendarSelector = ({ setCurrentCalendarId }) => {
+  const { user } = useAuthState();
   const [options, setOptions] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(user.defaultCalendar);
+
+  const getCalendarData = async () => {
+    const res = await fetch("/api/user/google/calendars", {
+      credentials: "include",
+    });
+
+    if (res.ok) {
+      const calendars = await res.json();
+      let newOptions = [];
+      calendars.forEach((calendar) => {
+        newOptions.push({
+          value: calendar.id,
+          label: calendar.summary,
+        });
+      });
+      setOptions(newOptions);
+    } else {
+      setOptions(null);
+    }
+  };
 
   useEffect(() => {
-    const getCalendarData = async () => {
-      const res = await fetch("/api/user/google/calendars", {
-        credentials: "include",
-      });
-
-      if (res.ok) {
-        const calendars = await res.json();
-        let newOptions = [];
-        calendars.forEach((calendar) => {
-          newOptions.push({
-            value: calendar.id,
-            label: calendar.summary,
-          });
-        });
-        setOptions(newOptions);
-      } else {
-        setOptions(null);
-      }
-    };
     getCalendarData();
   }, []);
 
@@ -36,8 +39,23 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
     }
   }, [selectedOption, setCurrentCalendarId]);
 
-  const handleSelectChange = (e) => {
-    setSelectedOption(e.target.value);
+  const handleSelectChange = async (e) => {
+    const response = await fetch("/api/user/google/calendars/default", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ calendarId: e.target.value }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log("defaultCalendarResponse:", data);
+      setSelectedOption(data);
+    }
+    if (!response.ok) {
+      setSelectedOption(null);
+    }
   };
 
   if (options && options.length) {
@@ -51,8 +69,9 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
             className="form-select"
             id="calendar-selector"
             onChange={handleSelectChange}
+            value={selectedOption ? selectedOption : "default"}
           >
-            <option disabled selected value>
+            <option disabled selected value="default">
               {" "}
               Choose Calendar{" "}
             </option>
@@ -69,7 +88,8 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
     return (
       <div>
         <p style={{ color: "red", marginBottom: 0 }}>
-          Could not load calendars, refresh to try again.
+          Could not load calendars.{" "}
+          <button onClick={getCalendarData}>Try Again.</button>
         </p>
       </div>
     );

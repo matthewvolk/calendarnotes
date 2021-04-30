@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAuthState } from "../context/Auth";
 import CalendarSelector from "../components/CalendarSelector";
 import Events from "../components/Events";
@@ -119,44 +119,9 @@ const Dashboard = () => {
   const [wrikeFolderId, setWrikeFolderId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [notesStorage, setNotesStorage] = useState({
-    current: null,
-    available: null,
+    current: user.notesStorage.current, // can I replace with user.notesStorage.current?
+    available: user.notesStorage.available,
   });
-
-  useEffect(() => {
-    const getNotesStorage = async () => {
-      const res = await fetch(`/api/user/notes/storage`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setNotesStorage(data);
-    };
-
-    getNotesStorage();
-  }, []);
-
-  useEffect(() => {
-    const getEvents = async (currentCalendarId) => {
-      const res = await fetch(
-        `/api/user/google/calendars/${encodeURIComponent(
-          currentCalendarId
-        )}/events`,
-        {
-          credentials: "include",
-        }
-      );
-      const calendarEvents = await res.json();
-      if (res.ok) {
-        setEvents(calendarEvents);
-      } else {
-        console.error("ERROR at getEvents()", res);
-      }
-    };
-
-    if (currentCalendarId) {
-      getEvents(currentCalendarId);
-    }
-  }, [currentCalendarId]);
 
   const createNotes = async (
     currentEventId,

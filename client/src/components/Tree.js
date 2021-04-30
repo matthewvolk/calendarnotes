@@ -1,5 +1,5 @@
-import { useAuthState } from "../context/Auth";
 import { useState, useEffect } from "react";
+import Loading from "react-spinners/GridLoader";
 import styled from "styled-components";
 import Folder from "./Folder";
 import TreeRecursive from "./TreeRecursive";
@@ -17,45 +17,55 @@ const StyledTree = styled.div`
 `;
 
 const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
-  const { user } = useAuthState();
   const [folderTree, setFolderTree] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  useEffect(() => {
-    const getTopLevelFoldersForNotesLocation = async () => {
-      setIsLoading(true);
-      const res = await fetch(`/api/user/folders`, {
-        credentials: "include",
-      });
-      const data = await res.json();
+  const getWrikeTopLevelFolders = async () => {
+    setIsError(false);
+    setIsLoading(true);
+    const response = await fetch(`/api/user/folders`, {
+      credentials: "include",
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log("getWrikeTopLevelFolders data", data);
       setFolderTree(data);
       setIsLoading(false);
-    };
-
-    const getTopLevelFoldersForNotesLocation2 = async () => {
-      setIsLoading(true);
-      const res2 = await fetch(`/api/user/google/drives`, {
-        method: "GET",
-        credentials: "include",
-      });
-      let data2 = await res2.json();
-      console.log(data2);
-      setFolderTree(data2);
+    }
+    if (!response.ok) {
+      setIsError(true);
       setIsLoading(false);
-    };
+    }
+  };
 
+  const getGoogleDriveTopLevelFolders = async () => {
+    setIsError(false);
+    setIsLoading(true);
+    const response = await fetch(`/api/user/google/drives`, {
+      credentials: "include",
+    });
+    if (response.ok) {
+      const data = await response.json();
+      console.log("getGoogleDriveTopLevelFolders data", data);
+      setFolderTree(data);
+      setIsLoading(false);
+    }
+    if (!response.ok) {
+      setIsError(true);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (notesStorage.current === "wrike") {
-      if (user.wrike) {
-        if (user.wrike.accessToken) {
-          getTopLevelFoldersForNotesLocation();
-        }
-      }
+      getWrikeTopLevelFolders();
     }
 
     if (notesStorage.current === "googleDrive") {
-      getTopLevelFoldersForNotesLocation2();
+      getGoogleDriveTopLevelFolders();
     }
-  }, [user, notesStorage.current]);
+  }, [notesStorage]);
 
   const getChildFoldersForNotesLocation = async (clickedFolderId) => {
     if (notesStorage.current === "wrike") {
@@ -144,49 +154,10 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
     }
   };
 
-  if (notesStorage.available) {
-    if (notesStorage.available.length >= 1) {
-      if (isLoading) {
-        return (
-          <StyledTree>
-            <h4>Notes Location</h4>
-            <div
-              style={{
-                display: "flex",
-                fontSize: "0.85rem",
-                marginBottom: "1rem",
-              }}
-            >
-              <div style={{ fontWeight: "500" }}>
-                {
-                  notesStorage.available[
-                    notesStorage.available
-                      .map((el) => el.id)
-                      .indexOf(notesStorage.current)
-                  ].name
-                }
-                {console.log(notesStorage)}
-              </div>
-              <div
-                onClick={openSettings}
-                style={{
-                  cursor: "pointer",
-                  color: "dodgerblue",
-                  textDecoration: "underline",
-                  border: "none",
-                  backgroundColor: "inherit",
-                  padding: "0",
-                  marginLeft: "0.25rem",
-                }}
-              >
-                Change
-              </div>
-            </div>
-            <p style={{ fontWeight: "700" }}>Loading...</p>
-          </StyledTree>
-        );
-      }
-
+  // is the user signed in with at least one of google or wrike?
+  if (notesStorage.available.length >= 1) {
+    // if yes, fetch folders
+    if (isLoading) {
       return (
         <StyledTree>
           <h4>Notes Location</h4>
@@ -222,29 +193,43 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
               Change
             </div>
           </div>
-          <TreeRecursive
-            folders={folderTree}
-            setFolderTree={setFolderTree}
-            getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
-            setWrikeFolderId={setWrikeFolderId}
-          />
+          <div
+            style={{
+              display: "flex",
+              height: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Loading color="#DD4339" />
+          </div>
         </StyledTree>
       );
-    } else {
+    }
+
+    // if folders are done fetching but there is an error
+    if (isError) {
       return (
-        <div
-          style={{
-            lineHeight: "1.5",
-            padding: "15px",
-            backgroundColor: "white",
-            margin: "10px",
-            borderRadius: "10px",
-          }}
-        >
+        <StyledTree>
           <h4>Notes Location</h4>
-          <p>
-            Please{" "}
-            <button
+          <div
+            style={{
+              display: "flex",
+              fontSize: "0.85rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <div style={{ fontWeight: "500" }}>
+              {
+                notesStorage.available[
+                  notesStorage.available
+                    .map((el) => el.id)
+                    .indexOf(notesStorage.current)
+                ].name
+              }
+              {console.log(notesStorage)}
+            </div>
+            <div
               onClick={openSettings}
               style={{
                 cursor: "pointer",
@@ -253,16 +238,28 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
                 border: "none",
                 backgroundColor: "inherit",
                 padding: "0",
+                marginLeft: "0.25rem",
               }}
             >
-              choose somewhere
-            </button>{" "}
-            to <br /> store your notes first!
+              Change
+            </div>
+          </div>
+          <p style={{ fontWeight: "700", color: "red" }}>
+            Something went wrong. <br />
+            {notesStorage.current === "wrike" && (
+              <button onClick={getWrikeTopLevelFolders}>Try Again.</button>
+            )}
+            {notesStorage.current === "googleDrive" && (
+              <button onClick={getGoogleDriveTopLevelFolders}>
+                Try Again.
+              </button>
+            )}
           </p>
-        </div>
+        </StyledTree>
       );
     }
-  } else {
+
+    // if folders are done fetching successfully
     return (
       <StyledTree>
         <h4>Notes Location</h4>
@@ -273,8 +270,18 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
             marginBottom: "1rem",
           }}
         >
-          <div style={{ fontWeight: "500" }}>Loading...</div>
+          <div style={{ fontWeight: "500" }}>
+            {
+              notesStorage.available[
+                notesStorage.available
+                  .map((el) => el.id)
+                  .indexOf(notesStorage.current)
+              ].name
+            }
+            {console.log(notesStorage)}
+          </div>
           <div
+            onClick={openSettings}
             style={{
               cursor: "pointer",
               color: "dodgerblue",
@@ -285,11 +292,48 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
               marginLeft: "0.25rem",
             }}
           >
-            Loading...
+            Change
           </div>
         </div>
-        <p style={{ fontWeight: "700" }}>Loading...</p>
+        <TreeRecursive
+          folders={folderTree}
+          setFolderTree={setFolderTree}
+          getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
+          setWrikeFolderId={setWrikeFolderId}
+        />
       </StyledTree>
+    );
+  } else {
+    // user is not signed in with one of google or wrike
+    return (
+      <div
+        style={{
+          lineHeight: "1.5",
+          padding: "15px",
+          backgroundColor: "white",
+          margin: "10px",
+          borderRadius: "10px",
+        }}
+      >
+        <h4>Notes Location</h4>
+        <p>
+          Please{" "}
+          <button
+            onClick={openSettings}
+            style={{
+              cursor: "pointer",
+              color: "dodgerblue",
+              textDecoration: "underline",
+              border: "none",
+              backgroundColor: "inherit",
+              padding: "0",
+            }}
+          >
+            choose somewhere
+          </button>{" "}
+          to <br /> store your notes first!
+        </p>
+      </div>
     );
   }
 };

@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import Loading from "react-spinners/GridLoader";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import styled from "styled-components";
@@ -69,6 +71,44 @@ const Events = ({
   wrikeFolderId,
   createNotes,
 }) => {
+  const [eventsLoading, setEventsLoading] = useState(true);
+  useEffect(() => {
+    const getEvents = async (currentCalendarId) => {
+      setEventsLoading(true);
+      const res = await fetch(
+        `/api/user/google/calendars/${encodeURIComponent(
+          currentCalendarId
+        )}/events`,
+        {
+          credentials: "include",
+        }
+      );
+      if (res.ok) {
+        const calendarEvents = await res.json();
+        console.log(`Events for ${currentCalendarId}:`, calendarEvents);
+        if (!calendarEvents.error) {
+          setEvents(calendarEvents);
+          setEventsLoading(false);
+        }
+        if (calendarEvents.error) {
+          // if events == null && !!currentCalendarId,
+          // you do not have permission to consume events for the calendar you have selected
+          // if events == null && !currentCalendarId
+          // please select a calendar above
+          setEvents(null);
+          setEventsLoading(false);
+        }
+      } else {
+        setEvents(null);
+        setEventsLoading(false);
+      }
+    };
+
+    if (currentCalendarId) {
+      getEvents(currentCalendarId);
+    }
+  }, [currentCalendarId, setEvents]);
+
   const nextWeek = async () => {
     const response = await fetch(
       `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${events.startOfWeekISO}&prevOrNext=next`
@@ -103,6 +143,23 @@ const Events = ({
     }
   };
 
+  if (eventsLoading) {
+    return (
+      <EventsWrapper>
+        <h4>Events</h4>
+        <div
+          style={{
+            display: "flex",
+            height: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Loading color="#DD4339" />
+        </div>
+      </EventsWrapper>
+    );
+  }
   if (events) {
     return (
       <EventsWrapper>
@@ -173,13 +230,22 @@ const Events = ({
         </Table>
       </EventsWrapper>
     );
-  } else {
+  }
+  if (!events && !currentCalendarId) {
     return (
       <EventsWrapper>
-        <h4>Events This Week</h4>
+        <h4>Events</h4>
+        <p>To view events, please first select a calendar above.</p>
+      </EventsWrapper>
+    );
+  }
+  if (!events && currentCalendarId) {
+    return (
+      <EventsWrapper>
+        <h4>Events</h4>
         <p>
-          Either you haven't selected a calendar above, or you do not have
-          permission to consume the events for the calendar you have chosen
+          Oops! You do not have permission to consume events for the calendar
+          you have chosen. Please select a different calendar.
         </p>
       </EventsWrapper>
     );

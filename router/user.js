@@ -8,6 +8,11 @@ const router = express.Router();
 router.get("/", checkAuth, userController.getUser);
 router.get("/folders", checkAuth, userController.getFolders);
 router.get("/google/calendars", checkAuth, userController.getGoogleCals);
+router.post(
+  "/google/calendars/default",
+  checkAuth,
+  userController.updateDefaultCalendar
+);
 router.get("/google/drives", checkAuth, userController.listGoogleDrives);
 router.get(
   "/google/calendars/:calendarId/events",

@@ -20,6 +20,17 @@ module.exports = {
     }
   },
 
+  updateDefaultCalendar: async (request, response) => {
+    const user = request.user;
+    const { calendarId } = request.body;
+    const calendarService = new CalendarService();
+    const updatedDefaultCalendar = await calendarService.updateDefaultCalendar(
+      user,
+      calendarId
+    );
+    response.json(updatedDefaultCalendar);
+  },
+
   getNotesStorageInfo: async (request, response) => {
     const user = request.user;
     const storageService = new StorageService();

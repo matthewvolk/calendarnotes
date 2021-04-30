@@ -38,7 +38,7 @@ function AuthProvider({ children }) {
             backgroundColor: "#DD4339",
           }}
         >
-          <Loading loading={true} color={"#fff"} size={20} />
+          <Loading color="#ffffff" />
         </div>
       ) : state.status === "error" ? (
         <div>

@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
     current: String,
     available: [{ id: String, name: String }],
   },
+  defaultCalendar: String,
 });
 const User = mongoose.model("User", userSchema);
 

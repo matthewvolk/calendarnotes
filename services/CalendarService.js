@@ -1,4 +1,5 @@
 const axios = require("axios");
+const UserModel = require("../models/User");
 const DateService = require("./DateService");
 const TokenService = require("./TokenService");
 
@@ -53,6 +54,12 @@ class CalendarService {
     return calendars;
   }
 
+  async updateDefaultCalendar(user, calendarId) {
+    const userDoc = await UserModel.findOne({ "google.id": user.google.id });
+    userDoc.defaultCalendar = calendarId;
+    await userDoc.save();
+    return userDoc.defaultCalendar;
+  }
   /**
    * @param {object} user deserialized user object from Passport.js
    * @param {string} calendarId Google calendar ID
