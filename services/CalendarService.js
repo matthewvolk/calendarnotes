@@ -2,25 +2,6 @@ const axios = require("axios");
 const DateService = require("./DateService");
 const TokenService = require("./TokenService");
 
-const logAxiosErrors = (err) => {
-  if (err.response) {
-    // The request was made and the server responded with a status code
-    // that falls out of the range of 2xx
-    console.error(err.response.data);
-    console.error(err.response.status);
-    console.error(err.response.headers);
-  } else if (err.request) {
-    // The request was made but no response was received
-    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-    // http.ClientRequest in node.js
-    console.error(err.request);
-  } else {
-    // Something happened in setting up the request that triggered an Error
-    console.error("Error", err.message);
-  }
-  console.error(err.config);
-};
-
 class CalendarService {
   async getUserCalendars(user) {
     let calendars = null;
@@ -33,7 +14,12 @@ class CalendarService {
           Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
-      calendars = response.data.items;
+      if (response.status === 200) {
+        calendars = response.data.items;
+      }
+      if (response.status !== 200) {
+        calendars = null;
+      }
     } catch (err) {
       if (err.response && err.response.status === 401) {
         const tokenService = new TokenService();
@@ -50,12 +36,17 @@ class CalendarService {
               Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
-          calendars = response.data.items;
+          if (response.status === 200) {
+            calendars = response.data.items;
+          }
+          if (response.status !== 200) {
+            calendars = null;
+          }
         } catch (err) {
-          logAxiosErrors(err);
+          calendars = null;
         }
       } else {
-        logAxiosErrors(err);
+        calendars = null;
       }
     }
 
@@ -65,9 +56,10 @@ class CalendarService {
   /**
    * @param {object} user deserialized user object from Passport.js
    * @param {string} calendarId Google calendar ID
-   * @returns {string} timezone string e.g., "America/Chicago"
+   * @returns {string | null} timezone string e.g., "America/Chicago" or null if error occurred
    */
   async getCalendarTimeZone(user, calendarId) {
+    let calendarTimeZone = null;
     try {
       let response = await axios({
         method: "get",
@@ -76,8 +68,12 @@ class CalendarService {
           Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
-      let calendarTimeZone = response.data.timeZone;
-      return calendarTimeZone;
+      if (response.status === 200) {
+        calendarTimeZone = response.data.timeZone;
+      }
+      if (response.status !== 200) {
+        calendarTimeZone = null;
+      }
     } catch (err) {
       if (err.response && err.response.status === 401) {
         const tokenService = new TokenService();
@@ -93,20 +89,24 @@ class CalendarService {
               Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
-          calendarTimeZone = response.data.timeZone;
-          return calendarTimeZone;
+          if (response.status === 200) {
+            calendarTimeZone = response.data.timeZone;
+          }
+          if (response.status !== 200) {
+            calendarTimeZone = null;
+          }
         } catch (err) {
-          logAxiosErrors(err);
+          calendarTimeZone = null;
         }
       } else {
-        logAxiosErrors(err);
+        calendarTimeZone = null;
       }
     }
+    return calendarTimeZone;
   }
 
   async getCalEventsForWeek(user, calendarId, weekOf) {
-    let eventsResponse = {};
-    let url;
+    let url = null;
     let dateServiceInstance = new DateService();
     let {
       startOfWeek,
@@ -124,6 +124,7 @@ class CalendarService {
       startOfWeek
     )}&timeMax=${encodeURIComponent(endOfWeek)}&singleEvents=true`;
 
+    let eventsResponse = null;
     try {
       const response = await axios({
         method: "get",
@@ -132,21 +133,28 @@ class CalendarService {
           Authorization: `Bearer ${user.google.accessToken}`,
         },
       });
-      let calendarEventsResponse = response.data;
-      let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
-        (obj) => obj.start
-      );
-      let eventsOrderedByEarliestFirst = eventsResponseMinusCancelledEvents.sort(
-        (a, b) => {
-          return (
-            new Date(a.start.dateTime).getTime() -
-            new Date(b.start.dateTime).getTime()
-          );
-        }
-      );
-      eventsResponse.startOfWeekISO = startOfWeek;
-      eventsResponse.startOfWeek = userFriendlyStartOfWeek;
-      eventsResponse.events = eventsOrderedByEarliestFirst;
+      if (response.status === 200) {
+        let calendarEventsResponse = response.data;
+        let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
+          (obj) => obj.start
+        );
+        let eventsOrderedByEarliestFirst = eventsResponseMinusCancelledEvents.sort(
+          (a, b) => {
+            return (
+              new Date(a.start.dateTime).getTime() -
+              new Date(b.start.dateTime).getTime()
+            );
+          }
+        );
+        eventsResponse = {
+          startOfWeekISO: startOfWeek,
+          startOfWeek: userFriendlyStartOfWeek,
+          events: eventsOrderedByEarliestFirst,
+        };
+      }
+      if (response.status !== 200) {
+        eventsResponse = null;
+      }
     } catch (err) {
       if (err.response && err.response.status === 401) {
         const tokenService = new TokenService();
@@ -163,32 +171,33 @@ class CalendarService {
               Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
             },
           });
-          let calendarEventsResponse = response.data;
-          let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
-            (obj) => obj.start
-          );
-          let eventsOrderedByEarliestFirst = eventsResponseMinusCancelledEvents.sort(
-            (a, b) => {
-              return (
-                new Date(a.start.dateTime).getTime() -
-                new Date(b.start.dateTime).getTime()
-              );
-            }
-          );
-          eventsResponse.startOfWeekISO = startOfWeek;
-          eventsResponse.startOfWeek = userFriendlyStartOfWeek;
-          eventsResponse.events = eventsOrderedByEarliestFirst;
+          if (response.status === 200) {
+            let calendarEventsResponse = response.data;
+            let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
+              (obj) => obj.start
+            );
+            let eventsOrderedByEarliestFirst = eventsResponseMinusCancelledEvents.sort(
+              (a, b) => {
+                return (
+                  new Date(a.start.dateTime).getTime() -
+                  new Date(b.start.dateTime).getTime()
+                );
+              }
+            );
+            eventsResponse = {
+              startOfWeekISO: startOfWeek,
+              startOfWeek: userFriendlyStartOfWeek,
+              events: eventsOrderedByEarliestFirst,
+            };
+          }
+          if (response.status !== 200) {
+            eventsResponse = null;
+          }
         } catch (err) {
-          console.error(
-            "Failed to retrieve calendar events in second try of getCalEventsForWeek()",
-            err
-          );
+          eventsResponse = null;
         }
       } else {
-        console.error(
-          "Call to get calendar events in getCalEventsForWeek() failed for some other reason than 401",
-          err
-        );
+        eventsResponse = null;
       }
     }
     return eventsResponse;

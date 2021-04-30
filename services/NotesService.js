@@ -55,7 +55,7 @@ class NotesService {
 
     if (!calendarEvent)
       return {
-        status: 500,
+        error: true,
         message: "Failed to retrieve Google Calendar Event",
       };
 
@@ -137,7 +137,7 @@ class NotesService {
       }
       if (!wrikeUserId)
         return {
-          status: 500,
+          error: true,
           message: "Failed to retrieve Wrike User ID",
         };
       wrikeTask.responsibles.push(wrikeUserId);
@@ -189,7 +189,7 @@ class NotesService {
       }
       if (!createdWrikeTask)
         return {
-          status: 500,
+          error: true,
           message: "Failed to create Wrike task",
         };
 
@@ -251,7 +251,7 @@ class NotesService {
 
       if (!savedGoogleDoc)
         return {
-          status: 500,
+          error: true,
           message: "Failed to create Google Doc",
         };
 
@@ -306,7 +306,7 @@ class NotesService {
 
       if (!savedGoogleDocFileInfo)
         return {
-          status: 500,
+          error: true,
           message:
             "Saved Google Doc, but failed to retrieve saved Google Doc file info",
         };
@@ -360,7 +360,7 @@ class NotesService {
 
       if (!movedGoogleDoc)
         return {
-          status: 500,
+          error: true,
           message:
             "Saved Google Doc, but failed to move it into user selected folder",
         };
@@ -429,14 +429,14 @@ class NotesService {
 
     if (!googleNotesEvent)
       return {
-        status: 500,
+        error: true,
         message:
           "Failed to create Google '_Notes' Event w/ Permalink to Notes File",
       };
 
     if (googleNotesEvent)
       return {
-        status: 200,
+        success: true,
         message: "Created Google '_Notes' Event w/ Permalink to Notes File!",
       };
   }

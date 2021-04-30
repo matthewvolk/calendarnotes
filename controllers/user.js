@@ -58,14 +58,23 @@ module.exports = {
         user,
         calendarId
       );
+      if (!userCalTz)
+        return response.json({
+          error: true,
+          message: "Failed to retrieve user calendar timezone",
+        });
       weekOf = dateServiceInstance.getDateTimeForTimezone(userCalTz);
       const calendarEvents = await calendarServiceInstance.getCalEventsForWeek(
         user,
         calendarId,
         weekOf
       );
-      response.json(calendarEvents);
-      return;
+      if (!calendarEvents)
+        return response.json({
+          error: true,
+          message: "Failed to retrieve user calendar events",
+        });
+      return response.json(calendarEvents);
     }
 
     if (weekOf) {
@@ -92,8 +101,12 @@ module.exports = {
         calendarId,
         weekOf
       );
-      response.json(calendarEvents);
-      return;
+      if (!calendarEvents)
+        return response.json({
+          error: true,
+          message: "Failed to retrieve user calendar events",
+        });
+      return response.json(calendarEvents);
     }
   },
 

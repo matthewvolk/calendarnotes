@@ -1,4 +1,5 @@
 import React from "react";
+import Loading from "react-spinners/GridLoader";
 
 const AuthContext = React.createContext();
 
@@ -27,7 +28,18 @@ function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={state}>
       {state.status === "pending" ? (
-        <div>Loading...</div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            backgroundColor: "#DD4339",
+          }}
+        >
+          <Loading loading={true} color={"#fff"} size={20} />
+        </div>
       ) : state.status === "error" ? (
         <div>
           Error!
