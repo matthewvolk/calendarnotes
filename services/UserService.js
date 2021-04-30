@@ -23,42 +23,6 @@ const logAxiosErrors = (err) => {
 };
 
 class UserService {
-  async getUserCalendars(user) {
-    let calendars = null;
-
-    try {
-      const response = await axios({
-        method: "get",
-        url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
-        headers: {
-          Authorization: `Bearer ${user.google.accessToken}`,
-        },
-      });
-      calendars = response.data.items;
-    } catch (err) {
-      if (err.response && err.response.status === 401) {
-        let userWithRefreshedToken = await this.refreshToken(user, "GOOGLE");
-
-        try {
-          const response = await axios({
-            method: "get",
-            url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
-            headers: {
-              Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
-            },
-          });
-          calendars = response.data.items;
-        } catch (err) {
-          logAxiosErrors(err);
-        }
-      } else {
-        logAxiosErrors(err);
-      }
-    }
-
-    return calendars;
-  }
-
   async getNotesStorageInfo(user) {
     const userDoc = await UserModel.findOne({ "google.id": user.google.id });
     const { notesStorage: notesStorageInfo } = userDoc;

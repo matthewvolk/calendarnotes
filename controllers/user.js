@@ -10,8 +10,8 @@ module.exports = {
 
   getGoogleCals: async (request, response) => {
     const user = request.user;
-    const userServiceInstance = new UserService();
-    const calendars = await userServiceInstance.getUserCalendars(user);
+    const calendarServiceInstance = new CalendarService();
+    const calendars = await calendarServiceInstance.getUserCalendars(user);
     if (calendars) {
       response.json(calendars);
     } else {

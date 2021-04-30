@@ -26,6 +26,46 @@ class CalendarService {
    * @param {string} calendarId Google calendar ID
    * @returns {string} timezone string e.g., "America/Chicago"
    */
+  async getUserCalendars(user) {
+    let calendars = null;
+
+    try {
+      const response = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
+        headers: {
+          Authorization: `Bearer ${user.google.accessToken}`,
+        },
+      });
+      calendars = response.data.items;
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        let userServiceInstance = new UserService();
+        let userWithRefreshedToken = await userServiceInstance.refreshToken(
+          user,
+          "GOOGLE"
+        );
+
+        try {
+          const response = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.google.accessToken}`,
+            },
+          });
+          calendars = response.data.items;
+        } catch (err) {
+          logAxiosErrors(err);
+        }
+      } else {
+        logAxiosErrors(err);
+      }
+    }
+
+    return calendars;
+  }
+
   getCalendarTimeZone = async (user, calendarId) => {
     try {
       let response = await axios({
