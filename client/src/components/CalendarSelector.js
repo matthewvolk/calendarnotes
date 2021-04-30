@@ -1,12 +1,13 @@
 import { useAuthState } from "../context/Auth";
 import React, { useEffect, useState } from "react";
 
-const CalendarSelector = ({ setCurrentCalendarId }) => {
+const CalendarSelector = ({ setCurrentCalendarId, setEventsLoading }) => {
   const { user } = useAuthState();
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(user.defaultCalendar);
 
   const getCalendarData = async () => {
+    setEventsLoading(true);
     const res = await fetch("/api/user/google/calendars", {
       credentials: "include",
     });
@@ -21,8 +22,10 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
         });
       });
       setOptions(newOptions);
+      setEventsLoading(false);
     } else {
       setOptions(null);
+      setEventsLoading(false);
     }
   };
 
@@ -31,15 +34,13 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
   }, []);
 
   useEffect(() => {
-    /**
-     * @todo change state of <Dashboard /> selected calendar
-     */
     if (selectedOption) {
       setCurrentCalendarId(selectedOption);
     }
   }, [selectedOption, setCurrentCalendarId]);
 
   const handleSelectChange = async (e) => {
+    setEventsLoading(true);
     const response = await fetch("/api/user/google/calendars/default", {
       method: "POST",
       credentials: "include",
@@ -50,7 +51,6 @@ const CalendarSelector = ({ setCurrentCalendarId }) => {
     });
     if (response.ok) {
       const data = await response.json();
-      console.log("defaultCalendarResponse:", data);
       setSelectedOption(data);
     }
     if (!response.ok) {

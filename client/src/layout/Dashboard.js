@@ -114,7 +114,6 @@ const StyledButton = styled(Button)`
 const Dashboard = () => {
   const { user } = useAuthState();
   const [currentCalendarId, setCurrentCalendarId] = useState(null);
-  const [events, setEvents] = useState(null);
   const [, setCurrentEventId] = useState(null);
   const [wrikeFolderId, setWrikeFolderId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -122,6 +121,7 @@ const Dashboard = () => {
     current: user.notesStorage.current, // can I replace with user.notesStorage.current?
     available: user.notesStorage.available,
   });
+  const [eventsLoading, setEventsLoading] = useState(true);
 
   const createNotes = async (
     currentEventId,
@@ -165,7 +165,10 @@ const Dashboard = () => {
             <CalendarIcon src={calendarIcon} alt="Calendar Icon" />{" "}
             <LogoText>CalendarNotes</LogoText>
           </Logo>
-          <CalendarSelector setCurrentCalendarId={setCurrentCalendarId} />
+          <CalendarSelector
+            setEventsLoading={setEventsLoading}
+            setCurrentCalendarId={setCurrentCalendarId}
+          />
           <AccountButtonGroup>
             <div className="mr-1">Hi, {user.google.firstName}!</div>
             <StyledButton variant="danger" onClick={openSettings}>
@@ -183,8 +186,8 @@ const Dashboard = () => {
             setWrikeFolderId={setWrikeFolderId}
           />
           <Events
-            events={events}
-            setEvents={setEvents}
+            eventsLoading={eventsLoading}
+            setEventsLoading={setEventsLoading}
             setCurrentEventId={setCurrentEventId}
             currentCalendarId={currentCalendarId}
             wrikeFolderId={wrikeFolderId}

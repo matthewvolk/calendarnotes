@@ -64,14 +64,14 @@ const StyledButton = styled(Button)`
 `;
 
 const Events = ({
-  events,
-  setEvents,
+  eventsLoading,
+  setEventsLoading,
   setCurrentEventId,
   currentCalendarId,
   wrikeFolderId,
   createNotes,
 }) => {
-  const [eventsLoading, setEventsLoading] = useState(true);
+  const [events, setEvents] = useState(null);
   useEffect(() => {
     const getEvents = async (currentCalendarId) => {
       setEventsLoading(true);
@@ -104,40 +104,55 @@ const Events = ({
       }
     };
 
+    /**
+     * This if statement below is the reason I get a quick flash of
+     * (!events && currentCalendarId), because I do have a
+     * currentCalendarId, but I have not yet fetched events.
+     * Potentially refactor the response from getEvents so that
+     * if the user does not have permission to access the calendar,
+     * that is an entirely different thing.
+     *
+     */
     if (currentCalendarId) {
       getEvents(currentCalendarId);
     }
   }, [currentCalendarId, setEvents]);
 
   const nextWeek = async () => {
+    setEventsLoading(true);
     const response = await fetch(
       `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${events.startOfWeekISO}&prevOrNext=next`
     );
     const calendarEvents = await response.json();
     if (response.ok) {
       setEvents(calendarEvents);
+      setEventsLoading(false);
     } else {
       console.error("ERROR at getEvents()", response);
     }
   };
   const prevWeek = async () => {
+    setEventsLoading(true);
     const response = await fetch(
       `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${events.startOfWeekISO}&prevOrNext=prev`
     );
     const calendarEvents = await response.json();
     if (response.ok) {
       setEvents(calendarEvents);
+      setEventsLoading(false);
     } else {
       console.error("ERROR at getEvents()", response);
     }
   };
   const goToToday = async () => {
+    setEventsLoading(true);
     const response = await fetch(
       `/api/user/google/calendars/${currentCalendarId}/events`
     );
     const calendarEvents = await response.json();
     if (response.ok) {
       setEvents(calendarEvents);
+      setEventsLoading(false);
     } else {
       console.error("ERROR at getEvents()", response);
     }
