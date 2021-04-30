@@ -123,12 +123,20 @@ const Events = ({
     const response = await fetch(
       `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${events.startOfWeekISO}&prevOrNext=next`
     );
-    const calendarEvents = await response.json();
     if (response.ok) {
-      setEvents(calendarEvents);
-      setEventsLoading(false);
+      const calendarEvents = await response.json();
+      console.log(`Events for ${currentCalendarId}:`, calendarEvents);
+      if (!calendarEvents.error) {
+        setEvents(calendarEvents);
+        setEventsLoading(false);
+      }
+      if (calendarEvents.error) {
+        setEvents(null);
+        setEventsLoading(false);
+      }
     } else {
-      console.error("ERROR at getEvents()", response);
+      setEvents(null);
+      setEventsLoading(false);
     }
   };
   const prevWeek = async () => {
@@ -136,12 +144,20 @@ const Events = ({
     const response = await fetch(
       `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${events.startOfWeekISO}&prevOrNext=prev`
     );
-    const calendarEvents = await response.json();
     if (response.ok) {
-      setEvents(calendarEvents);
-      setEventsLoading(false);
+      const calendarEvents = await response.json();
+      console.log(`Events for ${currentCalendarId}:`, calendarEvents);
+      if (!calendarEvents.error) {
+        setEvents(calendarEvents);
+        setEventsLoading(false);
+      }
+      if (calendarEvents.error) {
+        setEvents(null);
+        setEventsLoading(false);
+      }
     } else {
-      console.error("ERROR at getEvents()", response);
+      setEvents(null);
+      setEventsLoading(false);
     }
   };
   const goToToday = async () => {
@@ -149,12 +165,20 @@ const Events = ({
     const response = await fetch(
       `/api/user/google/calendars/${currentCalendarId}/events`
     );
-    const calendarEvents = await response.json();
     if (response.ok) {
-      setEvents(calendarEvents);
-      setEventsLoading(false);
+      const calendarEvents = await response.json();
+      console.log(`Events for ${currentCalendarId}:`, calendarEvents);
+      if (!calendarEvents.error) {
+        setEvents(calendarEvents);
+        setEventsLoading(false);
+      }
+      if (calendarEvents.error) {
+        setEvents(null);
+        setEventsLoading(false);
+      }
     } else {
-      console.error("ERROR at getEvents()", response);
+      setEvents(null);
+      setEventsLoading(false);
     }
   };
 
