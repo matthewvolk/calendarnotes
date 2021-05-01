@@ -29,7 +29,6 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
     });
     if (response.ok) {
       const data = await response.json();
-      console.log("getWrikeTopLevelFolders data", data);
       setFolderTree(data);
       setIsLoading(false);
     }
@@ -47,7 +46,6 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
     });
     if (response.ok) {
       const data = await response.json();
-      console.log("getGoogleDriveTopLevelFolders data", data);
       setFolderTree(data);
       setIsLoading(false);
     }

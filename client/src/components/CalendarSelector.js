@@ -1,13 +1,17 @@
 import { useAuthState } from "../context/Auth";
 import React, { useEffect, useState } from "react";
 
-const CalendarSelector = ({ setCurrentCalendarId, setEventsLoading }) => {
+const CalendarSelector = ({
+  setCurrentCalendarId,
+  setEventState,
+  eventState,
+}) => {
   const { user } = useAuthState();
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(user.defaultCalendar);
 
   const getCalendarData = async () => {
-    setEventsLoading(true);
+    setEventState({ ...eventState, loading: true });
     const res = await fetch("/api/user/google/calendars", {
       credentials: "include",
     });
@@ -22,10 +26,9 @@ const CalendarSelector = ({ setCurrentCalendarId, setEventsLoading }) => {
         });
       });
       setOptions(newOptions);
-      setEventsLoading(false);
+      setEventState({ ...eventState, loading: false });
     } else {
       setOptions(null);
-      setEventsLoading(false);
     }
   };
 
@@ -40,7 +43,6 @@ const CalendarSelector = ({ setCurrentCalendarId, setEventsLoading }) => {
   }, [selectedOption, setCurrentCalendarId]);
 
   const handleSelectChange = async (e) => {
-    setEventsLoading(true);
     const response = await fetch("/api/user/google/calendars/default", {
       method: "POST",
       credentials: "include",

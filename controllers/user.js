@@ -64,6 +64,13 @@ module.exports = {
     const calendarServiceInstance = new CalendarService();
     const dateServiceInstance = new DateService();
 
+    /**
+     * @todo - put in a check to see if the calendar selected is valid
+     * for example, the call to getCalendarTimeZone sometimes fails with a
+     * 404 if the calendar is birthdays or holidays, so it should
+     * return "that's not a valid calendar" response to client
+     */
+
     if (!weekOf) {
       let userCalTz = await calendarServiceInstance.getCalendarTimeZone(
         user,

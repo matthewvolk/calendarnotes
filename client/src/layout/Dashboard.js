@@ -121,7 +121,13 @@ const Dashboard = () => {
     current: user.notesStorage.current, // can I replace with user.notesStorage.current?
     available: user.notesStorage.available,
   });
-  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventState, setEventState] = useState({
+    loading: false,
+    error: null,
+    success: null,
+    message: null,
+    events: null,
+  });
 
   const createNotes = async (
     currentEventId,
@@ -166,7 +172,8 @@ const Dashboard = () => {
             <LogoText>CalendarNotes</LogoText>
           </Logo>
           <CalendarSelector
-            setEventsLoading={setEventsLoading}
+            eventState={eventState}
+            setEventState={setEventState}
             setCurrentCalendarId={setCurrentCalendarId}
           />
           <AccountButtonGroup>
@@ -186,8 +193,8 @@ const Dashboard = () => {
             setWrikeFolderId={setWrikeFolderId}
           />
           <Events
-            eventsLoading={eventsLoading}
-            setEventsLoading={setEventsLoading}
+            eventState={eventState}
+            setEventState={setEventState}
             setCurrentEventId={setCurrentEventId}
             currentCalendarId={currentCalendarId}
             wrikeFolderId={wrikeFolderId}
