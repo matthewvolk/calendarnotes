@@ -108,18 +108,10 @@ module.exports = {
 
       if (prevOrNext === "prev") {
         weekOf = dateServiceInstance.oneWeekBack(weekOf);
-        console.log(
-          ">>>>> userController dateServiceInstance.oneWeekBack(weekOf)",
-          weekOf
-        );
       }
 
       if (prevOrNext === "next") {
         weekOf = dateServiceInstance.oneWeekForward(weekOf);
-        console.log(
-          ">>>>> userController dateServiceInstance.oneWeekForward(weekOf)",
-          weekOf
-        );
       }
 
       const calendarEvents = await calendarServiceInstance.getCalEventsForWeek(
