@@ -40,7 +40,13 @@ class DateService {
    * @returns an ISO 8601-compliant string representation of Luxon's DateTime one week ago from date parameter
    */
   oneWeekBack = (date) => {
-    return DateTime.fromISO(date).minus({ weeks: 1 }).toISO();
+    let weekAgo = DateTime.fromISO(date);
+    console.log(">>>>> weekAgo1", weekAgo);
+    weekAgo = weekAgo.minus({ weeks: 1 }).toISO();
+    console.log(">>>>> weekAgo2", weekAgo);
+    weekAgo = weekAgo.toISO();
+    console.log(">>>>> weekAgo3", weekAgo);
+    return weekAgo;
   };
 
   /**
@@ -48,7 +54,13 @@ class DateService {
    * @returns an ISO 8601-compliant string representation of Luxon's DateTime one week ago from date parameter
    */
   oneWeekForward = (date) => {
-    return DateTime.fromISO(date).plus({ weeks: 1 }).toISO();
+    let weekForward = DateTime.fromISO(date);
+    console.log(">>>>> weekForward1", weekForward);
+    weekForward = weekForward.plus({ weeks: 1 }).toISO();
+    console.log(">>>>> weekForward2", weekForward);
+    weekForward = weekForward.toISO();
+    console.log(">>>>> weekForward3", weekForward);
+    return weekForward;
   };
 }
 
