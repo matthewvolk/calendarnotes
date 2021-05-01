@@ -72,6 +72,12 @@ const Events = ({
   createNotes,
 }) => {
   const [events, setEvents] = useState(null);
+  // const [events, setEvents] = useState({
+  //   error: null,
+  //   success: null,
+  //   message: null,
+  //   events: null,
+  // });
   useEffect(() => {
     const getEvents = async (currentCalendarId) => {
       setEventsLoading(true);
@@ -85,7 +91,7 @@ const Events = ({
       );
       if (res.ok) {
         const calendarEvents = await res.json();
-        console.log(`Events for ${currentCalendarId}:`, calendarEvents);
+        // console.log(`Events for ${currentCalendarId}:`, calendarEvents);
         if (!calendarEvents.error) {
           setEvents(calendarEvents);
           setEventsLoading(false);
@@ -95,6 +101,7 @@ const Events = ({
           // you do not have permission to consume events for the calendar you have selected
           // if events == null && !currentCalendarId
           // please select a calendar above
+          console.log(">>>>> getEvents ERROR", calendarEvents);
           setEvents(null);
           setEventsLoading(false);
         }
@@ -116,7 +123,7 @@ const Events = ({
     if (currentCalendarId) {
       getEvents(currentCalendarId);
     }
-  }, [currentCalendarId, setEvents]);
+  }, [currentCalendarId, setEvents, setEventsLoading]);
 
   const nextWeek = async () => {
     setEventsLoading(true);
@@ -125,7 +132,6 @@ const Events = ({
     );
     if (response.ok) {
       const calendarEvents = await response.json();
-      console.log(`Events for ${currentCalendarId}:`, calendarEvents);
       if (!calendarEvents.error) {
         setEvents(calendarEvents);
         setEventsLoading(false);
@@ -146,13 +152,12 @@ const Events = ({
     );
     if (response.ok) {
       const calendarEvents = await response.json();
-      console.log(`Events for ${currentCalendarId}:`, calendarEvents);
       if (!calendarEvents.error) {
         setEvents(calendarEvents);
         setEventsLoading(false);
       }
       if (calendarEvents.error) {
-        setEvents(null);
+        setEvents(calendarEvents);
         setEventsLoading(false);
       }
     } else {
@@ -167,7 +172,6 @@ const Events = ({
     );
     if (response.ok) {
       const calendarEvents = await response.json();
-      console.log(`Events for ${currentCalendarId}:`, calendarEvents);
       if (!calendarEvents.error) {
         setEvents(calendarEvents);
         setEventsLoading(false);
@@ -182,6 +186,12 @@ const Events = ({
     }
   };
 
+  {
+    console.log(">>>>> currentCalendarId", currentCalendarId);
+  }
+  {
+    console.log(">>>>> events", events);
+  }
   if (eventsLoading) {
     return (
       <EventsWrapper>

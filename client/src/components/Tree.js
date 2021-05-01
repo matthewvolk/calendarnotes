@@ -176,7 +176,6 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
                     .indexOf(notesStorage.current)
                 ].name
               }
-              {console.log(notesStorage)}
             </div>
             <div
               onClick={openSettings}
@@ -278,7 +277,6 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
                   .indexOf(notesStorage.current)
               ].name
             }
-            {console.log(notesStorage)}
           </div>
           <div
             onClick={openSettings}
