@@ -126,10 +126,27 @@ class CalendarService {
     let userFriendlyStartOfWeek = dateServiceInstance.getUserFriendlyStartOfWeek(
       weekOf
     );
+    console.log(">>>>> CalendarService getCalEventsForWeek() weekOf", weekOf);
+    console.log(
+      ">>>>> CalendarService getCalEventsForWeek() startOfWeek",
+      startOfWeek
+    );
+    console.log(
+      ">>>>> CalendarService getCalEventsForWeek() endOfWeek",
+      endOfWeek
+    );
+    console.log(
+      ">>>>> CalendarService getCalEventsForWeek() userFriendly",
+      userFriendlyStartOfWeek
+    );
 
-    url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?timeMin=${encodeURIComponent(
+    url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(
+      calendarId
+    )}/events?timeMin=${encodeURIComponent(
       startOfWeek
     )}&timeMax=${encodeURIComponent(endOfWeek)}&singleEvents=true`;
+
+    console.log(">>>>> CalendarService getCalEventsForWeek() url", url);
 
     let eventsResponse = null;
     try {
@@ -141,6 +158,7 @@ class CalendarService {
         },
       });
       if (response.status === 200) {
+        console.log(">>>>> CalendarService eventsResponse === 200");
         let calendarEventsResponse = response.data;
         let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
           (obj) => obj.start
@@ -160,6 +178,7 @@ class CalendarService {
         };
       }
       if (response.status !== 200) {
+        console.log(">>>>> CalendarService eventsResponse !== 200");
         eventsResponse = null;
       }
     } catch (err) {
@@ -179,6 +198,7 @@ class CalendarService {
             },
           });
           if (response.status === 200) {
+            console.log(">>>>> CalendarService eventsResponse === 200 2nd try");
             let calendarEventsResponse = response.data;
             let eventsResponseMinusCancelledEvents = calendarEventsResponse.items.filter(
               (obj) => obj.start
@@ -198,6 +218,7 @@ class CalendarService {
             };
           }
           if (response.status !== 200) {
+            console.log(">>>>> CalendarService eventsResponse !== 200 2nd try");
             eventsResponse = null;
           }
         } catch (err) {
