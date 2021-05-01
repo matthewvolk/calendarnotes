@@ -126,8 +126,15 @@ const Events = ({
 
   const nextWeek = async () => {
     setEventState({ ...eventState, loading: true });
+    console.log(
+      `>>>>> nextWeek URL: /api/user/google/calendars/${currentCalendarId}/events?weekOf=${encodeURIComponent(
+        eventState.events.startOfWeekISO
+      )}&prevOrNext=next`
+    );
     const response = await fetch(
-      `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${eventState.events.startOfWeekISO}&prevOrNext=next`
+      `/api/user/google/calendars/${currentCalendarId}/events?weekOf=${encodeURIComponent(
+        eventState.events.startOfWeekISO
+      )}&prevOrNext=next`
     );
     if (response.ok) {
       const calendarEvents = await response.json();
@@ -216,6 +223,9 @@ const Events = ({
     }
   };
 
+  {
+    console.log(">>>>> <Events /> eventState", eventState);
+  }
   if (eventState.loading) {
     return (
       <EventsWrapper>
