@@ -18,6 +18,7 @@ const StyledDashboardContainer = styled(Container)`
   left: 0;
   width: 100vw;
   background-color: #e2473b;
+  // background-color: #a64030;
   padding-left: 0px;
   padding-right: 0px;
 `;
@@ -51,6 +52,7 @@ const StyledHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   background-color: white;
+  // background-color: #8a3729;
   padding-right: 15px;
   padding-left: 15px;
 `;

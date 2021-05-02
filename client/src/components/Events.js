@@ -9,8 +9,7 @@ const EventsWrapper = styled.div`
   margin: 10px 10px 10px 0px;
   background-color: white;
   border-radius: 10px;
-  flex-grow: 7;
-  flex-basis: auto;
+  flex: 1 1 auto;
   overflow: auto;
 `;
 

@@ -8,9 +8,8 @@ const StyledTree = styled.div`
   line-height: 1.5;
   margin: 10px;
   padding: 15px;
-  flex-basis: auto;
-  flex-grow: 1;
-  overflow: auto;
+  flex: 1 1 auto;
+  overflow-x: scroll;
   min-height: 0;
   background-color: white;
   border-radius: 10px;
