@@ -23,28 +23,6 @@ const StyledDashboardContainer = styled(Container)`
   padding-right: 0px;
 `;
 
-const LogoutButton = styled(Button)`
-  margin-left: 0.25rem;
-
-  background-color: ${(props) => {
-    if (props.variant === "danger") return "#e2473b";
-    if (props.disabled) return "#f3b5b0";
-  }};
-  border-color: ${(props) => {
-    if (props.variant === "danger") return "#e2473b";
-    if (props.disabled) return "#f3b5b0";
-  }};
-
-  &:hover {
-    background-color: ${(props) => {
-      if (props.variant === "danger") return "#B7362C";
-    }};
-    border-color: ${(props) => {
-      if (props.variant === "danger") return "#B7362C";
-    }};
-  }
-`;
-
 const StyledHeader = styled.div`
   display: flex;
   padding-bottom: 0.35rem;
@@ -110,6 +88,28 @@ const StyledButton = styled(Button)`
       if (props.disabled) return "#e76b62";
     }};
     cursor: not-allowed;
+  }
+`;
+
+const LogoutButton = styled(Button)`
+  margin-left: 0.25rem;
+
+  background-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+  border-color: ${(props) => {
+    if (props.variant === "danger") return "#e2473b";
+    if (props.disabled) return "#f3b5b0";
+  }};
+
+  &:hover {
+    background-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
+    border-color: ${(props) => {
+      if (props.variant === "danger") return "#B7362C";
+    }};
   }
 `;
 
