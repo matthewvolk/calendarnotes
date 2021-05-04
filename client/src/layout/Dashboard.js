@@ -10,7 +10,9 @@ import styled from "styled-components";
 import SettingsModal from "../components/SettingsModal";
 
 const StyledDashboardContainer = styled(Container)`
-  display: flex;
+  display: grid;
+  grid-template-columns: fit-content(100%) 4fr;
+  grid-template-rows: fit-content(100%) auto;
   flex-direction: column;
   position: absolute;
   top: 0;
@@ -24,6 +26,7 @@ const StyledDashboardContainer = styled(Container)`
 `;
 
 const StyledHeader = styled.div`
+  grid-column: 1/3;
   display: flex;
   padding-bottom: 0.35rem;
   padding-top: 0.35rem;
@@ -38,12 +41,6 @@ const StyledHeader = styled.div`
 const AccountButtonGroup = styled.div`
   display: flex;
   align-items: center;
-`;
-
-const StyledBody = styled.div`
-  display: flex;
-  flex-grow: 1;
-  min-height: 0;
 `;
 
 const CalendarIcon = styled.img`
@@ -188,21 +185,19 @@ const Dashboard = () => {
             </LogoutButton>
           </AccountButtonGroup>
         </StyledHeader>
-        <StyledBody>
-          <Tree
-            notesStorage={notesStorage}
-            openSettings={openSettings}
-            setWrikeFolderId={setWrikeFolderId}
-          />
-          <Events
-            eventState={eventState}
-            setEventState={setEventState}
-            setCurrentEventId={setCurrentEventId}
-            currentCalendarId={currentCalendarId}
-            wrikeFolderId={wrikeFolderId}
-            createNotes={createNotes}
-          />
-        </StyledBody>
+        <Tree
+          notesStorage={notesStorage}
+          openSettings={openSettings}
+          setWrikeFolderId={setWrikeFolderId}
+        />
+        <Events
+          eventState={eventState}
+          setEventState={setEventState}
+          setCurrentEventId={setCurrentEventId}
+          currentCalendarId={currentCalendarId}
+          wrikeFolderId={wrikeFolderId}
+          createNotes={createNotes}
+        />
       </StyledDashboardContainer>
     </>
   );
