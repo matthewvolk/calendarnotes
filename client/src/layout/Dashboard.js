@@ -127,6 +127,11 @@ const Dashboard = () => {
     message: null,
     events: null,
   });
+  const [folderTreeState, setFolderTreeState] = useState({
+    loading: true,
+    error: false,
+    tree: null,
+  });
 
   const createNotes = async (
     currentEventId,
@@ -163,6 +168,8 @@ const Dashboard = () => {
             close={setModalOpen}
             notesStorage={notesStorage}
             setNotesStorage={setNotesStorage}
+            folderTreeState={folderTreeState}
+            setFolderTreeState={setFolderTreeState}
           />
         ) : null}
         <StyledHeader>
@@ -186,6 +193,8 @@ const Dashboard = () => {
           </AccountButtonGroup>
         </StyledHeader>
         <Tree
+          folderTreeState={folderTreeState}
+          setFolderTreeState={setFolderTreeState}
           notesStorage={notesStorage}
           openSettings={openSettings}
           setWrikeFolderId={setWrikeFolderId}

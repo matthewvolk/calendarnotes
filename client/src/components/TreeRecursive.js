@@ -2,7 +2,6 @@ import Folder from "./Folder";
 
 const TreeRecursive = ({
   folders,
-  setFolderTree,
   getChildFoldersForNotesLocation,
   setWrikeFolderId,
 }) => {
@@ -26,7 +25,6 @@ const TreeRecursive = ({
           name={folder.name}
           id={folder.id}
           key={folder.id}
-          setFolderTree={setFolderTree}
           folderTree={folders}
           getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
           setWrikeFolderId={setWrikeFolderId}
@@ -35,7 +33,6 @@ const TreeRecursive = ({
             // every time TreeRecursive renders a new child directory (IPM Space > child directory), it sets the global folder tree to that (most recently rendered) sub directory
             <TreeRecursive
               folders={folder.childFolders} // setting it to folders causes infinite loop
-              setFolderTree={setFolderTree}
               getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
               setWrikeFolderId={setWrikeFolderId}
             />

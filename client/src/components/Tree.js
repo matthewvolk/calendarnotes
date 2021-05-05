@@ -15,42 +15,62 @@ const StyledTree = styled.div`
   min-width: 17rem;
 `;
 
-const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
-  const [folderTree, setFolderTree] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-
+const Tree = ({
+  setWrikeFolderId,
+  openSettings,
+  notesStorage,
+  folderTreeState,
+  setFolderTreeState,
+}) => {
   const getWrikeTopLevelFolders = async () => {
-    setIsError(false);
-    setIsLoading(true);
+    setFolderTreeState({
+      loading: true,
+      error: false,
+      tree: null,
+    });
     const response = await fetch(`/api/user/folders`, {
       credentials: "include",
     });
     if (response.ok) {
       const data = await response.json();
-      setFolderTree(data);
-      setIsLoading(false);
+      setFolderTreeState({
+        loading: false,
+        error: false,
+        tree: data,
+      });
     }
     if (!response.ok) {
-      setIsError(true);
-      setIsLoading(false);
+      setFolderTreeState({
+        loading: false,
+        error: true,
+        tree: null,
+      });
     }
   };
 
   const getGoogleDriveTopLevelFolders = async () => {
-    setIsError(false);
-    setIsLoading(true);
+    setFolderTreeState({
+      loading: true,
+      error: false,
+      tree: null,
+    });
     const response = await fetch(`/api/user/google/drives`, {
       credentials: "include",
     });
     if (response.ok) {
       const data = await response.json();
-      setFolderTree(data);
-      setIsLoading(false);
+      setFolderTreeState({
+        loading: false,
+        error: false,
+        tree: data,
+      });
     }
     if (!response.ok) {
-      setIsError(true);
-      setIsLoading(false);
+      setFolderTreeState({
+        loading: false,
+        error: true,
+        tree: null,
+      });
     }
   };
 
@@ -89,7 +109,7 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
             return textA < textB ? -1 : textA > textB ? 1 : 0;
           });
 
-          let newFolderTree = [...folderTree];
+          let newFolderTree = [...folderTreeState.tree];
 
           function findRecurisvely(tree, id) {
             for (let i = 0; i < tree.length; i++) {
@@ -106,7 +126,11 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
           }
 
           findRecurisvely(newFolderTree, clickedFolderId);
-          setFolderTree(newFolderTree);
+          setFolderTreeState({
+            loading: false,
+            error: false,
+            tree: newFolderTree,
+          });
         }
       } else {
         /** Error handling if res not ok */
@@ -129,7 +153,7 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
           return textA < textB ? -1 : textA > textB ? 1 : 0;
         });
 
-        let newFolderTree = [...folderTree];
+        let newFolderTree = [...folderTreeState.tree];
 
         function findRecurisvely(tree, id) {
           for (let i = 0; i < tree.length; i++) {
@@ -146,7 +170,11 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
         }
 
         findRecurisvely(newFolderTree, clickedFolderId);
-        setFolderTree(newFolderTree);
+        setFolderTreeState({
+          loading: false,
+          error: false,
+          tree: newFolderTree,
+        });
       }
     }
   };
@@ -154,7 +182,7 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
   // is the user signed in with at least one of google or wrike?
   if (notesStorage.available.length >= 1) {
     // if yes, fetch folders
-    if (isLoading) {
+    if (folderTreeState.loading) {
       return (
         <StyledTree>
           <h4>Notes Location</h4>
@@ -204,7 +232,7 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
     }
 
     // if folders are done fetching but there is an error
-    if (isError) {
+    if (folderTreeState.error) {
       return (
         <StyledTree>
           <h4>Notes Location</h4>
@@ -291,8 +319,7 @@ const Tree = ({ setWrikeFolderId, openSettings, notesStorage }) => {
           </div>
         </div>
         <TreeRecursive
-          folders={folderTree}
-          setFolderTree={setFolderTree}
+          folders={folderTreeState.tree}
           getChildFoldersForNotesLocation={getChildFoldersForNotesLocation}
           setWrikeFolderId={setWrikeFolderId}
         />

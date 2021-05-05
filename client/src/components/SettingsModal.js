@@ -44,10 +44,17 @@ const loginWithGoogleDrive = (e) => {
   window.location.assign(process.env.REACT_APP_GOOGLE_DRIVE_AUTH_URL);
 };
 
-const SettingsModal = ({ close, notesStorage, setNotesStorage }) => {
+const SettingsModal = ({
+  close,
+  notesStorage,
+  setNotesStorage,
+  folderTreeState,
+  setFolderTreeState,
+}) => {
   const { user } = useAuthState();
 
   const handleNotesLocationChange = async (e) => {
+    setFolderTreeState({ ...folderTreeState, loading: true });
     notesStorage.current = e.target.value;
     console.log("Notes Storage", notesStorage);
     const res = await fetch(`/api/user/notes/storage`, {
@@ -144,22 +151,28 @@ const SettingsModal = ({ close, notesStorage, setNotesStorage }) => {
         </div>
         <div style={{ margin: "1rem" }}>
           <h5>2. Choose where to store your notes:</h5>
-          <select
-            value={notesStorage?.current ? notesStorage.current : ""}
-            onChange={handleNotesLocationChange}
-            disabled={notesStorage?.current ? false : true}
-            name=""
-            id=""
-            style={{ minWidth: "150px" }}
-          >
-            {notesStorage?.available
-              ? notesStorage.available.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
-                  </option>
-                ))
-              : null}
-          </select>
+          {folderTreeState.loading && notesStorage.available.length >= 1 ? (
+            <select value="loading" disabled style={{ minWidth: "150px" }}>
+              <option value="loading">Loading...</option>
+            </select>
+          ) : (
+            <select
+              value={notesStorage?.current ? notesStorage.current : ""}
+              onChange={handleNotesLocationChange}
+              disabled={notesStorage?.current ? false : true}
+              name=""
+              id=""
+              style={{ minWidth: "150px" }}
+            >
+              {notesStorage?.available
+                ? notesStorage.available.map((location) => (
+                    <option key={location.id} value={location.id}>
+                      {location.name}
+                    </option>
+                  ))
+                : null}
+            </select>
+          )}
         </div>
       </div>
     </div>
