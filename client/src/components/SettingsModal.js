@@ -56,7 +56,6 @@ const SettingsModal = ({
   const handleNotesLocationChange = async (e) => {
     setFolderTreeState({ ...folderTreeState, loading: true });
     notesStorage.current = e.target.value;
-    console.log("Notes Storage", notesStorage);
     const res = await fetch(`/api/user/notes/storage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
