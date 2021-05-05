@@ -89,7 +89,7 @@ class CalendarService {
           "GOOGLE"
         );
         try {
-          response = await axios({
+          let response = await axios({
             method: "get",
             url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}`,
             headers: {

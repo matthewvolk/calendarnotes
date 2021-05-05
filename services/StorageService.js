@@ -116,7 +116,7 @@ class StorageService {
             }
 
             if (!response.data.nextPageToken) {
-              const driveResponse = response.data.drives.map((drive) => {
+              let driveResponse = response.data.drives.map((drive) => {
                 return {
                   id: drive.id,
                   name: drive.name,
