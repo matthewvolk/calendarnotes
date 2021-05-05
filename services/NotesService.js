@@ -62,7 +62,6 @@ class NotesService {
 
     let calendarService = new CalendarService();
     let userTz = await calendarService.getCalendarTimeZone(user, calendarId);
-    console.log(">>>>>>>>>>>>>>> Calendar Timezone", userTz);
 
     let eventStartTime = DateTime.fromISO(calendarEvent.start.dateTime);
     eventStartTime = eventStartTime.setZone(userTz);
