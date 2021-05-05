@@ -48,8 +48,11 @@ There are a few categories of data stored in this application:
 
 User and User Authentication data is fairly small in terms of storage footprint; it consists of basic user information, such as first name, last name, email, etc., as well as access and refresh tokens to authenticate with third party applications using OAuth2.
 Similarly, user application preference data is also relatively small. This data consists of data that could also be stored in a browser cookie, but is stored in a database so the user's preferences are available from different browsers and computers. Information such as the user's default calendar that they should see when they log in, as well as their preferred notes storage location (such as Google Drive) is in the scope of this data category.
+
 For the two data categories above, the convenience of a document-based store such as MongoDB made the most sense, especially because of the requirements around the third category of data: Meeting Notes Data.
+
 Meeting Notes Data is defined as data pertaining to the meeting notes "events" that the user creates with the application. One of the main features of this application is that when the user creates meeting notes for the event, the application is aware of the newly created meeting notes file, and can perform CRUD operations on the document based on user activity. For example, a user may create a meeting notes "event", and then reschedule the meeting tied to the event to the next day. The application listens to Google Calendar webhooks and is able to subsequently move the associated notes event to the updated meeting time, as well as update the meeting notes document with the same information. In order to understand which meeting notes to listen to Google Calendar Webhooks for, the application must have a mechanism to store information about the meeting notes that the user creates.
+
 Because there is no limit to the number of meeting notes the user can create, and because the number of columns associated with each meeting note is small, I chose MongoDB as a document-based storage system. Each user document stored in MongoDB has a subdocument called "meetingNotes" that contains information about every single meeting notes event created by the user using the application.
 
 <!-- ### Client/Server Relationship
