@@ -67,26 +67,10 @@ class NotesService {
     let eventStartTime = DateTime.fromISO(calendarEvent.start.dateTime);
     eventStartTime = eventStartTime.setZone(userTz);
     eventStartTime = eventStartTime.toFormat("cccc, LLLL d ⋅ h:mm a");
+
     let eventEndTime = DateTime.fromISO(calendarEvent.end.dateTime);
     eventEndTime = eventEndTime.setZone(userTz);
     eventEndTime = eventEndTime.toFormat("h:mm a ZZZZ");
-
-    let debugging = DateTime.fromISO(calendarEvent.start.dateTime);
-    console.log(
-      ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime)",
-      DateTime.fromISO(calendarEvent.start.dateTime)
-    );
-    debugging = debugging.setZone(userTz);
-    console.log(
-      ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime) with zone",
-      debugging
-    );
-    console.log(">>>>>>>>>>>>>>> DEBUGGING IANA Zone", debugging.toFormat("z"));
-    debugging = debugging.toFormat("h:mm a ZZZZ");
-    console.log(
-      ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime).toFormat()",
-      debugging
-    );
 
     const notesTitle = `${calendarEvent.summary} - ${eventStartTime} - ${eventEndTime}`;
 
