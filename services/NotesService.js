@@ -67,7 +67,7 @@ class NotesService {
     let debugging = DateTime.fromISO(calendarEvent.start.dateTime);
     console.log(
       ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime)",
-      DateTime.fromISO(calendarEvent.start.dateTime)
+      DateTime.fromISO(calendarEvent.start.dateTime).setZone(userTz)
     );
     debugging = debugging.toFormat("h:mm a ZZZZ");
     console.log(
