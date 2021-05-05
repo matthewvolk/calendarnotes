@@ -67,8 +67,14 @@ class NotesService {
     let debugging = DateTime.fromISO(calendarEvent.start.dateTime);
     console.log(
       ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime)",
-      DateTime.fromISO(calendarEvent.start.dateTime).setZone(userTz)
+      DateTime.fromISO(calendarEvent.start.dateTime)
     );
+    debugging = debugging.setZone(userTz);
+    console.log(
+      ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime) with zone",
+      debugging
+    );
+    console.log(">>>>>>>>>>>>>>> DEBUGGING IANA Zone", debugging.toFormat("z"));
     debugging = debugging.toFormat("h:mm a ZZZZ");
     console.log(
       ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime).toFormat()",
