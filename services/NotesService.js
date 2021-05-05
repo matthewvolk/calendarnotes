@@ -1,5 +1,6 @@
 const axios = require("axios");
 const { DateTime } = require("luxon");
+const CalendarService = require("./CalendarService");
 const TokenService = require("./TokenService");
 
 class NotesService {
@@ -53,11 +54,26 @@ class NotesService {
       }
     }
 
+    let calendarService = new CalendarService();
+    let userTz = calendarService.getCalendarTimeZone(user, calendarId);
+    console.log(">>>>>>>>>>>>>>> Calendar Timezone", userTz);
+
     if (!calendarEvent)
       return {
         error: true,
         message: "Failed to retrieve Google Calendar Event",
       };
+
+    let debugging = DateTime.fromISO(calendarEvent.start.dateTime);
+    console.log(
+      ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime)",
+      DateTime.fromISO(calendarEvent.start.dateTime)
+    );
+    debugging = debugging.toFormat("h:mm a ZZZZ");
+    console.log(
+      ">>>>>>>>>>>>>>> DateTime.fromISO(calendarEvent.start.dateTime).toFormat()",
+      debugging
+    );
 
     const notesTitle = `${calendarEvent.summary} - ${DateTime.fromISO(
       calendarEvent.start.dateTime
