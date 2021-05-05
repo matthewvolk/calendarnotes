@@ -55,7 +55,7 @@ class NotesService {
     }
 
     let calendarService = new CalendarService();
-    let userTz = calendarService.getCalendarTimeZone(user, calendarId);
+    let userTz = await calendarService.getCalendarTimeZone(user, calendarId);
     console.log(">>>>>>>>>>>>>>> Calendar Timezone", userTz);
 
     if (!calendarEvent)
