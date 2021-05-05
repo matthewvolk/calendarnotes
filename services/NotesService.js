@@ -54,15 +54,22 @@ class NotesService {
       }
     }
 
-    let calendarService = new CalendarService();
-    let userTz = await calendarService.getCalendarTimeZone(user, calendarId);
-    console.log(">>>>>>>>>>>>>>> Calendar Timezone", userTz);
-
     if (!calendarEvent)
       return {
         error: true,
         message: "Failed to retrieve Google Calendar Event",
       };
+
+    let calendarService = new CalendarService();
+    let userTz = await calendarService.getCalendarTimeZone(user, calendarId);
+    console.log(">>>>>>>>>>>>>>> Calendar Timezone", userTz);
+
+    let eventStartTime = DateTime.fromISO(calendarEvent.start.dateTime);
+    eventStartTime = eventStartTime.setZone(userTz);
+    eventStartTime = eventStartTime.toFormat("cccc, LLLL d ⋅ h:mm a");
+    let eventEndTime = DateTime.fromISO(calendarEvent.end.dateTime);
+    eventEndTime = eventEndTime.setZone(userTz);
+    eventEndTime = eventEndTime.toFormat("h:mm a ZZZZ");
 
     let debugging = DateTime.fromISO(calendarEvent.start.dateTime);
     console.log(
@@ -81,11 +88,7 @@ class NotesService {
       debugging
     );
 
-    const notesTitle = `${calendarEvent.summary} - ${DateTime.fromISO(
-      calendarEvent.start.dateTime
-    ).toFormat("cccc, LLLL d ⋅ h:mm a")} - ${DateTime.fromISO(
-      calendarEvent.end.dateTime
-    ).toFormat("h:mm a ZZZZ")}`;
+    const notesTitle = `${calendarEvent.summary} - ${eventStartTime} - ${eventEndTime}`;
 
     let notesPermalink;
 
