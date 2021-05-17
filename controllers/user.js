@@ -4,7 +4,7 @@ const StorageService = require("../services/StorageService");
 const CalendarService = require("../services/CalendarService");
 
 module.exports = {
-  getUser: async (request, response) => {
+  getUser: (request, response) => {
     const user = request.user;
     response.json(user);
   },
