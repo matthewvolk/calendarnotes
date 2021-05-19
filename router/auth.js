@@ -5,6 +5,12 @@ const authController = require("../controllers/auth");
 
 const router = express.Router();
 
+// Next.js Testing
+router.get("/google/next", authController.googleAuthNext);
+router.get("/google/cb/next", authController.googleAuthCallbackNext);
+router.get("/google/user", authController.googleUserNext);
+// End Next.js Testing
+
 router.get("/logout", authController.logout);
 router.get("/google", authController.googleAuth);
 router.get("/google/cb", authController.googleAuthCallback);
