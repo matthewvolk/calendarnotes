@@ -50,15 +50,26 @@ module.exports = {
   },
   googleUserNext: (request, response) => {
     const token = request.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, "SECRET");
+    let decoded;
+    try {
+      decoded = jwt.verify(token, "SECRET");
+    } catch (err) {
+      console.log("Could not decode token", err);
+      response.status(401).send("Unauthorized");
+      return;
+    }
+    console.log("decoded", decoded);
     const user = FAKE_DATABASE.find((user) => user.id === decoded.id);
+    console.log("user", user);
     if (!user) {
       response.json({
         error: `No user with ID: ${decoded.id} in the database.`,
       });
+      return;
     }
     if (user) {
       response.json(user);
+      return;
     }
   },
   // End Next.js Testing

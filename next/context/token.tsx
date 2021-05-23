@@ -8,7 +8,7 @@ function TokenProvider({ children }) {
   React.useEffect(() => {
     (function () {
       if (typeof window !== "undefined") {
-        const tokenInStorage = localStorage.getItem("token");
+        const tokenInStorage = localStorage.getItem("cnauthtkn");
         if (tokenInStorage) {
           setToken(tokenInStorage);
         }
@@ -17,14 +17,15 @@ function TokenProvider({ children }) {
     // need to clear token state when user logs out
   });
 
+  const value = { token, setToken };
   return (
-    <TokenContext.Provider value={token}>{children}</TokenContext.Provider>
+    <TokenContext.Provider value={value}>{children}</TokenContext.Provider>
   );
 }
 
 function useToken() {
-  const token = React.useContext(TokenContext);
-  return { token };
+  const { token, setToken } = React.useContext(TokenContext);
+  return { token, setToken };
 }
 
 export { TokenProvider, useToken };
