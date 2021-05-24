@@ -8,10 +8,14 @@ export const useSaveTokenFromQueryParams = () => {
     query[tokenKey] || asPath.match(new RegExp(`[&?]${tokenKey}=(.*)(&|$)`));
 
   if (asPath.match(new RegExp(`[&?]${tokenKey}=(.*)(&|$)`))) {
-    queryValue = queryValue[1].slice(0, -1);
+    queryValue = queryValue[1].replace(/\#$/, "");
   }
 
   if (typeof queryValue === "string" && queryValue) {
+    console.log(localStorage.getItem("cnauthtkn"));
+    if (localStorage.getItem("cnauthtkn")) {
+      localStorage.removeItem("cnauthtkn");
+    }
     localStorage.setItem("cnauthtkn", queryValue);
     push("/dashboard");
   }

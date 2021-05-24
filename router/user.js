@@ -1,15 +1,9 @@
 const express = require("express");
 
 const { checkAuth } = require("../middlewares/auth");
-const { withJwt } = require("../middlewares/withJwt");
 const userController = require("../controllers/user");
 
 const router = express.Router();
-
-// Next.js Testing
-router.get("/next", withJwt, userController.googleUserNext);
-router.get("/cals/next", withJwt, userController.googleCalsNext);
-// End Next.js Testing
 
 router.get("/", checkAuth, userController.getUser);
 router.get("/folders", checkAuth, userController.getFolders);

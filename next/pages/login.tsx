@@ -3,7 +3,9 @@ import Nav from "../components/nav";
 export default function Login() {
   const logInWithGoogle = (e) => {
     e.preventDefault();
-    window.location.assign("https://localhost:8443/api/auth/google/next");
+    window.location.assign(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/next/google`
+    );
   };
 
   return (

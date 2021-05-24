@@ -11,9 +11,7 @@ const withJwt = async (request, response, next) => {
     response.status(401).send("Unauthorized");
     return;
   }
-  console.log("withJwt.js decoded:", decoded);
   const user = await NextUser.findOne({ id: decoded.id }).exec();
-  console.log("withJwt.js user:", user);
   if (!user) {
     response.status(401).send("Unauthorized");
     return;

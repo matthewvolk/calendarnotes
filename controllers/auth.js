@@ -1,68 +1,9 @@
 const User = require("../models/User");
-const NextUser = require("../models/NextUser");
 const axios = require("axios");
 const passport = require("passport");
-const jwt = require("jsonwebtoken");
 require("../config/passport")(passport);
 
 module.exports = {
-  // Next.js Testing
-  googleAuthNext: (request, response) => {
-    response.redirect(
-      `https://accounts.google.com/o/oauth2/v2/auth?scope=${encodeURIComponent(
-        "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.email openid"
-      )}&access_type=offline&include_granted_scopes=true&response_type=code&redirect_uri=${encodeURIComponent(
-        process.env.GOOGLE_OAUTH2_REDIRECT_URI_NEXT
-      )}&client_id=${encodeURIComponent(process.env.GOOGLE_OAUTH2_CLIENT_ID)}`
-    );
-  },
-
-  googleAuthCallbackNext: async (request, response) => {
-    const { error, code } = request.query;
-    if (code) {
-      const { data: tokens } = await axios({
-        method: "post",
-        url: `https://oauth2.googleapis.com/token?code=${code}&client_id=${encodeURIComponent(
-          process.env.GOOGLE_OAUTH2_CLIENT_ID
-        )}&client_secret=${encodeURIComponent(
-          process.env.GOOGLE_OAUTH2_CLIENT_SECRET
-        )}&redirect_uri=${encodeURIComponent(
-          process.env.GOOGLE_OAUTH2_REDIRECT_URI_NEXT
-        )}&grant_type=authorization_code`,
-      });
-      const { data: googleUser } = await axios({
-        method: "get",
-        url: "https://www.googleapis.com/oauth2/v1/userinfo",
-        headers: {
-          Authorization: `Bearer ${tokens.access_token}`,
-        },
-      });
-      const user = await NextUser.findOne({ id: googleUser.id }).exec();
-      if (!user) {
-        const newUser = new NextUser({
-          id: googleUser.id,
-          name: googleUser.name,
-          email: googleUser.email,
-          picture: googleUser.picture,
-          givenName: googleUser.given_name,
-          familyName: googleUser.family_name,
-          "googleCalendar.accessToken": tokens.access_token,
-          "googleCalendar.refreshToken": tokens.refresh_token,
-          "googleCalendar.expiresIn": tokens.expires_in,
-          "googleCalendar.scope": tokens.scope,
-          "googleCalendar.tokenType": tokens.token_type,
-        });
-        await newUser.save();
-      }
-      const token = jwt.sign({ id: googleUser.id }, "SECRET");
-      response.redirect(`http://localhost:3000/dashboard?token=${token}`);
-    }
-    if (error) {
-      console.error(error);
-    }
-  },
-  // End Next.js Testing
-
   logout: (request, response) => {
     request.session.destroy();
     response.redirect(process.env.LOGOUT_REDIRECT);

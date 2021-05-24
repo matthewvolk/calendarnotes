@@ -1,28 +1,56 @@
-import { useEffect, useState } from "react";
 import Nav from "../components/nav";
 import withAuth from "../components/withAuth";
+import authFetch from "../utils/authFetch";
 import { useToken } from "../context/token";
-import { useUser } from "../context/user";
+import { useEffect, useState } from "react";
 
 function Dashboard() {
-  const { user } = useUser();
   const { token } = useToken();
   const [calendars, setCalendars] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const getCals = async () => {
-      const res = await fetch("https://localhost:8443/api/user/cals/next", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      setCalendars(data);
+    const getCalendars = async () => {
+      setCalendars(
+        await authFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/next/calendars`,
+          token
+        )
+      );
     };
     if (token) {
-      getCals();
+      getCalendars();
     }
   }, [token]);
+
+  useEffect(() => {
+    const getUser = async () => {
+      setUser(
+        await authFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/next/user`,
+          token
+        )
+      );
+    };
+    if (token) {
+      getUser();
+    }
+  }, [token]);
+
+  const fetchEvents = async (e) => {
+    e.preventDefault();
+    console.log(e.target.innerText);
+    if (token) {
+      console.log(
+        await authFetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL
+          }/api/next/events?id=${encodeURIComponent(e.target.innerText)}`,
+          token
+        )
+      );
+    }
+  };
 
   if (!user) {
     return <div>Loading...</div>;
@@ -41,7 +69,9 @@ function Dashboard() {
             Calendars
             <ul>
               {calendars.map((calendar) => (
-                <li key={calendar.id}>{calendar.summary}</li>
+                <li onClick={fetchEvents} key={calendar.id}>
+                  {calendar.id}
+                </li>
               ))}
             </ul>
           </div>

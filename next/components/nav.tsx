@@ -1,11 +1,27 @@
 import Link from "next/link";
+import authFetch from "../utils/authFetch";
+import { useState, useEffect } from "react";
 import { useToken } from "../context/token";
-import { useUser } from "../context/user";
 
 export default function Nav() {
-  const user = useUser();
-  const { setToken } = useToken();
-  if (user.user) {
+  const [user, setUser] = useState(null);
+  const { token, setToken } = useToken();
+
+  useEffect(() => {
+    const getCalendars = async () => {
+      setUser(
+        await authFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/next/user`,
+          token
+        )
+      );
+    };
+    if (token) {
+      getCalendars();
+    }
+  }, [token]);
+
+  if (user) {
     return (
       <nav>
         <ul>
@@ -47,7 +63,7 @@ export default function Nav() {
     );
   }
 
-  if (!user.user) {
+  if (!user) {
     return (
       <nav>
         <ul>
