@@ -2,8 +2,33 @@ const DateService = require("../services/DateService");
 const NotesService = require("../services/NotesService");
 const StorageService = require("../services/StorageService");
 const CalendarService = require("../services/CalendarService");
+const axios = require("axios");
 
 module.exports = {
+  // Next.js Testing
+  googleUserNext: async (request, response) => {
+    response.json(request.user);
+    return;
+  },
+
+  googleCalsNext: async (request, response) => {
+    const res = await axios({
+      method: "get",
+      url: `https://www.googleapis.com/calendar/v3/users/me/calendarList`,
+      headers: {
+        Authorization: `Bearer ${request.user.googleCalendar.accessToken}`,
+      },
+    });
+    if (res.status === 200) {
+      response.json(res.data.items);
+    }
+    if (res.status !== 200) {
+      console.log("Call to get calendars not 200 OK");
+    }
+    return;
+  },
+  // End Next.js Testing
+
   getUser: (request, response) => {
     const user = request.user;
     response.json(user);

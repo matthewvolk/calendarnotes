@@ -13,7 +13,7 @@ function UserProvider({ children }) {
 
   React.useEffect(() => {
     if (token) {
-      fetch("https://localhost:8443/api/auth/google/user", {
+      fetch("https://localhost:8443/api/user/next", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -1,10 +1,9 @@
 const User = require("../models/User");
+const NextUser = require("../models/NextUser");
 const axios = require("axios");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 require("../config/passport")(passport);
-
-const FAKE_DATABASE = [];
 
 module.exports = {
   // Next.js Testing
@@ -17,6 +16,7 @@ module.exports = {
       )}&client_id=${encodeURIComponent(process.env.GOOGLE_OAUTH2_CLIENT_ID)}`
     );
   },
+
   googleAuthCallbackNext: async (request, response) => {
     const { error, code } = request.query;
     if (code) {
@@ -30,46 +30,35 @@ module.exports = {
           process.env.GOOGLE_OAUTH2_REDIRECT_URI_NEXT
         )}&grant_type=authorization_code`,
       });
-      const { data: user } = await axios({
+      const { data: googleUser } = await axios({
         method: "get",
         url: "https://www.googleapis.com/oauth2/v1/userinfo",
         headers: {
           Authorization: `Bearer ${tokens.access_token}`,
         },
       });
-      FAKE_DATABASE.push({
-        ...user,
-        tokens,
-      });
-      const token = jwt.sign({ id: user.id }, "SECRET");
+      const user = await NextUser.findOne({ id: googleUser.id }).exec();
+      if (!user) {
+        const newUser = new NextUser({
+          id: googleUser.id,
+          name: googleUser.name,
+          email: googleUser.email,
+          picture: googleUser.picture,
+          givenName: googleUser.given_name,
+          familyName: googleUser.family_name,
+          "googleCalendar.accessToken": tokens.access_token,
+          "googleCalendar.refreshToken": tokens.refresh_token,
+          "googleCalendar.expiresIn": tokens.expires_in,
+          "googleCalendar.scope": tokens.scope,
+          "googleCalendar.tokenType": tokens.token_type,
+        });
+        await newUser.save();
+      }
+      const token = jwt.sign({ id: googleUser.id }, "SECRET");
       response.redirect(`http://localhost:3000/dashboard?token=${token}`);
     }
     if (error) {
       console.error(error);
-    }
-  },
-  googleUserNext: (request, response) => {
-    const token = request.headers.authorization.split(" ")[1];
-    let decoded;
-    try {
-      decoded = jwt.verify(token, "SECRET");
-    } catch (err) {
-      console.log("Could not decode token", err);
-      response.status(401).send("Unauthorized");
-      return;
-    }
-    console.log("decoded", decoded);
-    const user = FAKE_DATABASE.find((user) => user.id === decoded.id);
-    console.log("user", user);
-    if (!user) {
-      response.json({
-        error: `No user with ID: ${decoded.id} in the database.`,
-      });
-      return;
-    }
-    if (user) {
-      response.json(user);
-      return;
     }
   },
   // End Next.js Testing
