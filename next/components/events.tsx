@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useToken } from "../context/token";
 import authFetch from "../utils/authFetch";
 
-export default function Events({ currentCal, setCurrentEventId }) {
+export default function Events({ currentCal, folderId }) {
   const { token } = useToken();
   const [events, setEvents] = useState(null);
 
@@ -13,6 +13,7 @@ export default function Events({ currentCal, setCurrentEventId }) {
       }/api/next/events?id=${encodeURIComponent(currentCal)}`,
       token
     );
+    console.log("events", data);
     setEvents(data);
   };
 
@@ -51,6 +52,39 @@ export default function Events({ currentCal, setCurrentEventId }) {
     }
   };
 
+  const createNotes = async (eventId, folderId, calendarId) => {
+    if (!folderId) {
+      console.log("No folder selected");
+      return;
+    }
+    if (!calendarId) {
+      console.log("No calendar selected");
+      return;
+    }
+    console.log("Sending Request", { eventId, folderId, calendarId });
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/next/notes`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventId, folderId, calendarId }),
+      }
+    );
+
+    if (!res.ok) {
+      console.error("Response not OK");
+    }
+
+    if (res.ok) {
+      const data = await res.json();
+      console.log("Data", data);
+    }
+  };
+
   return (
     <>
       <p>
@@ -65,7 +99,7 @@ export default function Events({ currentCal, setCurrentEventId }) {
             return (
               <li
                 onClick={() => {
-                  setCurrentEventId(event.id);
+                  createNotes(event.id, folderId, currentCal);
                 }}
               >
                 <b>Event: </b>

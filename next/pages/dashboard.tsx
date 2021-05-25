@@ -11,18 +11,8 @@ function Dashboard() {
   const { token } = useToken();
   const [user, setUser] = useState(null);
   const [currentCal, setCurrentCal] = useState(null);
-  const [currentEventId, setCurrentEventId] = useState(null);
   const [notesLocation, setNotesLocation] = useState(null);
-  /**
-   * @todo [DONE] - if someone selects 'folderId' and then changes
-   * to a different notes location, must do: setFolderId(null)
-   * otherwise createNotes will send a call to one location
-   * with the folderId for a folder in another location
-   */
   const [folderId, setFolderId] = useState(null);
-  console.log("Current Calendar:", currentCal);
-  console.log("Current Folder:", folderId);
-  console.log("Current Event:", currentEventId);
 
   useEffect(() => {
     const getUser = async () => {
@@ -74,7 +64,7 @@ function Dashboard() {
     );
   };
 
-  const loginWithWrike = async (e) => {
+  const wrike = async (e) => {
     e.preventDefault();
     if (notesLocation?.available?.some((loc) => loc.id === "wrike")) {
       if (notesLocation?.current !== "wrike") {
@@ -113,14 +103,14 @@ function Dashboard() {
           setCurrentCal={setCurrentCal}
         />
         <br />
-        <button onClick={googleDrive}>Sign in with Google Drive</button>
-        <button onClick={loginWithWrike}>Sign in with Wrike</button>
+        <button onClick={googleDrive}>Google Drive</button>
+        <button onClick={wrike}>Wrike</button>
         <FolderSelector
           folderId={folderId}
           setFolderId={setFolderId}
           notesLocation={notesLocation}
         />
-        <Events currentCal={currentCal} setCurrentEventId={setCurrentEventId} />
+        <Events currentCal={currentCal} folderId={folderId} />
       </div>
     );
   }

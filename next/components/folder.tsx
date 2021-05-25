@@ -34,8 +34,8 @@ export default function Folder({
           /**
            * @todo this needs to be changed when I change client/src/layout/Dashboard.js:108
            */
-          let errorObj = await getChildFoldersForFolderId(folderId);
-          if (errorObj) {
+          let childFolderResponse = await getChildFoldersForFolderId(folderId);
+          if (childFolderResponse) {
             // change folder text back from "Loading..."
             e.target.style.fontWeight = "normal";
             e.target.innerText = originalText;

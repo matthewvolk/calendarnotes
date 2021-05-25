@@ -18,5 +18,6 @@ router.get("/google/drive/cb", nextController.googleDriveAuthCallback);
 router.get("/wrike", jwtQuery, nextController.wrikeAuth);
 router.get("/wrike/cb", nextController.wrikeAuthCallback);
 router.get("/folders", withJwt, nextController.getFolders);
+router.post("/notes", withJwt, nextController.createNotes);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const { DateTime } = require("luxon");
 const NextUser = require("../models/NextUser");
 const DateService = require("../services/DateService");
 const TokenService = require("../services/TokenService");
@@ -487,7 +488,7 @@ module.exports = {
             );
 
             try {
-              const response = await axios({
+              const res = await axios({
                 method: "get",
                 url: `https://www.googleapis.com/drive/v3/files?includeItemsFromAllDrives=true&supportsAllDrives=true&q=${encodeURIComponent(
                   `'${folderId}' in parents and mimeType = 'application/vnd.google-apps.folder'`
@@ -497,12 +498,12 @@ module.exports = {
                 },
               });
 
-              if (response.data.nextPageToken) {
+              if (res.data.nextPageToken) {
                 console.log("Multi-page response");
               }
 
-              if (!response.data.nextPageToken) {
-                let childFolders = response.data.files.map((file) => {
+              if (!res.data.nextPageToken) {
+                let childFolders = res.data.files.map((file) => {
                   return {
                     id: file.id,
                     name: file.name,
@@ -555,14 +556,14 @@ module.exports = {
       if (!folderId) {
         let folderResponse = null;
         try {
-          const response = await axios({
+          const res = await axios({
             method: "get",
             url: `https://${user.wrike.apiHost}/api/v4/spaces`,
             headers: {
               Authorization: `Bearer ${user.wrike.accessToken}`,
             },
           });
-          folderResponse = { spaces: response.data };
+          folderResponse = { spaces: res.data };
         } catch (err) {
           if (err.response && err.response.status === 401) {
             const tokenService = new TokenService();
@@ -572,14 +573,14 @@ module.exports = {
             );
 
             try {
-              const response = await axios({
+              const res = await axios({
                 method: "get",
                 url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/spaces`,
                 headers: {
                   Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
                 },
               });
-              folderResponse = { spaces: response.data };
+              folderResponse = { spaces: res.data };
             } catch (err) {
               folderResponse = null;
             }
@@ -623,6 +624,79 @@ module.exports = {
         }
 
         response.json(folderResponse);
+      }
+
+      if (folderId) {
+        let folderResponse = null;
+        try {
+          const res = await axios({
+            method: "get",
+            url: `https://${user.wrike.apiHost}/api/v4/folders/${folderId}/folders`,
+            headers: {
+              Authorization: `Bearer ${user.wrike.accessToken}`,
+            },
+          });
+          folderResponse = res.data.data[0].childIds;
+        } catch (err) {
+          if (err.response && err.response.status === 401) {
+            const tokenService = new TokenService();
+            const userWithRefreshedToken = await tokenService.refreshTokenNext(
+              user,
+              "WRIKE"
+            );
+
+            try {
+              const res = await axios({
+                method: "get",
+                url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${folderId}/folders`,
+                headers: {
+                  Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+                },
+              });
+              folderResponse = res.data.data[0].childIds;
+            } catch (err) {
+              folderResponse = null;
+            }
+          } else {
+            folderResponse = null;
+          }
+        }
+
+        if (folderResponse) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "WRIKE"
+          );
+
+          let getSpaceIdsAndNames = folderResponse.map((spaceId) => {
+            let url = `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${spaceId}/folders`;
+            let promise = axios({
+              method: "get",
+              url,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+              },
+            });
+            return promise;
+          });
+
+          try {
+            let spaceIdsAndNames = await Promise.all(getSpaceIdsAndNames);
+            folderResponse = spaceIdsAndNames.map((spaceIdAndName) => {
+              return {
+                name: spaceIdAndName.data.data[0].title,
+                id: spaceIdAndName.data.data[0].id,
+                hasChildFolders:
+                  spaceIdAndName.data.data[0].childIds == 0 ? false : true,
+              };
+            });
+            response.json(folderResponse);
+          } catch (err) {
+            console.log("Promise.all() failed:", err);
+            return { error: true };
+          }
+        }
       }
     }
 
@@ -773,5 +847,498 @@ module.exports = {
     if (error) {
       response.redirect(process.env.WRIKE_OAUTH_REDIRECT_NEXT);
     }
+  },
+
+  createNotes: async (request, response) => {
+    const user = request.user;
+    const { eventId, folderId, calendarId } = request.body;
+
+    let calendarEvent = null;
+    try {
+      const calendarEventResponse = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+        headers: {
+          Authorization: `Bearer ${user.googleCalendar.accessToken}`,
+        },
+      });
+      if (calendarEventResponse.status === 200) {
+        calendarEvent = calendarEventResponse.data;
+      }
+      if (calendarEventResponse.status !== 200) {
+        calendarEvent = null;
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        const tokenService = new TokenService();
+        const userWithRefreshedToken = await tokenService.refreshTokenNext(
+          user,
+          "GOOGLE"
+        );
+        try {
+          const calendarEventResponse = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleCalendar.accessToken}`,
+            },
+          });
+          if (calendarEventResponse.status === 200) {
+            calendarEvent = calendarEventResponse.data;
+          }
+          if (calendarEventResponse.status !== 200) {
+            calendarEvent = null;
+          }
+        } catch (err) {
+          calendarEvent = null;
+        }
+      } else {
+        calendarEvent = null;
+      }
+    }
+
+    if (!calendarEvent)
+      response.json({
+        error: true,
+        message: "Failed to retrieve Google Calendar Event",
+      });
+
+    let userTz;
+
+    try {
+      const res = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}`,
+        headers: {
+          Authorization: `Bearer ${user.googleCalendar.accessToken}`,
+        },
+      });
+      if (res.status === 200) {
+        userTz = res.data.timeZone;
+      }
+      if (res.status !== 200) {
+        userTz = null;
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        const tokenService = new TokenService();
+        const userWithRefreshedToken = await tokenService.refreshTokenNext(
+          user,
+          "GOOGLE"
+        );
+
+        try {
+          const res = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleCalendar.accessToken}`,
+            },
+          });
+          if (res.status === 200) {
+            userTz = res.data.timeZone;
+          }
+          if (res.status !== 200) {
+            userTz = null;
+          }
+        } catch (err) {
+          userTz = null;
+        }
+      } else {
+        userTz = null;
+      }
+    }
+
+    if (!userTz) {
+      return response.json({
+        error: true,
+        message: "Failed to retrieve user calendar timezone",
+      });
+    }
+
+    let eventStartTime = DateTime.fromISO(calendarEvent.start.dateTime);
+    eventStartTime = eventStartTime.setZone(userTz);
+    eventStartTime = eventStartTime.toFormat("cccc, LLLL d ⋅ h:mm a");
+
+    let eventEndTime = DateTime.fromISO(calendarEvent.end.dateTime);
+    eventEndTime = eventEndTime.setZone(userTz);
+    eventEndTime = eventEndTime.toFormat("h:mm a ZZZZ");
+
+    const notesTitle = `${calendarEvent.summary} - ${eventStartTime} - ${eventEndTime}`;
+
+    let notesPermalink;
+
+    if (user.notesStorage.current === "googleDrive") {
+      // Create Google Doc w/ Title
+      let googleDoc = {
+        title: notesTitle,
+      };
+
+      // Save Google Doc and then move it to desired folder
+      let savedGoogleDoc = null;
+      try {
+        const googleDocResponse = await axios({
+          method: "post",
+          url: "https://docs.googleapis.com/v1/documents",
+          data: googleDoc,
+          headers: {
+            Authorization: `Bearer ${user.googleDrive.accessToken}`,
+          },
+        });
+        if (googleDocResponse.status === 200) {
+          savedGoogleDoc = googleDocResponse.data;
+        }
+        if (googleDocResponse.status !== 200) {
+          savedGoogleDoc = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE"
+          );
+          try {
+            const googleDocResponse = await axios({
+              method: "post",
+              url: "https://docs.googleapis.com/v1/documents",
+              data: googleDoc,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+              },
+            });
+            if (googleDocResponse.status === 200) {
+              savedGoogleDoc = googleDocResponse.data;
+            }
+            if (googleDocResponse.status !== 200) {
+              savedGoogleDoc = null;
+            }
+          } catch (err) {
+            savedGoogleDoc = null;
+          }
+        } else {
+          savedGoogleDoc = null;
+        }
+      }
+
+      if (!savedGoogleDoc)
+        return {
+          error: true,
+          message: "Failed to create Google Doc",
+        };
+
+      let savedGoogleDocFileInfo = null;
+      try {
+        const googleDocFileInfoResponse = await axios({
+          method: "get",
+          url: `https://www.googleapis.com/drive/v3/files/${
+            savedGoogleDoc.documentId
+          }?fields=${encodeURIComponent("id, name, webViewLink, parents")}`,
+          headers: {
+            Authorization: `Bearer ${user.googleDrive.accessToken}`,
+          },
+        });
+        if (googleDocFileInfoResponse.status === 200) {
+          savedGoogleDocFileInfo = googleDocFileInfoResponse.data;
+        }
+        if (googleDocFileInfoResponse.status !== 200) {
+          savedGoogleDocFileInfo = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE"
+          );
+          try {
+            const googleDocFileInfoResponse = await axios({
+              method: "get",
+              url: `https://www.googleapis.com/drive/v3/files/${
+                savedGoogleDoc.documentId
+              }?fields=${encodeURIComponent("id, name, webViewLink, parents")}`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+              },
+            });
+            if (googleDocFileInfoResponse.status === 200) {
+              savedGoogleDocFileInfo = googleDocFileInfoResponse.data;
+            }
+            if (googleDocFileInfoResponse.status !== 200) {
+              savedGoogleDocFileInfo = null;
+            }
+          } catch (err) {
+            savedGoogleDocFileInfo = null;
+          }
+        } else {
+          savedGoogleDocFileInfo = null;
+        }
+      }
+
+      if (!savedGoogleDocFileInfo)
+        return {
+          error: true,
+          message:
+            "Saved Google Doc, but failed to retrieve saved Google Doc file info",
+        };
+
+      notesPermalink = savedGoogleDocFileInfo.webViewLink;
+
+      let movedGoogleDoc = null;
+      try {
+        const moveGoogleDocResponse = await axios({
+          method: "patch",
+          url: `https://www.googleapis.com/drive/v3/files/${savedGoogleDocFileInfo.id}?supportsAllDrives=true&removeParents=${savedGoogleDocFileInfo.parents[0]}&addParents=${folderId}`,
+          headers: {
+            Authorization: `Bearer ${user.googleDrive.accessToken}`,
+          },
+        });
+        if (moveGoogleDocResponse.status === 200) {
+          movedGoogleDoc = moveGoogleDocResponse.data;
+        }
+        if (moveGoogleDocResponse.status !== 200) {
+          movedGoogleDoc = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE"
+          );
+          try {
+            const moveGoogleDocResponse = await axios({
+              method: "patch",
+              url: `https://www.googleapis.com/drive/v3/files/${savedGoogleDocFileInfo.id}?supportsAllDrives=true&removeParents=${savedGoogleDocFileInfo.parents[0]}&addParents=${folderId}`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+              },
+            });
+            if (moveGoogleDocResponse.status === 200) {
+              movedGoogleDoc = moveGoogleDocResponse.data;
+            }
+            if (moveGoogleDocResponse.status !== 200) {
+              movedGoogleDoc = null;
+            }
+          } catch (err) {
+            movedGoogleDoc = null;
+          }
+        } else {
+          movedGoogleDoc = null;
+        }
+      }
+
+      if (!movedGoogleDoc)
+        return {
+          error: true,
+          message:
+            "Saved Google Doc, but failed to move it into user selected folder",
+        };
+    }
+
+    if (user.notesStorage.current === "wrike") {
+      const wrikeTask = {};
+      wrikeTask.title = notesTitle;
+      wrikeTask.description = `<h4><b>Attendees</b></h4><ul>`;
+      wrikeTask.description += `<li><a href="mailto:${calendarEvent.organizer.email}">${calendarEvent.organizer.email}</a></li>`;
+      if (calendarEvent.attendees) {
+        calendarEvent.attendees.forEach((obj) => {
+          wrikeTask.description += `<li><a href="mailto:${obj.email}">${obj.email}</a></li>`;
+        });
+      }
+      wrikeTask.description += `</ul><h4><b>Meeting Notes</b></h4><ul><label><li></li></label></ul><h4><b>Action Items</b></h4><ul class='checklist' style='list-style-type: none;'><li><label><input type='checkbox' /></label></li></ul>`;
+      wrikeTask.dates = {};
+      wrikeTask.dates.type = "Planned";
+      wrikeTask.dates.duration = DateTime.fromISO(calendarEvent.end.dateTime)
+        .diff(DateTime.fromISO(calendarEvent.start.dateTime), "minutes")
+        .toObject().minutes;
+      wrikeTask.dates.start = DateTime.fromISO(calendarEvent.start.dateTime)
+        .toISO({ includeOffset: false })
+        .slice(0, -4);
+      wrikeTask.dates.due = DateTime.fromISO(calendarEvent.end.dateTime)
+        .toISO({ includeOffset: false })
+        .slice(0, -4);
+
+      wrikeTask.responsibles = [];
+
+      let wrikeUserId = null;
+      try {
+        const wrikeUserIdResponse = await axios({
+          method: "get",
+          url: `https://${user.wrike.apiHost}/api/v4/contacts?me=true`,
+          headers: {
+            Authorization: `Bearer ${user.wrike.accessToken}`,
+          },
+        });
+        if (wrikeUserIdResponse.status === 200) {
+          wrikeUserId = wrikeUserIdResponse.data.data[0].id;
+        }
+        if (wrikeUserIdResponse.status !== 200) {
+          wrikeUserId = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "WRIKE"
+          );
+          try {
+            const wrikeUserIdResponse = await axios({
+              method: "get",
+              url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/contacts?me=true`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+              },
+            });
+            if (wrikeUserIdResponse.status === 200) {
+              wrikeUserId = wrikeUserIdResponse.data.data[0].id;
+            }
+            if (wrikeUserIdResponse.status !== 200) {
+              wrikeUserId = null;
+            }
+          } catch (err) {
+            wrikeUserId = null;
+          }
+        } else {
+          wrikeUserId = null;
+        }
+      }
+      if (!wrikeUserId)
+        return {
+          error: true,
+          message: "Failed to retrieve Wrike User ID",
+        };
+      wrikeTask.responsibles.push(wrikeUserId);
+
+      let createdWrikeTask = null;
+      try {
+        const wrikeCreateTaskResponse = await axios({
+          method: "post",
+          url: `https://${user.wrike.apiHost}/api/v4/folders/${folderId}/tasks`,
+          headers: {
+            Authorization: `Bearer ${user.wrike.accessToken}`,
+          },
+          data: wrikeTask,
+        });
+        if (wrikeCreateTaskResponse.status === 200) {
+          createdWrikeTask = wrikeCreateTaskResponse.data;
+        }
+        if (wrikeCreateTaskResponse.status !== 200) {
+          createdWrikeTask = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "WRIKE"
+          );
+          try {
+            const wrikeCreateTaskResponse = await axios({
+              method: "post",
+              url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${folderId}/tasks`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+              },
+              data: wrikeTask,
+            });
+            if (wrikeCreateTaskResponse.status === 200) {
+              createdWrikeTask = wrikeCreateTaskResponse.data;
+            }
+            if (wrikeCreateTaskResponse.status !== 200) {
+              createdWrikeTask = null;
+            }
+          } catch (err) {
+            createdWrikeTask = null;
+          }
+        } else {
+          createdWrikeTask = null;
+        }
+      }
+      if (!createdWrikeTask)
+        return {
+          error: true,
+          message: "Failed to create Wrike task",
+        };
+
+      notesPermalink = createdWrikeTask.data[0].permalink;
+    }
+
+    const googleNotesEventCreationData = {
+      summary: "_Notes",
+      description: notesPermalink,
+      start: {
+        dateTime: calendarEvent.start.dateTime,
+      },
+      end: {
+        dateTime: calendarEvent.end.dateTime,
+      },
+      reminders: {
+        useDefault: false,
+      },
+      colorId: "8",
+    };
+
+    let googleNotesEvent = null;
+    try {
+      const googleCreateNotesEventResponse = await axios({
+        method: "post",
+        url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+        headers: {
+          Authorization: `Bearer ${user.googleCalendar.accessToken}`,
+        },
+        data: googleNotesEventCreationData,
+      });
+      if (googleCreateNotesEventResponse.status === 200) {
+        googleNotesEvent = googleCreateNotesEventResponse.data;
+      }
+      if (googleCreateNotesEventResponse.status !== 200) {
+        googleNotesEvent = null;
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        const tokenService = new TokenService();
+        const userWithRefreshedToken = await tokenService.refreshTokenNext(
+          user,
+          "GOOGLE"
+        );
+        try {
+          const googleCreateNotesEventResponse = await axios({
+            method: "post",
+            url: `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleCalendar.accessToken}`,
+            },
+            data: googleNotesEventCreationData,
+          });
+          if (googleCreateNotesEventResponse.status === 200) {
+            googleNotesEvent = googleCreateNotesEventResponse.data;
+          }
+          if (googleCreateNotesEventResponse.status !== 200) {
+            googleNotesEvent = null;
+          }
+        } catch (err) {
+          googleNotesEvent = null;
+        }
+      } else {
+        googleNotesEvent = null;
+      }
+    }
+
+    if (!googleNotesEvent)
+      response.json({
+        error: true,
+        message:
+          "Failed to create Google '_Notes' Event w/ Permalink to Notes File",
+      });
+
+    if (googleNotesEvent)
+      response.json({
+        success: true,
+        message: "Created Google '_Notes' Event w/ Permalink to Notes File!",
+      });
   },
 };
