@@ -67,7 +67,6 @@ module.exports = {
 
   googleCalendars: async (request, response) => {
     const user = request.user;
-    console.log("user", user);
     try {
       const res = await axios({
         method: "get",
@@ -276,52 +275,407 @@ module.exports = {
     response.json(user.googleCalendar.defaultCalId);
   },
 
+  notesStorage: async (request, response) => {
+    const { location } = request.query;
+    const user = request.user;
+
+    const userDoc = await NextUser.findOne({ id: user.id });
+
+    if (location === "googleDrive") {
+      userDoc.notesStorage.current = "googleDrive";
+      await userDoc.save();
+      response.json({ status: 200, message: "success" });
+    }
+    if (location === "wrike") {
+      userDoc.notesStorage.current = "wrike";
+      await userDoc.save();
+      response.json({ status: 200, message: "success" });
+    }
+  },
+
   getFolders: async (request, response) => {
-    response.json([
-      {
-        id: "test1",
-        name: "Test 1",
-        hasChildFolders: true,
-        children: [
-          {
-            id: "subtest1",
-            name: "Sub Test 1",
-            hasChildFolders: true,
-            children: [
-              {
-                id: "subsubtest1",
-                name: "Sub Sub Test 1",
-                hasChildFolders: false,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "test2",
-        name: "Test 2",
-        hasChildFolders: true,
-        children: [
-          { id: "subtest1", name: "Sub Test 1", hasChildFolders: false },
-        ],
-      },
-      {
-        id: "test3",
-        name: "Test 3",
-        hasChildFolders: true,
-        children: [
-          { id: "subtest1", name: "Sub Test 1", hasChildFolders: false },
-        ],
-      },
-      {
-        id: "test4",
-        name: "Test 4",
-        hasChildFolders: true,
-        children: [
-          { id: "subtest1", name: "Sub Test 1", hasChildFolders: false },
-        ],
-      },
-    ]);
+    const { location, folderId } = request.query;
+    const user = request.user;
+
+    if (location === "googleDrive") {
+      if (!folderId) {
+        // return top level drives
+        try {
+          const res = await axios({
+            method: "get",
+            url: "https://www.googleapis.com/drive/v3/drives",
+            headers: {
+              Authorization: `Bearer ${user.googleDrive.accessToken}`,
+            },
+          });
+
+          if (res.data.nextPageToken) {
+            console.log("Multi-page response");
+          }
+
+          if (!res.data.nextPageToken) {
+            let driveResponse = res.data.drives.map((drive) => {
+              return {
+                id: drive.id,
+                name: drive.name,
+              };
+            });
+            driveResponse.push({
+              id: "root",
+              name: "My Drive",
+              hasChildFolders: false,
+            });
+            const findIfHasChildFolders = await Promise.all(
+              driveResponse.map((drive) => {
+                let url = `https://www.googleapis.com/drive/v2/files/${
+                  drive.id
+                }/children?q=${encodeURIComponent(
+                  "mimeType = 'application/vnd.google-apps.folder'"
+                )}`;
+                let promise = axios({
+                  method: "get",
+                  url,
+                  headers: {
+                    Authorization: `Bearer ${user.googleDrive.accessToken}`,
+                  },
+                });
+                return promise;
+              })
+            );
+            let folderHasChildren = findIfHasChildFolders.map(
+              (promiseResponse) => {
+                return promiseResponse.data.items.length >= 1 ? true : false;
+              }
+            );
+            driveResponse = driveResponse.map((folder, index) => {
+              return { ...folder, hasChildFolders: folderHasChildren[index] };
+            });
+            response.json(driveResponse);
+          }
+        } catch (err) {
+          if (err.response && err.response.status === 401) {
+            const tokenService = new TokenService();
+            const userWithRefreshedToken = await tokenService.refreshTokenNext(
+              user,
+              "GOOGLE",
+              "DRIVE"
+            );
+
+            try {
+              const res = await axios({
+                method: "get",
+                url: "https://www.googleapis.com/drive/v3/drives",
+                headers: {
+                  Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+                },
+              });
+
+              if (res.data.nextPageToken) {
+                console.log("Multi-page response");
+              }
+
+              if (!res.data.nextPageToken) {
+                let driveResponse = res.data.drives.map((drive) => {
+                  return {
+                    id: drive.id,
+                    name: drive.name,
+                  };
+                });
+                driveResponse.push({
+                  id: "root",
+                  name: "My Drive",
+                  hasChildFolders: false,
+                });
+                const findIfHasChildFolders = await Promise.all(
+                  driveResponse.map((drive) => {
+                    let url = `https://www.googleapis.com/drive/v2/files/${
+                      drive.id
+                    }/children?q=${encodeURIComponent(
+                      "mimeType = 'application/vnd.google-apps.folder'"
+                    )}`;
+                    let promise = axios({
+                      method: "get",
+                      url,
+                      headers: {
+                        Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+                      },
+                    });
+                    return promise;
+                  })
+                );
+                let folderHasChildren = findIfHasChildFolders.map(
+                  (promiseResponse) => {
+                    return promiseResponse.data.items.length >= 1
+                      ? true
+                      : false;
+                  }
+                );
+                driveResponse = driveResponse.map((folder, index) => {
+                  return {
+                    ...folder,
+                    hasChildFolders: folderHasChildren[index],
+                  };
+                });
+                response.json(driveResponse);
+              }
+            } catch (err) {
+              response.json(null);
+            }
+          }
+          response.json(null);
+        }
+      }
+
+      if (folderId) {
+        try {
+          const res = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/drive/v3/files?includeItemsFromAllDrives=true&supportsAllDrives=true&q=${encodeURIComponent(
+              `'${folderId}' in parents and mimeType = 'application/vnd.google-apps.folder'`
+            )}`,
+            headers: {
+              Authorization: `Bearer ${user.googleDrive.accessToken}`,
+            },
+          });
+
+          if (res.data.nextPageToken) {
+            console.log("Multi-page response");
+          }
+
+          if (!res.data.nextPageToken) {
+            let childFolders = res.data.files.map((file) => {
+              return {
+                id: file.id,
+                name: file.name,
+              };
+            });
+            const checkChildFoldersChildren = await Promise.all(
+              childFolders.map((file) => {
+                let url = `https://www.googleapis.com/drive/v2/files/${
+                  file.id
+                }/children?q=${encodeURIComponent(
+                  "mimeType = 'application/vnd.google-apps.folder'"
+                )}`;
+                let promise = axios({
+                  method: "get",
+                  url,
+                  headers: {
+                    Authorization: `Bearer ${user.googleDrive.accessToken}`,
+                  },
+                });
+                return promise;
+              })
+            );
+
+            let folderHasChildren = checkChildFoldersChildren.map(
+              (promiseResponse) => {
+                return promiseResponse.data.items.length >= 1 ? true : false;
+              }
+            );
+            childFolders = childFolders.map((folder, index) => {
+              return { ...folder, hasChildFolders: folderHasChildren[index] };
+            });
+            response.json(childFolders);
+          }
+        } catch (err) {
+          if (err.response && err.response.status === 401) {
+            const tokenService = new TokenService();
+            const userWithRefreshedToken = await tokenService.refreshTokenNext(
+              user,
+              "GOOGLE",
+              "DRIVE"
+            );
+
+            try {
+              const response = await axios({
+                method: "get",
+                url: `https://www.googleapis.com/drive/v3/files?includeItemsFromAllDrives=true&supportsAllDrives=true&q=${encodeURIComponent(
+                  `'${folderId}' in parents and mimeType = 'application/vnd.google-apps.folder'`
+                )}`,
+                headers: {
+                  Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+                },
+              });
+
+              if (response.data.nextPageToken) {
+                console.log("Multi-page response");
+              }
+
+              if (!response.data.nextPageToken) {
+                let childFolders = response.data.files.map((file) => {
+                  return {
+                    id: file.id,
+                    name: file.name,
+                  };
+                });
+                const checkChildFoldersChildren = await Promise.all(
+                  childFolders.map((file) => {
+                    let url = `https://www.googleapis.com/drive/v2/files/${
+                      file.id
+                    }/children?q=${encodeURIComponent(
+                      "mimeType = 'application/vnd.google-apps.folder'"
+                    )}`;
+                    let promise = axios({
+                      method: "get",
+                      url,
+                      headers: {
+                        Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+                      },
+                    });
+                    return promise;
+                  })
+                );
+
+                let folderHasChildren = checkChildFoldersChildren.map(
+                  (promiseResponse) => {
+                    return promiseResponse.data.items.length >= 1
+                      ? true
+                      : false;
+                  }
+                );
+                childFolders = childFolders.map((folder, index) => {
+                  return {
+                    ...folder,
+                    hasChildFolders: folderHasChildren[index],
+                  };
+                });
+                response.json(childFolders);
+              }
+            } catch (err) {
+              response.json(null);
+            }
+          } else {
+            response.json(null);
+          }
+        }
+      }
+    }
+
+    if (location === "wrike") {
+      if (!folderId) {
+        let folderResponse = null;
+        try {
+          const response = await axios({
+            method: "get",
+            url: `https://${user.wrike.apiHost}/api/v4/spaces`,
+            headers: {
+              Authorization: `Bearer ${user.wrike.accessToken}`,
+            },
+          });
+          folderResponse = { spaces: response.data };
+        } catch (err) {
+          if (err.response && err.response.status === 401) {
+            const tokenService = new TokenService();
+            const userWithRefreshedToken = await tokenService.refreshTokenNext(
+              user,
+              "WRIKE"
+            );
+
+            try {
+              const response = await axios({
+                method: "get",
+                url: `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/spaces`,
+                headers: {
+                  Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+                },
+              });
+              folderResponse = { spaces: response.data };
+            } catch (err) {
+              folderResponse = null;
+            }
+          } else {
+            folderResponse = null;
+          }
+        }
+
+        if (folderResponse) {
+          // refresh wrike token just in case its about to expire before Promise.all (if one promise fails, they all fail)
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "WRIKE"
+          );
+
+          let folderNamesAndIds = folderResponse.spaces.data.map((space) => {
+            return { name: space.title, id: space.id };
+          });
+
+          let spaceChildFolderRequests = folderResponse.spaces.data.map(
+            (space) => {
+              let url = `https://${userWithRefreshedToken.wrike.apiHost}/api/v4/folders/${space.id}/folders`;
+              let promise = axios({
+                method: "get",
+                url,
+                headers: {
+                  Authorization: `Bearer ${userWithRefreshedToken.wrike.accessToken}`,
+                },
+              });
+              return promise;
+            }
+          );
+          let spaceFolders = await Promise.all(spaceChildFolderRequests);
+          let spaceHasChildren = spaceFolders.map((spaceFolder) => {
+            return spaceFolder.data.data[0].childIds == 0 ? false : true;
+          });
+          folderResponse = folderNamesAndIds.map((folder, index) => {
+            return { ...folder, hasChildFolders: spaceHasChildren[index] };
+          });
+        }
+
+        response.json(folderResponse);
+      }
+    }
+
+    if (!location) {
+      // user has not authenticated with a notes location
+      response.json(null);
+    }
+
+    // response.json([
+    //   {
+    //     id: "test1",
+    //     name: "Test 1",
+    //     hasChildFolders: true,
+    //     children: [
+    //       {
+    //         id: "subtest1",
+    //         name: "Sub Test 1",
+    //         hasChildFolders: true,
+    //         children: [
+    //           {
+    //             id: "subsubtest1",
+    //             name: "Sub Sub Test 1",
+    //             hasChildFolders: false,
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     id: "test2",
+    //     name: "Test 2",
+    //     hasChildFolders: true,
+    //     children: [
+    //       { id: "subtest1", name: "Sub Test 1", hasChildFolders: false },
+    //     ],
+    //   },
+    //   {
+    //     id: "test3",
+    //     name: "Test 3",
+    //     hasChildFolders: true,
+    //     children: [
+    //       { id: "subtest1", name: "Sub Test 1", hasChildFolders: false },
+    //     ],
+    //   },
+    //   {
+    //     id: "test4",
+    //     name: "Test 4",
+    //     hasChildFolders: true,
+    //     children: [
+    //       { id: "subtest1", name: "Sub Test 1", hasChildFolders: false },
+    //     ],
+    //   },
+    // ]);
   },
 
   googleDriveAuth: (request, response) => {

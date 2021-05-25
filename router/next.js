@@ -11,6 +11,7 @@ router.get("/google/cb", nextController.googleAuthCallback);
 router.get("/user", withJwt, nextController.googleUser);
 router.get("/calendars", withJwt, nextController.googleCalendars);
 router.post("/calendars/default", withJwt, nextController.defaultCalendar);
+router.get("/notes/storage", withJwt, nextController.notesStorage);
 router.get("/events", withJwt, nextController.googleEvents);
 router.get("/google/drive", jwtQuery, nextController.googleDriveAuth);
 router.get("/google/drive/cb", nextController.googleDriveAuthCallback);

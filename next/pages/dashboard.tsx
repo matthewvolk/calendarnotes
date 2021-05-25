@@ -13,11 +13,16 @@ function Dashboard() {
   const [currentCal, setCurrentCal] = useState(null);
   const [currentEventId, setCurrentEventId] = useState(null);
   const [notesLocation, setNotesLocation] = useState(null);
+  /**
+   * @todo [DONE] - if someone selects 'folderId' and then changes
+   * to a different notes location, must do: setFolderId(null)
+   * otherwise createNotes will send a call to one location
+   * with the folderId for a folder in another location
+   */
   const [folderId, setFolderId] = useState(null);
   console.log("Current Calendar:", currentCal);
   console.log("Current Folder:", folderId);
   console.log("Current Event:", currentEventId);
-  console.log("notesLocation", notesLocation);
 
   useEffect(() => {
     const getUser = async () => {
@@ -48,12 +53,17 @@ function Dashboard() {
     }
   }, [user]);
 
-  const googleDrive = (e) => {
+  const googleDrive = async (e) => {
     e.preventDefault();
     if (notesLocation?.available?.some((loc) => loc.id === "googleDrive")) {
       if (notesLocation?.current !== "googleDrive") {
+        await authFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/next/notes/storage?location=googleDrive`,
+          token
+        );
         setNotesLocation({ ...notesLocation, current: "googleDrive" });
-        // tell folder tree to get new folder tree
+        setFolderId(null);
+        return;
       }
       console.log("current notes location already googleDrive");
       return;
@@ -64,12 +74,17 @@ function Dashboard() {
     );
   };
 
-  const loginWithWrike = (e) => {
+  const loginWithWrike = async (e) => {
     e.preventDefault();
     if (notesLocation?.available?.some((loc) => loc.id === "wrike")) {
       if (notesLocation?.current !== "wrike") {
+        await authFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/next/notes/storage?location=wrike`,
+          token
+        );
         setNotesLocation({ ...notesLocation, current: "wrike" });
-        // tell folder tree to get new folder tree
+        setFolderId(null);
+        return;
       }
       console.log("current notes location already wrike");
       return;
@@ -100,7 +115,11 @@ function Dashboard() {
         <br />
         <button onClick={googleDrive}>Sign in with Google Drive</button>
         <button onClick={loginWithWrike}>Sign in with Wrike</button>
-        <FolderSelector setFolderId={setFolderId} />
+        <FolderSelector
+          folderId={folderId}
+          setFolderId={setFolderId}
+          notesLocation={notesLocation}
+        />
         <Events currentCal={currentCal} setCurrentEventId={setCurrentEventId} />
       </div>
     );

@@ -61,13 +61,13 @@ class TokenService {
 
       if (provider === "WRIKE") {
         userWithRefreshedToken = await NextUserModel.findOneAndUpdate(
-          { "google.id": user.google.id },
+          { id: user.id },
           {
             "wrike.accessToken": response.data.access_token,
             "wrike.refreshToken": response.data.refresh_token,
             "wrike.apiHost": response.data.host,
             "wrike.tokenType": response.data.token_type,
-            "wrike.tokenExpiresIn": response.data.expires_in,
+            "wrike.expiresIn": response.data.expires_in,
           },
           { new: true }
         ).exec();
