@@ -54,7 +54,9 @@ module.exports = {
         await newUser.save();
       }
       const token = jwt.sign({ id: googleUser.id }, "SECRET");
-      response.redirect(`http://localhost:3000/dashboard?token=${token}`);
+      response.redirect(
+        `${process.env.GOOGLE_OAUTH_REDIRECT_NEXT}?token=${token}`
+      );
     }
     if (error) {
       console.error(error);
