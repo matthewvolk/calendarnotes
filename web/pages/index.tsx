@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div>
       <Nav />
-      <h1>CalendarNotes Homepage</h1>
+      <h1>CalendarNotes</h1>
     </div>
   );
 }
