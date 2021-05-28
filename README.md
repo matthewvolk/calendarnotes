@@ -55,7 +55,9 @@ Meeting Notes Data is defined as data pertaining to the meeting notes "events" t
 
 Because there is no limit to the number of meeting notes the user can create, and because the number of columns associated with each meeting note is small, I chose MongoDB as a document-based storage system. Each user document stored in MongoDB has a subdocument called "meetingNotes" that contains information about every single meeting notes event created by the user using the application.
 
-<!-- ### Client/Server Relationship
+<!--
+
+### Client/Server Relationship
 
 ## Application Architecture
 
@@ -69,8 +71,12 @@ Because there is no limit to the number of meeting notes the user can create, an
 
 ### Authorization/Authentication
 
+#### JSON Web Tokens
+
 ### SOLID Principles
 
 ### Testing (TDD, Red Green Refactor)
 
-### OAuth2 Flows with Access and Refresh Token Exchanges -->
+### OAuth2 Flows with Access and Refresh Token Exchanges
+
+-->
