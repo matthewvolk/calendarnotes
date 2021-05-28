@@ -4,13 +4,13 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const redis = require("redis");
-const session = require("express-session");
-const RedisStore = require("connect-redis")(session);
+// const redis = require("redis");
+// const session = require("express-session");
+// const RedisStore = require("connect-redis")(session);
 const mongoose = require("mongoose");
 
-const passport = require("passport");
-require("./config/passport")(passport);
+// const passport = require("passport");
+// require("./config/passport")(passport);
 
 const port = process.env.PORT || 5000;
 
@@ -26,30 +26,28 @@ mongoose
   });
 
 app.use(express.static(path.join(__dirname, "client/build")));
-app.use(
-  session({
-    store: !!process.env.REDIS_URL
-      ? new RedisStore({ client: redis.createClient(process.env.REDIS_URL) })
-      : null,
-    secret: process.env.SESSION_SECRET,
-    resave: process.env.REDIS_URL ? false : true,
-    saveUninitialized: false,
-    cooke: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 1000 * 60 * 60 * 24 * 7 * 365,
-    },
-  })
-);
+// app.use(
+//   session({
+//     store: !!process.env.REDIS_URL
+//       ? new RedisStore({ client: redis.createClient(process.env.REDIS_URL) })
+//       : null,
+//     secret: process.env.SESSION_SECRET,
+//     resave: process.env.REDIS_URL ? false : true,
+//     saveUninitialized: false,
+//     cooke: {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       maxAge: 1000 * 60 * 60 * 24 * 7 * 365,
+//     },
+//   })
+// );
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(passport.initialize());
-app.use(passport.session());
-if (process.env.NODE_ENV === "development") {
-  app.use(
-    require("cors")({ origin: "http://localhost:3000", credentials: true })
-  );
-}
+// app.use(passport.initialize());
+// app.use(passport.session());
+app.use(
+  require("cors")({ origin: process.env.CORS_ORIGIN, credentials: true })
+);
 
 app.use("/api", require("./router"));
 
