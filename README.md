@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [Contributing](#contributing)
+- [Deployment](#deployment)
 - [Folder Structure](#folder-structure)
 - [Roadmap](#roadmap)
 - [What I Learned Building this Project](#what-i-learned-building-this-project)
@@ -17,6 +18,18 @@
 6. Generate localhost self-signed certificate: [Example](https://stackoverflow.com/a/32169444) (required to interact with Wrike API)
 7. `npm run develop`
 
+## ☁️ Deployment
+
+**Server**
+
+- Commit all changes and push to `master` branch
+- Configure SSH Config for production server and run `./deploy.sh`
+
+**Web (Next.js)**
+
+- Commit all changes and push to `master` branch
+- Vercel will deploy to production automatically when it detects changes to `master` branch
+
 ## 🗂 Folder structure
 
 ```
@@ -28,6 +41,7 @@ calendarnotes/
 ├── models/        # Mongoose.js models
 ├── router/        # Express.js routes
 ├── services/      # Business logic for Express.js controllers
+├── web/           # Frontend Next.js app
 ```
 
 ## 🛣 Roadmap
