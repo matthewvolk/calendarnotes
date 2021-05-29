@@ -1,4 +1,4 @@
-import Nav from "../components/nav";
+import Layout from "../components/layout";
 
 export default function Login() {
   const logInWithGoogle = (e) => {
@@ -9,10 +9,10 @@ export default function Login() {
   };
 
   return (
-    <div>
-      <Nav />
-      <h1>CalendarNotes Login</h1>
-      <button onClick={logInWithGoogle}>Login</button>
-    </div>
+    <Layout>
+      {/* <h1>CalendarNotes Login</h1> */}
+      <button onClick={logInWithGoogle}>Click Here to Login with Google</button>
+      <br />
+    </Layout>
   );
 }

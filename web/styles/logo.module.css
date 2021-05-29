@@ -1,0 +1,15 @@
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+.text {
+  font-weight: 700;
+  font-size: 1.75rem;
+}
+
+@media only screen and (max-width: 528px) {
+  .text {
+    display: none;
+  }
+}

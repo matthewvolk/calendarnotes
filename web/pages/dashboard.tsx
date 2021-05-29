@@ -6,6 +6,7 @@ import authFetch from "../utils/authFetch";
 import { useToken } from "../context/token";
 import { useEffect, useState } from "react";
 import FolderSelector from "../components/folderSelector";
+import Logout from "../components/logout";
 
 function Dashboard() {
   const { token } = useToken();
@@ -92,7 +93,7 @@ function Dashboard() {
   if (user) {
     return (
       <div>
-        <Nav />
+        <Logout />
         <h1>CalendarNotes Dashboard</h1>
         <img src={user.picture} alt="Your Profile Picture" />
         <p>

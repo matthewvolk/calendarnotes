@@ -1,10 +1,10 @@
-import Nav from "../components/nav";
+import Headline from "../components/headline";
+import Layout from "../components/layout";
 
 export default function Terms() {
   return (
-    <div>
-      <Nav />
-      <h1>CalendarNotes Terms of Service</h1>
-    </div>
+    <Layout>
+      <Headline>Terms of Service</Headline>
+    </Layout>
   );
 }

@@ -1,0 +1,42 @@
+.flex {
+  display: flex;
+  justify-content: space-around;
+}
+
+.imageContainer {
+  min-width: 600px;
+}
+
+.textCenter {
+  text-align: center;
+}
+
+.my5 {
+  margin: 5rem 0;
+}
+
+.textContainer {
+  max-width: 500px;
+}
+
+.heading2 {
+  font-size: 2rem;
+}
+
+.blurb {
+  color: #525252;
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+
+@media only screen and (max-width: 1250px) {
+  .flex {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .imageContainer {
+    min-width: 90%;
+  }
+}

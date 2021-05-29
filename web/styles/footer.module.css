@@ -1,0 +1,14 @@
+.footer {
+  display: flex;
+  justify-content: center;
+  margin: 6rem 0 3rem 0;
+  color: #525252;
+}
+
+.link {
+  text-decoration: underline;
+}
+
+.link:first-of-type {
+  margin-right: 1rem;
+}

@@ -1,0 +1,13 @@
+.headline {
+  margin: 5rem 0;
+  font-weight: 900;
+  font-size: 3rem;
+  text-align: center;
+}
+
+@media only screen and (max-width: 740px) {
+  .headline {
+    margin: 5rem 0;
+    font-size: 2rem;
+  }
+}

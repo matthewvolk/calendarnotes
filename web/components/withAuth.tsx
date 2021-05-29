@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useSaveTokenFromQueryParams } from "../components/auth/useSaveTokenFromQueryParams";
+import { useSaveTokenFromQueryParams } from "../auth/useSaveTokenFromQueryParams";
 
 const withAuth = (WrappedComponent) => {
   return (props) => {

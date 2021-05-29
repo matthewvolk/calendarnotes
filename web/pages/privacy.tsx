@@ -1,10 +1,10 @@
-import Nav from "../components/nav";
+import Headline from "../components/headline";
+import Layout from "../components/layout";
 
 export default function Privacy() {
   return (
-    <div>
-      <Nav />
-      <h1>CalendarNotes Privacy Policy</h1>
-    </div>
+    <Layout>
+      <Headline>Privacy Policy</Headline>
+    </Layout>
   );
 }

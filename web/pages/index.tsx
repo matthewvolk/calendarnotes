@@ -1,13 +1,14 @@
-import Nav from "../components/nav";
+import Layout from "../components/layout";
+import Headline from "../components/headline";
+import HomepageContent from "../components/homepageContent";
 
 export default function Home() {
   return (
-    <div>
-      <Nav />
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <img src="/calendar.svg" alt="Logo" height="70" />{" "}
-        <h1>CalendarNotes</h1>
-      </div>
-    </div>
+    <Layout>
+      <Headline>
+        Instantly Generate Meeting Notes for Google Calendar Events
+      </Headline>
+      <HomepageContent />
+    </Layout>
   );
 }
