@@ -9,6 +9,8 @@
 
 .textCenter {
   text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
 }
 
 .my5 {
@@ -29,11 +31,29 @@
   font-weight: 300;
 }
 
+.shadow {
+  box-shadow: 0px 4px 25px rgba(0, 0, 0, 0.2);
+}
+
+.radius img {
+  border-radius: 20rem;
+}
+
 @media only screen and (max-width: 1250px) {
   .flex {
     flex-direction: column;
     text-align: center;
     align-items: center;
+  }
+
+  .textCenter {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .my5 {
+    margin: 2rem 0 5rem 0;
   }
 
   .imageContainer {
