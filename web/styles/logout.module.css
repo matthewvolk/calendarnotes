@@ -16,7 +16,7 @@
   /* inherit font & color from ancestor */
   color: inherit;
   font: inherit;
-  font-weight: 500;
+  font-weight: 400;
 
   /* Normalize `line-height`. Cannot be changed from `normal` in Firefox 4+. */
   line-height: normal;

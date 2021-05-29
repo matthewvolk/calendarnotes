@@ -8,6 +8,10 @@ export default function Login() {
     <Layout>
       <Head>
         <title>CalendarNotes - Log In</title>
+        <meta
+          name="description"
+          content="CalendarNotes creates meeting notes in your Google Drive or cloud storage location of choice, and makes them easily accessible right from your Google Calendar."
+        />
       </Head>
       <Headline>Log In</Headline>
       <div style={{ textAlign: "center" }}>

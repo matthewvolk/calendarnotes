@@ -7,6 +7,7 @@ import { useToken } from "../context/token";
 import { useEffect, useState } from "react";
 import FolderSelector from "../components/folderSelector";
 import Logout from "../components/logout";
+import Image from "next/image";
 
 function Dashboard() {
   const { token } = useToken();
@@ -96,17 +97,30 @@ function Dashboard() {
         <Head>
           <title>CalendarNotes - Dashboard</title>
         </Head>
-        <Logout />
-        <h1>CalendarNotes Dashboard</h1>
-        <img src={user.picture} alt="Your Profile Picture" />
-        <p>
-          Hello, <a href={`mailto:${user.email}`}>{user.name}</a>
-        </p>
-        <CalendarSelector
-          currentCal={currentCal}
-          setCurrentCal={setCurrentCal}
-        />
-        <br />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Image src="/calendar.svg" alt="Logo" height="65" width="65" />
+          <CalendarSelector
+            currentCal={currentCal}
+            setCurrentCal={setCurrentCal}
+          />
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Logout />
+            {/* @todo https://nextjs.org/docs/api-reference/next/image#src */}
+            <img
+              src={user.picture}
+              alt="Your Profile Picture"
+              height="45"
+              width="45"
+              style={{ borderRadius: "2rem", margin: "0 1rem" }}
+            />
+          </div>
+        </div>
         <button onClick={googleDrive}>Google Drive</button>
         <button onClick={wrike}>Wrike</button>
         <FolderSelector

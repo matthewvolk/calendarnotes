@@ -8,6 +8,10 @@ export default function Signup() {
     <Layout>
       <Head>
         <title>CalendarNotes - Sign Up</title>
+        <meta
+          name="description"
+          content="CalendarNotes creates meeting notes in your Google Drive or cloud storage location of choice, and makes them easily accessible right from your Google Calendar."
+        />
       </Head>
       <Headline>Sign Up</Headline>
       <div style={{ textAlign: "center" }}>

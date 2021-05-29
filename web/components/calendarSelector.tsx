@@ -48,7 +48,7 @@ export default function CalendarSelector({ currentCal, setCurrentCal }) {
   };
 
   return (
-    <>
+    <div>
       <label htmlFor="calendar-select">Choose a Calendar:</label>
       <select
         name="calendars"
@@ -68,6 +68,6 @@ export default function CalendarSelector({ currentCal, setCurrentCal }) {
             );
           })}
       </select>
-    </>
+    </div>
   );
 }
