@@ -256,7 +256,18 @@ module.exports = {
             },
           });
           if (res.status === 200) {
-            response.json(res.data.items);
+            response.json({
+              startOfWeekISO: startOfWeek,
+              startOfWeek: userFriendlyStartOfWeek,
+              events: res.data.items
+                .filter((obj) => obj.start)
+                .sort((a, b) => {
+                  return (
+                    new Date(a.start.dateTime).getTime() -
+                    new Date(b.start.dateTime).getTime()
+                  );
+                }),
+            });
           }
           if (res.status !== 200) {
             response.json(null);
