@@ -104,7 +104,18 @@ function Dashboard() {
             justifyContent: "space-between",
           }}
         >
-          <Image src="/calendar.svg" alt="Logo" height="65" width="65" />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginLeft: "0.5rem",
+            }}
+          >
+            <Image src="/calendar.svg" alt="Logo" height="50" width="50" />
+            <p style={{ fontWeight: 600, fontSize: "1.35rem" }}>
+              CalendarNotes
+            </p>
+          </div>
           <CalendarSelector
             currentCal={currentCal}
             setCurrentCal={setCurrentCal}
@@ -115,8 +126,8 @@ function Dashboard() {
             <img
               src={user.picture}
               alt="Your Profile Picture"
-              height="45"
-              width="45"
+              height="40"
+              width="40"
               style={{ borderRadius: "2rem", margin: "0 1rem" }}
             />
           </div>
