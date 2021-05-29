@@ -1,4 +1,4 @@
-import Nav from "../components/nav";
+import Head from "next/head";
 import CalendarSelector from "../components/calendarSelector";
 import Events from "../components/events";
 import withAuth from "../components/withAuth";
@@ -93,6 +93,9 @@ function Dashboard() {
   if (user) {
     return (
       <div>
+        <Head>
+          <title>CalendarNotes - Dashboard</title>
+        </Head>
         <Logout />
         <h1>CalendarNotes Dashboard</h1>
         <img src={user.picture} alt="Your Profile Picture" />

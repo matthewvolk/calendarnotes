@@ -1,17 +1,18 @@
+import Head from "next/head";
+import Headline from "../components/headline";
 import Layout from "../components/layout";
+import GoogleLoginButton from "../components/googleLoginButton";
 
 export default function Login() {
-  const logInWithGoogle = (e) => {
-    e.preventDefault();
-    window.location.assign(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/next/google`
-    );
-  };
-
   return (
     <Layout>
-      {/* <h1>CalendarNotes Login</h1> */}
-      <button onClick={logInWithGoogle}>Click Here to Login with Google</button>
+      <Head>
+        <title>CalendarNotes - Log In</title>
+      </Head>
+      <Headline>Log In</Headline>
+      <div style={{ textAlign: "center" }}>
+        <GoogleLoginButton />
+      </div>
       <br />
     </Layout>
   );
