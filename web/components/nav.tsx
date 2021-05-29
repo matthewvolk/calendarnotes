@@ -48,7 +48,7 @@ export default function Nav() {
           <Link href="/login">
             <button className={styles.button}>Log In</button>
           </Link>
-          <Link href="/login">
+          <Link href="/signup">
             <button className={`${styles.button} ${styles.buttonPrimary}`}>
               Sign Up
             </button>
