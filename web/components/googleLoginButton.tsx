@@ -9,7 +9,7 @@ export default function GoogleLoginButton() {
   };
   return (
     <button className={styles.button} onClick={logInWithGoogle}>
-      Click Here to log in with Google
+      Click here to log in with Google
     </button>
   );
 }
