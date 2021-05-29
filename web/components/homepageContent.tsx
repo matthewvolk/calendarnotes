@@ -9,6 +9,7 @@ export default function HomepageContent() {
           <h2 className={styles.textCenter}>Go from this...</h2>
           <Image
             src="/go-from-this.png"
+            alt="Screenshot of Google Calendar Event details"
             layout="responsive"
             height="320"
             width="526"
@@ -18,6 +19,7 @@ export default function HomepageContent() {
           <h2 className={styles.textCenter}>...to this...</h2>
           <Image
             src="/to-this.png"
+            alt="Screenshot of Google Document demonstrating what this web application can create"
             layout="responsive"
             height="320px"
             width="526px"
@@ -39,6 +41,7 @@ export default function HomepageContent() {
         <div className={styles.imageContainer}>
           <Image
             src="/calendar-management.png"
+            alt="Screenshot of Google Calendar Event with Calendar Notes event added"
             layout="responsive"
             height="212.7px"
             width="526px"
