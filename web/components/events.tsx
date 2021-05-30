@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useToken } from "../context/token";
 import authFetch from "../utils/authFetch";
+import styles from "../styles/events.module.css";
 
 export default function Events({
   currentCal,
@@ -101,13 +102,25 @@ export default function Events({
     >
       <div style={{ display: "flex", alignItems: "center" }}>
         <h2 style={{ margin: "0 1rem 0 0" }}>Events</h2>
-        <button onClick={goToToday}>Today</button>
+        <button className={styles.button} onClick={goToToday}>
+          Today
+        </button>
         <div>
-          <button id="prev" onClick={changeWeek} style={{ margin: "0 1rem" }}>
+          <button
+            className={styles.button}
+            id="prev"
+            onClick={changeWeek}
+            style={{ margin: "0 1rem" }}
+          >
             &lt;
           </button>{" "}
           Week of {events && events?.startOfWeek}
-          <button id="next" onClick={changeWeek} style={{ margin: "0 1rem" }}>
+          <button
+            className={styles.button}
+            id="next"
+            onClick={changeWeek}
+            style={{ margin: "0 1rem" }}
+          >
             &gt;
           </button>
         </div>
@@ -154,6 +167,7 @@ export default function Events({
                   >
                     <div>
                       <button
+                        className={styles.button}
                         onClick={() => {
                           createNotes(event.id, folderId, currentCal);
                         }}

@@ -1,0 +1,39 @@
+.button {
+  border: none;
+  margin: 0;
+  padding: 0 1rem 0 1rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  width: auto;
+  overflow: visible;
+  cursor: pointer;
+
+  background: transparent;
+  background-color: #f0f0f0;
+  transition: background-color 0.15s;
+  border-radius: 0.25rem;
+
+  /* inherit font & color from ancestor */
+  color: inherit;
+  font: inherit;
+  font-weight: 400;
+
+  /* Normalize `line-height`. Cannot be changed from `normal` in Firefox 4+. */
+  line-height: normal;
+
+  /* Corrects font smoothing for webkit */
+  -webkit-font-smoothing: inherit;
+  -moz-osx-font-smoothing: inherit;
+
+  /* Corrects inability to style clickable `input` types in iOS */
+  -webkit-appearance: none;
+}
+
+.button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+.button:hover {
+  background-color: #dfdfdf;
+}
