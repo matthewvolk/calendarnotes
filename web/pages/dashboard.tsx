@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import FolderSelector from "../components/folderSelector";
 import Logout from "../components/logout";
 import Image from "next/image";
+import Header from "../components/header";
 
 function Dashboard() {
   const { token } = useToken();
@@ -93,53 +94,44 @@ function Dashboard() {
 
   if (user) {
     return (
-      <div>
+      <div
+        style={{
+          backgroundColor: "#f0f0f0",
+          display: "grid",
+          gap: "1rem",
+          gridTemplateColumns: "1fr 4fr",
+        }}
+      >
         <Head>
           <title>CalendarNotes - Dashboard</title>
         </Head>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginLeft: "0.5rem",
-            }}
-          >
-            <Image src="/calendar.svg" alt="Logo" height="50" width="50" />
-            <p style={{ fontWeight: 600, fontSize: "1.35rem" }}>
-              CalendarNotes
-            </p>
-          </div>
-          <CalendarSelector
+        <div style={{ gridColumn: "1/3" }}>
+          <Header
             currentCal={currentCal}
             setCurrentCal={setCurrentCal}
+            user={user}
           />
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Logout />
-            {/* @todo https://nextjs.org/docs/api-reference/next/image#src */}
-            <img
-              src={user.picture}
-              alt="Your Profile Picture"
-              height="40"
-              width="40"
-              style={{ borderRadius: "2rem", margin: "0 1rem" }}
-            />
-          </div>
         </div>
-        <button onClick={googleDrive}>Google Drive</button>
-        <button onClick={wrike}>Wrike</button>
-        <FolderSelector
-          folderId={folderId}
-          setFolderId={setFolderId}
-          notesLocation={notesLocation}
-        />
-        <Events currentCal={currentCal} folderId={folderId} />
+        <div
+          style={{
+            backgroundColor: "white",
+          }}
+        >
+          <button onClick={googleDrive}>Google Drive</button>
+          <button onClick={wrike}>Wrike</button>
+          <FolderSelector
+            folderId={folderId}
+            setFolderId={setFolderId}
+            notesLocation={notesLocation}
+          />
+        </div>
+        <div
+          style={{
+            backgroundColor: "white",
+          }}
+        >
+          <Events currentCal={currentCal} folderId={folderId} />
+        </div>
       </div>
     );
   }

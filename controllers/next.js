@@ -435,8 +435,9 @@ module.exports = {
             } catch (err) {
               response.json(null);
             }
+          } else {
+            response.json(null);
           }
-          response.json(null);
         }
       }
 
