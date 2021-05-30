@@ -8,7 +8,7 @@
 
 @media only screen and (max-width: 740px) {
   .headline {
-    margin: 5rem auto;
-    font-size: 2rem;
+    margin: 4rem auto 5rem auto;
+    font-size: 2.75rem;
   }
 }
