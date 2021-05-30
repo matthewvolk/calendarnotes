@@ -21,7 +21,11 @@ export default function Header({ currentCal, setCurrentCal, user }) {
         }}
       >
         <Image src="/calendar.svg" alt="Logo" height="50" width="50" />
-        <p style={{ fontWeight: 600, fontSize: "1.35rem" }}>CalendarNotes</p>
+        <h1
+          style={{ fontWeight: 600, fontSize: "1.35rem", margin: "1.1rem 0" }}
+        >
+          CalendarNotes
+        </h1>
       </div>
       <CalendarSelector currentCal={currentCal} setCurrentCal={setCurrentCal} />
       <div style={{ display: "flex", alignItems: "center" }}>

@@ -100,12 +100,18 @@ export default function Events({
         padding: "1rem",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          margin: "0 0 0.75rem 0",
+        }}
+      >
         <h2 style={{ margin: "0 1rem 0 0" }}>Events</h2>
         <button className={styles.button} onClick={goToToday}>
           Today
         </button>
-        <div>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <button
             className={styles.button}
             id="prev"
@@ -114,7 +120,9 @@ export default function Events({
           >
             &lt;
           </button>{" "}
-          Week of {events && events?.startOfWeek}
+          <div style={{ fontSize: "1.1rem", color: "#3e3e3e" }}>
+            Week of {events && events?.startOfWeek}
+          </div>
           <button
             className={styles.button}
             id="next"
@@ -137,13 +145,28 @@ export default function Events({
                     margin: "1rem 0.75rem",
                     padding: "2rem",
                     borderRadius: "0.5rem",
-                    boxShadow: "0px 0px 13px rgba(0, 0, 0, 0.1)",
+                    boxShadow: "0px 0px 25px rgba(0, 0, 0, 0.05)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center" }}>
+                  <h3
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      margin: "0",
+                      fontSize: "1.15rem",
+                      fontWeight: 500,
+                    }}
+                  >
                     {event.summary}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center" }}>
+                  </h3>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: "1.1rem",
+                      color: "#3e3e3e",
+                    }}
+                  >
                     {new Intl.DateTimeFormat("en-US", {
                       weekday: "long",
                       year: "numeric",

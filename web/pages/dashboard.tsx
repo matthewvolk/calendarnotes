@@ -7,6 +7,7 @@ import withAuth from "../components/withAuth";
 import authFetch from "../utils/authFetch";
 import DashContainer from "../components/dashContainer";
 import FolderSelector from "../components/folderSelector";
+import NotesLocationButton from "../components/notesLocationButton";
 
 function Dashboard() {
   const { token } = useToken();
@@ -126,8 +127,18 @@ function Dashboard() {
                 {chooseNotesLocationAlert}
               </div>
             )}
-            <button onClick={googleDrive}>Google Drive</button>
-            <button onClick={wrike}>Wrike</button>
+            <NotesLocationButton
+              notesLocation={notesLocation}
+              setNotesLocation={setNotesLocation}
+              setFolderId={setFolderId}
+              googleDrive
+            />
+            <NotesLocationButton
+              notesLocation={notesLocation}
+              setNotesLocation={setNotesLocation}
+              setFolderId={setFolderId}
+              wrike
+            />
             <FolderSelector
               folderId={folderId}
               setFolderId={setFolderId}
