@@ -6,6 +6,7 @@ export default function DashContainer({ children }) {
         display: "grid",
         gap: "1rem",
         gridTemplateColumns: "1fr 4fr",
+        gridTemplateRows: "fit-content(100%) auto",
         height: "100vh",
       }}
     >

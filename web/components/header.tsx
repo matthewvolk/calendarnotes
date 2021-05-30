@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import CalendarSelector from "./calendarSelector";
 import Logout from "./logout";
 
@@ -31,13 +32,19 @@ export default function Header({ currentCal, setCurrentCal, user }) {
       <div style={{ display: "flex", alignItems: "center" }}>
         <Logout />
         {/* @todo https://nextjs.org/docs/api-reference/next/image#src */}
-        <img
-          src={user.picture}
-          alt="Your Profile Picture"
-          height="40"
-          width="40"
-          style={{ borderRadius: "2rem", margin: "0 1rem" }}
-        />
+        <Link href="/settings">
+          <img
+            src={user.picture}
+            alt="Your Profile Picture"
+            height="40"
+            width="40"
+            style={{
+              borderRadius: "100%",
+              margin: "0 1rem",
+              cursor: "pointer",
+            }}
+          />
+        </Link>
       </div>
     </header>
   );
