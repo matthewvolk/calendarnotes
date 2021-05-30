@@ -8,6 +8,7 @@ export default function Folder({
   children,
   setFolderId,
   getChildFoldersForFolderId,
+  setChooseNotesLocationAlert,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -65,6 +66,7 @@ export default function Folder({
 
   const handleSelection = (e) => {
     console.log("Set Notes Location to:", e.target.id);
+    setChooseNotesLocationAlert(null);
     setFolderId(e.target.id);
   };
 

@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "develop": "concurrently --names \"HTTP\" -c \"bgMagenta.bold\" \"NODE_ENV=development node server.js\"",
+    "client": "cd web && yarn dev",
+    "develop": "concurrently --names \"HTTP,NEXT\" -c \"bgMagenta.bold,bgBlue.bold\" \"NODE_ENV=development node server.js\" \"npm run client\"",
     "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "keywords": [],

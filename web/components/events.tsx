@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useToken } from "../context/token";
 import authFetch from "../utils/authFetch";
 
-export default function Events({ currentCal, folderId }) {
+export default function Events({
+  currentCal,
+  folderId,
+  setChooseNotesLocationAlert,
+}) {
   const { token } = useToken();
   const [events, setEvents] = useState(null);
 
@@ -36,7 +40,7 @@ export default function Events({ currentCal, folderId }) {
   };
 
   const changeWeek = async (e) => {
-    let prevOrNext = e.target.innerText;
+    let prevOrNext = e.target.id;
     if (events) {
       const data = await authFetch(
         `${
@@ -54,7 +58,7 @@ export default function Events({ currentCal, folderId }) {
 
   const createNotes = async (eventId, folderId, calendarId) => {
     if (!folderId) {
-      console.log("No folder selected");
+      setChooseNotesLocationAlert("Please select a folder first.");
       return;
     }
     if (!calendarId) {
@@ -86,29 +90,83 @@ export default function Events({ currentCal, folderId }) {
   };
 
   return (
-    <>
-      <p>
-        Events <button onClick={goToToday}>Today</button>&nbsp;
-        <u onClick={changeWeek}>prev</u>&nbsp; Week of:{" "}
-        {events && events?.startOfWeek}&nbsp;
-        <u onClick={changeWeek}>next</u>
-      </p>
-      <ul>
-        {events &&
-          events?.events?.map((event) => {
-            return (
-              <li
-                onClick={() => {
-                  createNotes(event.id, folderId, currentCal);
-                }}
-              >
-                <b>Event: </b>
-                {event.summary} <b>Date: </b>
-                {event.start.dateTime} - {event.end.dateTime}
-              </li>
-            );
-          })}
-      </ul>
-    </>
+    <div
+      style={{
+        backgroundColor: "white",
+        borderRadius: "0.5rem",
+        margin: "0 1rem 1rem 0",
+        overflow: "auto",
+        padding: "1rem",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <h2 style={{ margin: "0 1rem 0 0" }}>Events</h2>
+        <button onClick={goToToday}>Today</button>
+        <div>
+          <button id="prev" onClick={changeWeek} style={{ margin: "0 1rem" }}>
+            &lt;
+          </button>{" "}
+          Week of {events && events?.startOfWeek}
+          <button id="next" onClick={changeWeek} style={{ margin: "0 1rem" }}>
+            &gt;
+          </button>
+        </div>
+      </div>
+      <div>
+        <div style={{ padding: "0.1rem 0" }}>
+          {events &&
+            events?.events?.map((event) => {
+              return (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1.25fr auto 1fr",
+                    margin: "1rem 0.75rem",
+                    padding: "2rem",
+                    borderRadius: "0.5rem",
+                    boxShadow: "0px 0px 13px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    {event.summary}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    {new Intl.DateTimeFormat("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                    }).format(Date.parse(event.start.dateTime))}{" "}
+                    -{" "}
+                    {new Intl.DateTimeFormat("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                    }).format(Date.parse(event.end.dateTime))}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <button
+                        onClick={() => {
+                          createNotes(event.id, folderId, currentCal);
+                        }}
+                      >
+                        Create Notes
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+    </div>
   );
 }

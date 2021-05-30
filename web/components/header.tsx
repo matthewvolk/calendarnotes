@@ -10,6 +10,7 @@ export default function Header({ currentCal, setCurrentCal, user }) {
         alignItems: "center",
         justifyContent: "space-between",
         backgroundColor: "white",
+        gridColumn: "1/3",
       }}
     >
       <div

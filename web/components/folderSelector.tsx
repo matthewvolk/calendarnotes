@@ -4,7 +4,12 @@ import authFetch from "../utils/authFetch";
 import { useEffect, useState } from "react";
 import { useToken } from "../context/token";
 
-const FolderSelector = ({ setFolderId, notesLocation, folderId }) => {
+const FolderSelector = ({
+  setFolderId,
+  notesLocation,
+  folderId,
+  setChooseNotesLocationAlert,
+}) => {
   const { token } = useToken();
   const [folderTree, setFolderTree] = useState(null);
 
@@ -62,6 +67,7 @@ const FolderSelector = ({ setFolderId, notesLocation, folderId }) => {
       folderTree={folderTree}
       setFolderId={setFolderId}
       getChildFoldersForFolderId={getChildFoldersForFolderId}
+      setChooseNotesLocationAlert={setChooseNotesLocationAlert}
     />
   );
 };

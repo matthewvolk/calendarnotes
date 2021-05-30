@@ -1,14 +1,12 @@
+import { useToken } from "../context/token";
+import { useEffect, useState } from "react";
 import Head from "next/head";
-import CalendarSelector from "../components/calendarSelector";
+import Header from "../components/header";
 import Events from "../components/events";
 import withAuth from "../components/withAuth";
 import authFetch from "../utils/authFetch";
-import { useToken } from "../context/token";
-import { useEffect, useState } from "react";
+import DashContainer from "../components/dashContainer";
 import FolderSelector from "../components/folderSelector";
-import Logout from "../components/logout";
-import Image from "next/image";
-import Header from "../components/header";
 
 function Dashboard() {
   const { token } = useToken();
@@ -16,6 +14,8 @@ function Dashboard() {
   const [currentCal, setCurrentCal] = useState(null);
   const [notesLocation, setNotesLocation] = useState(null);
   const [folderId, setFolderId] = useState(null);
+  const [chooseNotesLocationAlert, setChooseNotesLocationAlert] =
+    useState(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -94,45 +94,54 @@ function Dashboard() {
 
   if (user) {
     return (
-      <div
-        style={{
-          backgroundColor: "#f0f0f0",
-          display: "grid",
-          gap: "1rem",
-          gridTemplateColumns: "1fr 4fr",
-        }}
-      >
+      <>
         <Head>
           <title>CalendarNotes - Dashboard</title>
         </Head>
-        <div style={{ gridColumn: "1/3" }}>
+        <DashContainer>
           <Header
             currentCal={currentCal}
             setCurrentCal={setCurrentCal}
             user={user}
           />
-        </div>
-        <div
-          style={{
-            backgroundColor: "white",
-          }}
-        >
-          <button onClick={googleDrive}>Google Drive</button>
-          <button onClick={wrike}>Wrike</button>
-          <FolderSelector
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "0.5rem",
+              margin: "0 0 1rem 1rem",
+              padding: "1rem",
+            }}
+          >
+            <h2 style={{ margin: "0 0 1rem 0" }}>Notes Location</h2>
+            {chooseNotesLocationAlert && (
+              <div
+                style={{
+                  color: "red",
+                  backgroundColor: "#ffe5e5",
+                  padding: "0.5rem",
+                  borderRadius: "0.5rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                {chooseNotesLocationAlert}
+              </div>
+            )}
+            <button onClick={googleDrive}>Google Drive</button>
+            <button onClick={wrike}>Wrike</button>
+            <FolderSelector
+              folderId={folderId}
+              setFolderId={setFolderId}
+              notesLocation={notesLocation}
+              setChooseNotesLocationAlert={setChooseNotesLocationAlert}
+            />
+          </div>
+          <Events
+            currentCal={currentCal}
             folderId={folderId}
-            setFolderId={setFolderId}
-            notesLocation={notesLocation}
+            setChooseNotesLocationAlert={setChooseNotesLocationAlert}
           />
-        </div>
-        <div
-          style={{
-            backgroundColor: "white",
-          }}
-        >
-          <Events currentCal={currentCal} folderId={folderId} />
-        </div>
-      </div>
+        </DashContainer>
+      </>
     );
   }
 }

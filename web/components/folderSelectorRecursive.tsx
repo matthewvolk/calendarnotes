@@ -4,6 +4,7 @@ export default function FolderSelectorRecursive({
   folderTree,
   setFolderId,
   getChildFoldersForFolderId,
+  setChooseNotesLocationAlert,
 }) {
   if (!folderTree) {
     return <div>Loading</div>;
@@ -19,6 +20,7 @@ export default function FolderSelectorRecursive({
           children={null}
           folderTree={null}
           getChildFoldersForFolderId={getChildFoldersForFolderId}
+          setChooseNotesLocationAlert={setChooseNotesLocationAlert}
         />
       );
     }
@@ -31,6 +33,7 @@ export default function FolderSelectorRecursive({
           setFolderId={setFolderId}
           folderTree={folderTree}
           getChildFoldersForFolderId={getChildFoldersForFolderId}
+          setChooseNotesLocationAlert={setChooseNotesLocationAlert}
         >
           {!!folder.children ? (
             // every time TreeRecursive renders a new child directory (IPM Space > child directory), it sets the global folder tree to that (most recently rendered) sub directory
@@ -38,6 +41,7 @@ export default function FolderSelectorRecursive({
               folderTree={folder.children} // setting it to folders causes infinite loop
               setFolderId={setFolderId}
               getChildFoldersForFolderId={getChildFoldersForFolderId}
+              setChooseNotesLocationAlert={setChooseNotesLocationAlert}
             />
           ) : null}
         </Folder>
