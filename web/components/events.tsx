@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useToken } from "../context/token";
 import authFetch from "../utils/authFetch";
 import styles from "../styles/events.module.css";
+import loadConfig from "next/dist/next-server/server/config";
 
 export default function Events({
   currentCal,
@@ -10,6 +11,12 @@ export default function Events({
 }) {
   const { token } = useToken();
   const [events, setEvents] = useState(null);
+  const [createNotesLoading, setCreateNotesLoading] = useState({
+    loading: false,
+    success: false,
+    error: false,
+    eventId: null,
+  });
 
   const getEvents = async () => {
     const data = await authFetch(
@@ -58,12 +65,30 @@ export default function Events({
   };
 
   const createNotes = async (eventId, folderId, calendarId) => {
+    setCreateNotesLoading({
+      loading: true,
+      success: false,
+      error: false,
+      eventId: eventId,
+    });
     if (!folderId) {
+      setCreateNotesLoading({
+        loading: false,
+        success: false,
+        error: false,
+        eventId: eventId,
+      });
       setChooseNotesLocationAlert("Please select a folder first.");
       return;
     }
     if (!calendarId) {
       console.log("No calendar selected");
+      setCreateNotesLoading({
+        loading: false,
+        success: false,
+        error: true,
+        eventId: eventId,
+      });
       return;
     }
     console.log("Sending Request", { eventId, folderId, calendarId });
@@ -82,11 +107,23 @@ export default function Events({
 
     if (!res.ok) {
       console.error("Response not OK");
+      setCreateNotesLoading({
+        loading: false,
+        success: false,
+        error: true,
+        eventId: eventId,
+      });
     }
 
     if (res.ok) {
       const data = await res.json();
       console.log("Data", data);
+      setCreateNotesLoading({
+        loading: false,
+        success: true,
+        error: false,
+        eventId: eventId,
+      });
     }
   };
 
@@ -189,14 +226,40 @@ export default function Events({
                     }}
                   >
                     <div>
-                      <button
-                        className={styles.button}
-                        onClick={() => {
-                          createNotes(event.id, folderId, currentCal);
-                        }}
-                      >
-                        Create Notes
-                      </button>
+                      {event.id === createNotesLoading.eventId ? (
+                        createNotesLoading.loading ? (
+                          <button className={styles.button}>Loading...</button>
+                        ) : createNotesLoading.success ? (
+                          <button className={styles.button}>Created!</button>
+                        ) : createNotesLoading.error ? (
+                          <button
+                            className={styles.button}
+                            onClick={() => {
+                              createNotes(event.id, folderId, currentCal);
+                            }}
+                          >
+                            Error! Try Again
+                          </button>
+                        ) : (
+                          <button
+                            className={styles.button}
+                            onClick={() => {
+                              createNotes(event.id, folderId, currentCal);
+                            }}
+                          >
+                            Create Notes
+                          </button>
+                        )
+                      ) : (
+                        <button
+                          className={styles.button}
+                          onClick={() => {
+                            createNotes(event.id, folderId, currentCal);
+                          }}
+                        >
+                          Create Notes
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
