@@ -89,7 +89,7 @@ export default function Folder({
           className={styles.test}
         />
         <div onClick={handleOpen} style={{ marginTop: "1.5px" }}>
-          <span style={{ cursor: "pointer", fontWeight: 500 }} id={id}>
+          <span style={{ cursor: "pointer" }} id={id}>
             {name}
           </span>
         </div>
