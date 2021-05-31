@@ -1,9 +1,10 @@
 import { useState } from "react";
+import styles from "../styles/folder.module.css";
 
 export default function Folder({
   name,
   id,
-  key,
+  index,
   folderTree,
   children,
   setFolderId,
@@ -71,16 +72,26 @@ export default function Folder({
   };
 
   return (
-    <div key={key} style={{ paddingLeft: "20px" }}>
-      <div style={{ display: "flex", marginLeft: "5px" }}>
+    <div
+      key={index}
+      style={{
+        padding: "2px 0 2px 20px",
+        margin: "5px 0",
+        fontSize: "1.1rem",
+      }}
+    >
+      <div style={{ display: "flex" }}>
         <input
           type="radio"
           name="folderSelection"
           id={id}
           onClick={handleSelection}
+          className={styles.test}
         />
-        <div onClick={handleOpen}>
-          <span id={id}>{name}</span>
+        <div onClick={handleOpen} style={{ marginTop: "1.5px" }}>
+          <span style={{ cursor: "pointer", fontWeight: 500 }} id={id}>
+            {name}
+          </span>
         </div>
       </div>
       <div style={{ height: isOpen ? "auto" : "0", overflow: "hidden" }}>

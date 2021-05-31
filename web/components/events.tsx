@@ -176,6 +176,7 @@ export default function Events({
             events?.events?.map((event) => {
               return (
                 <div
+                  key={event.id}
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1.25fr auto 1fr",
@@ -191,7 +192,7 @@ export default function Events({
                       alignItems: "center",
                       margin: "0",
                       fontSize: "1.15rem",
-                      fontWeight: 500,
+                      fontWeight: 600,
                     }}
                   >
                     {event.summary}

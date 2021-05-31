@@ -7,7 +7,7 @@ export default function FolderSelectorRecursive({
   setChooseNotesLocationAlert,
 }) {
   if (!folderTree) {
-    return <div>Loading</div>;
+    return <div>Loading...</div>;
   }
   return folderTree.map((folder) => {
     if (!folder.hasChildFolders) {
@@ -15,7 +15,7 @@ export default function FolderSelectorRecursive({
         <Folder
           name={folder.name}
           id={folder.id}
-          key={folder.id}
+          index={folder.id}
           setFolderId={setFolderId}
           children={null}
           folderTree={null}
@@ -29,6 +29,7 @@ export default function FolderSelectorRecursive({
         <Folder
           name={folder.name}
           id={folder.id}
+          index={folder.id}
           key={folder.id}
           setFolderId={setFolderId}
           folderTree={folderTree}
