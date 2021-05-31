@@ -988,7 +988,7 @@ module.exports = {
         title: notesTitle,
       };
 
-      // Save Google Doc and then move it to desired folder
+      // Save Google Doc
       let savedGoogleDoc = null;
       try {
         const googleDocResponse = await axios({
@@ -1041,6 +1041,7 @@ module.exports = {
           message: "Failed to create Google Doc",
         };
 
+      // Move Google Doc to desired folder
       let savedGoogleDocFileInfo = null;
       try {
         const googleDocFileInfoResponse = await axios({
@@ -1150,6 +1151,242 @@ module.exports = {
           message:
             "Saved Google Doc, but failed to move it into user selected folder",
         };
+
+      // Append content to Google Doc
+      const googleDocBody = {
+        requests: [
+          {
+            createParagraphBullets: {
+              bulletPreset: "BULLET_CHECKBOX",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "Action Items\n",
+            },
+          },
+          {
+            deleteParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+            },
+          },
+          {
+            updateParagraphStyle: {
+              paragraphStyle: {
+                namedStyleType: "HEADING_1",
+              },
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+              fields: "*",
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "\n",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              paragraphStyle: {
+                namedStyleType: "NORMAL_TEXT",
+              },
+            },
+          },
+          {
+            createParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              bulletPreset: "BULLET_DISC_CIRCLE_SQUARE",
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "Meeting Notes\n",
+            },
+          },
+          {
+            deleteParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+            },
+          },
+          {
+            updateParagraphStyle: {
+              paragraphStyle: {
+                namedStyleType: "HEADING_1",
+              },
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+              fields: "*",
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "\n",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              paragraphStyle: {
+                namedStyleType: "NORMAL_TEXT",
+              },
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: `${eventStartTime} - ${eventEndTime}`,
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: `${eventStartTime} - ${eventEndTime}`.length,
+              },
+              paragraphStyle: {
+                namedStyleType: "SUBTITLE",
+              },
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "\n",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              paragraphStyle: {
+                namedStyleType: "NORMAL_TEXT",
+              },
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: `${calendarEvent.summary}`,
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: `${calendarEvent.summary}`.length,
+              },
+              paragraphStyle: {
+                namedStyleType: "TITLE",
+              },
+            },
+          },
+        ],
+      };
+
+      let addContentToGoogleDocResponse = null;
+      try {
+        addContentToGoogleDocResponse = await axios({
+          method: "post",
+          url: `https://docs.googleapis.com/v1/documents/${savedGoogleDocFileInfo.id}:batchUpdate`,
+          data: googleDocBody,
+          headers: {
+            Authorization: `Bearer ${user.googleDrive.accessToken}`,
+          },
+        });
+
+        console.log("response", addContentToGoogleDocResponse);
+
+        if (addContentToGoogleDocResponse.status !== 200) {
+          addContentToGoogleDocResponse = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE"
+          );
+
+          try {
+            addContentToGoogleDocResponse = await axios({
+              method: "post",
+              url: `https://docs.googleapis.com/v1/documents/${savedGoogleDocFileInfo.id}:batchUpdate`,
+              data: googleDocBody,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDrive.accessToken}`,
+              },
+            });
+
+            console.log("response", addContentToGoogleDocResponse);
+
+            if (addContentToGoogleDocResponse.status !== 200) {
+              addContentToGoogleDocResponse = null;
+            }
+          } catch (err) {
+            addContentToGoogleDocResponse = null;
+          }
+        } else {
+          addContentToGoogleDocResponse = null;
+        }
+      }
+
+      if (!addContentToGoogleDocResponse) {
+        console.log("Failed to add content to Google Doc");
+      }
+
+      if (addContentToGoogleDocResponse) {
+        console.log("Added content to Google Doc");
+      }
     }
 
     if (user.notesStorage.current === "wrike") {
