@@ -1269,12 +1269,73 @@ module.exports = {
               },
             },
           },
-          {
-            insertText: {
-              location: {
-                index: 1,
+        ],
+      };
+
+      if (calendarEvent.attendees) {
+        calendarEvent.attendees.forEach((attendee) => {
+          googleDocBody.requests.push(
+            {
+              createParagraphBullets: {
+                bulletPreset: "BULLET_DISC_CIRCLE_SQUARE",
+                range: {
+                  startIndex: 1,
+                  endIndex: 2,
+                },
               },
-              text: `${eventStartTime} - ${eventEndTime}`,
+            },
+            {
+              insertText: {
+                text: `${attendee.email}\u00A0`,
+                location: {
+                  index: 1,
+                },
+              },
+            },
+            {
+              updateTextStyle: {
+                fields: "*",
+                range: {
+                  startIndex: 1,
+                  endIndex: `${attendee.email}`.length + 1,
+                },
+                textStyle: {
+                  link: {
+                    url: `mailto:${attendee.email}`,
+                  },
+                  underline: true,
+                  foregroundColor: {
+                    color: {
+                      rgbColor: {
+                        blue: 0.8,
+                        green: 0.3333,
+                        red: 0.0667,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              insertText: {
+                location: {
+                  index: 1,
+                },
+                text: "\n",
+              },
+            }
+          );
+        });
+      }
+
+      if (calendarEvent.attendees) {
+        googleDocBody.requests.push(
+          {
+            deleteParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
             },
           },
           {
@@ -1282,11 +1343,31 @@ module.exports = {
               fields: "*",
               range: {
                 startIndex: 1,
-                endIndex: `${eventStartTime} - ${eventEndTime}`.length,
+                endIndex: 2,
               },
               paragraphStyle: {
-                namedStyleType: "SUBTITLE",
+                namedStyleType: "NORMAL_TEXT",
               },
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "Attendees",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              paragraphStyle: {
+                namedStyleType: "HEADING_1",
+              },
+              range: {
+                startIndex: 1,
+                endIndex: 10,
+              },
+              fields: "*",
             },
           },
           {
@@ -1308,29 +1389,72 @@ module.exports = {
                 namedStyleType: "NORMAL_TEXT",
               },
             },
+          }
+        );
+      }
+
+      googleDocBody.requests.push(
+        {
+          insertText: {
+            location: {
+              index: 1,
+            },
+            text: `${eventStartTime} - ${eventEndTime}`,
           },
-          {
-            insertText: {
-              location: {
-                index: 1,
-              },
-              text: `${calendarEvent.summary}`,
+        },
+        {
+          updateParagraphStyle: {
+            fields: "*",
+            range: {
+              startIndex: 1,
+              endIndex: `${eventStartTime} - ${eventEndTime}`.length,
+            },
+            paragraphStyle: {
+              namedStyleType: "SUBTITLE",
             },
           },
-          {
-            updateParagraphStyle: {
-              fields: "*",
-              range: {
-                startIndex: 1,
-                endIndex: `${calendarEvent.summary}`.length,
-              },
-              paragraphStyle: {
-                namedStyleType: "TITLE",
-              },
+        },
+        {
+          insertText: {
+            location: {
+              index: 1,
+            },
+            text: "\n",
+          },
+        },
+        {
+          updateParagraphStyle: {
+            fields: "*",
+            range: {
+              startIndex: 1,
+              endIndex: 2,
+            },
+            paragraphStyle: {
+              namedStyleType: "NORMAL_TEXT",
             },
           },
-        ],
-      };
+        },
+        {
+          insertText: {
+            location: {
+              index: 1,
+            },
+            text: `${calendarEvent.summary}`,
+          },
+        },
+        {
+          updateParagraphStyle: {
+            fields: "*",
+            range: {
+              startIndex: 1,
+              endIndex: `${calendarEvent.summary}`.length,
+            },
+            paragraphStyle: {
+              namedStyleType: "TITLE",
+            },
+          },
+        }
+      );
 
       let addContentToGoogleDocResponse = null;
       try {
@@ -1342,8 +1466,6 @@ module.exports = {
             Authorization: `Bearer ${user.googleDrive.accessToken}`,
           },
         });
-
-        console.log("response", addContentToGoogleDocResponse);
 
         if (addContentToGoogleDocResponse.status !== 200) {
           addContentToGoogleDocResponse = null;
@@ -1367,8 +1489,6 @@ module.exports = {
               },
             });
 
-            console.log("response", addContentToGoogleDocResponse);
-
             if (addContentToGoogleDocResponse.status !== 200) {
               addContentToGoogleDocResponse = null;
             }
@@ -1378,14 +1498,6 @@ module.exports = {
         } else {
           addContentToGoogleDocResponse = null;
         }
-      }
-
-      if (!addContentToGoogleDocResponse) {
-        console.log("Failed to add content to Google Doc");
-      }
-
-      if (addContentToGoogleDocResponse) {
-        console.log("Added content to Google Doc");
       }
     }
 

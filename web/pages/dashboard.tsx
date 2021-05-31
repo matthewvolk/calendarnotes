@@ -111,6 +111,7 @@ function Dashboard() {
               borderRadius: "0.5rem",
               margin: "0 0 1rem 1rem",
               padding: "1rem",
+              overflow: "auto",
             }}
           >
             <h2 style={{ margin: "0 0 1rem 0" }}>Notes Location</h2>
