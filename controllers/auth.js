@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const axios = require("axios");
 const passport = require("passport");
-require("../config/passport")(passport);
 
 module.exports = {
   logout: (request, response) => {
