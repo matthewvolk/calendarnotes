@@ -179,6 +179,7 @@ export default function Events({
                   key={event.id}
                   style={{
                     display: "grid",
+                    gap: "1.5rem",
                     gridTemplateColumns: "1.25fr auto 1fr",
                     margin: "1rem 0.75rem",
                     padding: "2rem",
