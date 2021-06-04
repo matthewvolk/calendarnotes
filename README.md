@@ -1,5 +1,9 @@
 # 🗓 CalendarNotes
 
+## Demo
+
+[![CalendarNotes Demonstration](https://embed-ssl.wistia.com/deliveries/c9648f283c25e63074082e5563c6a79275b2c146.jpg?image_crop_resized=960x564&image_play_button=1&image_play_button_color=1e71e7EE)](https://volkmattj.wistia.com/medias/qlko4uppmo "CalendarNotes Demonstration")
+
 ## Table of Contents
 
 - [Contributing](#contributing)
