@@ -2,7 +2,7 @@
 
 ## Demo
 
-[![CalendarNotes Demonstration](https://embed-ssl.wistia.com/deliveries/c9648f283c25e63074082e5563c6a79275b2c146.jpg?image_crop_resized=960x564&image_play_button=1&image_play_button_color=1e71e7EE)](https://volkmattj.wistia.com/medias/qlko4uppmo "CalendarNotes Demonstration")
+[![CalendarNotes Demonstration](https://embed-ssl.wistia.com/deliveries/0ab03963d7e9e65130366e3536344907.jpg?image_crop_resized=960x564&image_play_button=1&image_play_button_color=e65344EE)](https://volkmattj.wistia.com/medias/hhld2d17dn "CalendarNotes Demonstration")
 
 ## Table of Contents
 
