@@ -213,12 +213,14 @@ export default function Events({
                       day: "numeric",
                       hour: "numeric",
                       minute: "numeric",
-                    }).format(Date.parse(event.start.dateTime))}{" "}
+                    }).format(
+                      Date.parse(event.start.dateTime || event.start.date)
+                    )}{" "}
                     -{" "}
                     {new Intl.DateTimeFormat("en-US", {
                       hour: "numeric",
                       minute: "numeric",
-                    }).format(Date.parse(event.end.dateTime))}
+                    }).format(Date.parse(event.end.dateTime || event.end.date))}
                   </div>
                   <div
                     style={{
