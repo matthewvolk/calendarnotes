@@ -3,6 +3,7 @@ import styles from "../styles/homepageContent.module.css";
 import goFromThis from "../public/go-from-this.png";
 import toThis from "../public/to-this.png";
 import calendarManagement from "../public/calendar-management.png";
+import mouseCursor from "../public/mouse-cursor.png";
 
 export default function HomepageContent() {
   return (
@@ -30,9 +31,18 @@ export default function HomepageContent() {
           </div>
         </div>
       </div>
-      <h2 className={`${styles.textCenter} ${styles.my5}`}>
-        ...in a single click!
-      </h2>
+      <div className={styles.singleClick}>
+        <h2 className={`${styles.textCenter} ${styles.my5}`}>
+          ...in a single click!
+        </h2>
+        <Image
+          src={mouseCursor}
+          alt="Image of a cartoon mouse cursor"
+          placeholder="blur"
+          height="60px"
+          width="41px"
+        />
+      </div>
       <div className={styles.flex}>
         <div className={styles.textContainer}>
           <h2 className={styles.heading2}>Calendar Management</h2>

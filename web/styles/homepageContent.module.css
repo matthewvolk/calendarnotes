@@ -5,7 +5,7 @@
 
 .imageContainer {
   min-width: 600px;
-  max-width: 650px;
+  max-width: 600px;
 }
 
 .textCenter {
@@ -15,7 +15,7 @@
 }
 
 .my5 {
-  margin: 5rem 0;
+  margin: 6rem 1rem;
 }
 
 .textContainer {
@@ -27,7 +27,7 @@
 }
 
 .blurb {
-  color: #525252;
+  color: #878787;
   font-size: 1.25rem;
   font-weight: 300;
 }
@@ -35,10 +35,17 @@
 .shadow {
   box-shadow: 0px 4px 25px rgba(0, 0, 0, 0.2);
   margin: 0 auto;
+  border-radius: 12px;
 }
 
-.radius img {
-  border-radius: 20rem;
+.shadow div img {
+  border-radius: 12px;
+}
+
+.singleClick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media only screen and (max-width: 1250px) {
