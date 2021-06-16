@@ -5,6 +5,7 @@
 
 .imageContainer {
   min-width: 600px;
+  max-width: 650px;
 }
 
 .textCenter {
@@ -33,6 +34,7 @@
 
 .shadow {
   box-shadow: 0px 4px 25px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
 }
 
 .radius img {

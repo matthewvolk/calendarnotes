@@ -1,5 +1,8 @@
 import Image from "next/image";
 import styles from "../styles/homepageContent.module.css";
+import goFromThis from "../public/go-from-this.png";
+import toThis from "../public/to-this.png";
+import calendarManagement from "../public/calendar-management.png";
 
 export default function HomepageContent() {
   return (
@@ -9,12 +12,10 @@ export default function HomepageContent() {
           <h2 className={styles.textCenter}>Go from this...</h2>
           <div className={styles.shadow}>
             <Image
-              src="/go-from-this.png"
+              src={goFromThis}
               alt="Screenshot of Google Calendar Event details"
-              layout="responsive"
-              height="320"
-              width="526"
               className={styles.radius}
+              placeholder="blur"
             />
           </div>
         </div>
@@ -22,11 +23,9 @@ export default function HomepageContent() {
           <h2 className={styles.textCenter}>...to this...</h2>
           <div className={styles.shadow}>
             <Image
-              src="/to-this.png"
+              src={toThis}
               alt="Screenshot of Google Document demonstrating what this web application can create"
-              layout="responsive"
-              height="320px"
-              width="526px"
+              placeholder="blur"
             />
           </div>
         </div>
@@ -46,11 +45,9 @@ export default function HomepageContent() {
         <div className={styles.imageContainer}>
           <div className={styles.shadow}>
             <Image
-              src="/calendar-management.png"
+              src={calendarManagement}
               alt="Screenshot of Google Calendar Event with Calendar Notes event added"
-              layout="responsive"
-              height="212.7px"
-              width="526px"
+              placeholder="blur"
             />
           </div>
         </div>
