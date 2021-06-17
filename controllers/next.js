@@ -311,6 +311,16 @@ module.exports = {
     const { location, folderId } = request.query;
     const user = request.user;
 
+    if (location === "googleDriveSafe") {
+      response.json([
+        {
+          id: user.googleDriveSafe.folderId,
+          name: "CalendarNotes",
+          hasChildFolders: false,
+        },
+      ]);
+    }
+
     if (location === "googleDrive") {
       if (!folderId) {
         // return top level drives
@@ -815,6 +825,83 @@ module.exports = {
     }
   },
 
+  googleDriveAuthSafe: (request, response) => {
+    const user = request.user;
+    response.redirect(
+      `https://accounts.google.com/o/oauth2/v2/auth?client_id=${
+        process.env.GOOGLE_OAUTH2_CLIENT_ID
+      }&redirect_uri=${encodeURIComponent(
+        process.env.GOOGLE_DRIVE_SAFE_OAUTH_REDIRECT_URI_NEXT
+      )}&response_type=code&scope=${encodeURIComponent(
+        "https://www.googleapis.com/auth/drive.file"
+      )}&access_type=offline&prompt=consent&state=${encodeURIComponent(
+        `${user.id}`
+      )}`
+    );
+  },
+
+  googleDriveAuthCallbackSafe: async (request, response) => {
+    const { error, code, state: id } = request.query;
+
+    if (code) {
+      const googleDriveCreds = await axios({
+        method: "post",
+        url: `https://oauth2.googleapis.com/token?client_id=${
+          process.env.GOOGLE_OAUTH2_CLIENT_ID
+        }&client_secret=${
+          process.env.GOOGLE_OAUTH2_CLIENT_SECRET
+        }&code=${code}&grant_type=authorization_code&redirect_uri=${encodeURIComponent(
+          process.env.GOOGLE_DRIVE_SAFE_OAUTH_REDIRECT_URI_NEXT
+        )}`,
+      });
+      const user = await NextUser.findOne({ id });
+      user.googleDriveSafe.accessToken = googleDriveCreds.data.access_token;
+      user.googleDriveSafe.expiresIn = googleDriveCreds.data.expires_in;
+      user.googleDriveSafe.refreshToken = googleDriveCreds.data.refresh_token;
+      user.googleDriveSafe.scope = googleDriveCreds.data.scope;
+      user.googleDriveSafe.tokenType = googleDriveCreds.data.token_type;
+      user.notesStorage.current = "googleDriveSafe";
+      user.notesStorage.available.push({
+        id: "googleDriveSafe",
+        name: "Google Drive Safe",
+      });
+      await user.save();
+      console.log("Saved User with Google Drive Safe");
+      console.log("Making API Call to Create CalendarNotes Folder");
+      const calendarNotesFolderCreationResponse = await axios({
+        method: "post",
+        url: `https://www.googleapis.com/drive/v3/files`,
+        headers: {
+          // Refactor Mongo Save call above to return new user and use that below
+          Authorization: `Bearer ${googleDriveCreds.data.access_token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        data: {
+          name: "CalendarNotes",
+          mimeType: "application/vnd.google-apps.folder",
+        },
+      });
+      if (
+        calendarNotesFolderCreationResponse.status <= 299 &&
+        calendarNotesFolderCreationResponse.status >= 200
+      ) {
+        console.log("CalendarNotes folder created");
+        const calendarNotesFolderId =
+          calendarNotesFolderCreationResponse.data.id;
+        const user = await NextUser.findOne({ id });
+        user.googleDriveSafe.folderId = calendarNotesFolderId;
+        await user.save();
+        console.log("Saved User with Google Drive Safe Folder ID");
+      }
+      response.redirect(process.env.GOOGLE_OAUTH_REDIRECT_NEXT);
+    }
+
+    if (error) {
+      response.redirect(process.env.GOOGLE_OAUTH_REDIRECT_NEXT);
+    }
+  },
+
   wrikeAuth: (request, response) => {
     const user = request.user;
     response.redirect(
@@ -982,6 +1069,813 @@ module.exports = {
 
     let notesPermalink;
 
+    if (user.notesStorage.current === "googleDriveSafe") {
+      // Create Google Doc w/ Title
+      let googleDoc = {
+        title: notesTitle,
+      };
+
+      // Save Google Doc
+      let savedGoogleDoc = null;
+      try {
+        const googleDocResponse = await axios({
+          method: "post",
+          url: "https://docs.googleapis.com/v1/documents",
+          data: googleDoc,
+          headers: {
+            Authorization: `Bearer ${user.googleDriveSafe.accessToken}`,
+          },
+        });
+        if (googleDocResponse.status === 200) {
+          savedGoogleDoc = googleDocResponse.data;
+        }
+        if (googleDocResponse.status !== 200) {
+          savedGoogleDoc = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE_SAFE"
+          );
+          try {
+            const googleDocResponse = await axios({
+              method: "post",
+              url: "https://docs.googleapis.com/v1/documents",
+              data: googleDoc,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+              },
+            });
+            if (googleDocResponse.status === 200) {
+              savedGoogleDoc = googleDocResponse.data;
+            }
+            if (googleDocResponse.status !== 200) {
+              savedGoogleDoc = null;
+            }
+          } catch (err) {
+            savedGoogleDoc = null;
+          }
+        } else {
+          savedGoogleDoc = null;
+        }
+      }
+
+      if (!savedGoogleDoc) {
+        console.log({
+          error: true,
+          message: "Failed to create Google Doc",
+        });
+        return response.json({
+          error: true,
+          message: "Failed to create Google Doc",
+        });
+      }
+
+      // Get Google Document ID and webViewLink
+      let savedGoogleDocFileInfo = null;
+      try {
+        const googleDocFileInfoResponse = await axios({
+          method: "get",
+          url: `https://www.googleapis.com/drive/v3/files/${
+            savedGoogleDoc.documentId
+          }?fields=${encodeURIComponent("id, name, webViewLink")}`,
+          headers: {
+            Authorization: `Bearer ${user.googleDriveSafe.accessToken}`,
+          },
+        });
+        if (googleDocFileInfoResponse.status === 200) {
+          savedGoogleDocFileInfo = googleDocFileInfoResponse.data;
+        }
+        if (googleDocFileInfoResponse.status !== 200) {
+          savedGoogleDocFileInfo = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE_SAFE"
+          );
+          try {
+            const googleDocFileInfoResponse = await axios({
+              method: "get",
+              url: `https://www.googleapis.com/drive/v3/files/${
+                savedGoogleDoc.documentId
+              }?fields=${encodeURIComponent("id, name, webViewLink")}`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+              },
+            });
+            if (googleDocFileInfoResponse.status === 200) {
+              savedGoogleDocFileInfo = googleDocFileInfoResponse.data;
+            }
+            if (googleDocFileInfoResponse.status !== 200) {
+              savedGoogleDocFileInfo = null;
+            }
+          } catch (err) {
+            savedGoogleDocFileInfo = null;
+          }
+        } else {
+          savedGoogleDocFileInfo = null;
+        }
+      }
+
+      if (!savedGoogleDocFileInfo) {
+        console.log({
+          error: true,
+          message:
+            "Saved Google Doc, but failed to retrieve saved Google Doc file info",
+        });
+        return response.json({
+          error: true,
+          message:
+            "Saved Google Doc, but failed to retrieve saved Google Doc file info",
+        });
+      }
+
+      notesPermalink = savedGoogleDocFileInfo.webViewLink;
+
+      let calendarNotesFolderInfo = null;
+      try {
+        const calendarNotesFolderInfoResponse = await axios({
+          method: "get",
+          url: `https://www.googleapis.com/drive/v3/files/${
+            user.googleDriveSafe.folderId
+          }?fields=${encodeURIComponent("kind, id, name, mimeType, trashed")}`,
+          headers: {
+            Authorization: `Bearer ${user.googleDriveSafe.accessToken}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (calendarNotesFolderInfoResponse.data.trashed == true) {
+          console.log("folder was deleted, create a new one");
+          try {
+            const calendarNotesFolderCreationResponse = await axios({
+              method: "post",
+              url: `https://www.googleapis.com/drive/v3/files`,
+              headers: {
+                // Refactor Mongo Save call above to return new user and use that below
+                Authorization: `Bearer ${user.googleDriveSafe.accessToken}`,
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              data: {
+                name: "CalendarNotes",
+                mimeType: "application/vnd.google-apps.folder",
+              },
+            });
+            if (
+              calendarNotesFolderCreationResponse.status <= 299 &&
+              calendarNotesFolderCreationResponse.status >= 200
+            ) {
+              console.log(
+                "CalendarNotes folder created because it was deleted"
+              );
+              const calendarNotesFolderId =
+                calendarNotesFolderCreationResponse.data.id;
+              const newUser = await NextUser.findOne({ id: user.id });
+              console.log("NEW USER", newUser);
+              newUser.googleDriveSafe.folderId = calendarNotesFolderId;
+              await newUser.save();
+              console.log(
+                "Saved User with Google Drive Safe Folder ID first try"
+              );
+              calendarNotesFolderInfo =
+                calendarNotesFolderCreationResponse.data;
+            }
+          } catch (err) {
+            if (err.response && err.response.status === 401) {
+              const tokenService = new TokenService();
+              const userWithRefreshedToken =
+                await tokenService.refreshTokenNext(
+                  user,
+                  "GOOGLE",
+                  "DRIVE_SAFE"
+                );
+              const calendarNotesFolderCreationResponse = await axios({
+                method: "post",
+                url: `https://www.googleapis.com/drive/v3/files`,
+                headers: {
+                  // Refactor Mongo Save call above to return new user and use that below
+                  Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                },
+                data: {
+                  name: "CalendarNotes",
+                  mimeType: "application/vnd.google-apps.folder",
+                },
+              });
+              if (
+                calendarNotesFolderCreationResponse.status <= 299 &&
+                calendarNotesFolderCreationResponse.status >= 200
+              ) {
+                console.log(
+                  "CalendarNotes folder created because it was deleted"
+                );
+                const calendarNotesFolderId =
+                  calendarNotesFolderCreationResponse.data.id;
+                const newUser = await NextUser.findOne({ id: user.id });
+                console.log("NEW USER", newUser);
+                newUser.googleDriveSafe.folderId = calendarNotesFolderId;
+                await newUser.save();
+                console.log(
+                  "Saved User with Google Drive Safe Folder ID second try"
+                );
+                calendarNotesFolderInfo =
+                  calendarNotesFolderCreationResponse.data;
+              }
+            }
+          }
+        }
+
+        if (
+          calendarNotesFolderInfoResponse.status === 200 &&
+          calendarNotesFolderInfoResponse.data.trashed == false
+        ) {
+          calendarNotesFolderInfo = calendarNotesFolderInfoResponse.data;
+          console.log(calendarNotesFolderInfo);
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE_SAFE"
+          );
+
+          const calendarNotesFolderInfoResponse = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/drive/v3/files/${
+              user.googleDriveSafe.folderId
+            }?fields=${encodeURIComponent(
+              "kind, id, name, mimeType, trashed"
+            )}`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+              Accept: "application/json",
+            },
+          });
+
+          if (calendarNotesFolderInfoResponse.data.trashed == true) {
+            // folder was deleted, create a new one
+            try {
+              const calendarNotesFolderCreationResponse = await axios({
+                method: "post",
+                url: `https://www.googleapis.com/drive/v3/files`,
+                headers: {
+                  // Refactor Mongo Save call above to return new user and use that below
+                  Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                },
+                data: {
+                  name: "CalendarNotes",
+                  mimeType: "application/vnd.google-apps.folder",
+                },
+              });
+              if (
+                calendarNotesFolderCreationResponse.status <= 299 &&
+                calendarNotesFolderCreationResponse.status >= 200
+              ) {
+                console.log(
+                  "CalendarNotes folder created because it was deleted in 401 retry of calendarNotesFolderInfo"
+                );
+                const calendarNotesFolderId =
+                  calendarNotesFolderCreationResponse.data.id;
+                const newUser = await NextUser.findOne({ id: user.id });
+                console.log("NEW USER", newUser);
+                newUser.googleDriveSafe.folderId = calendarNotesFolderId;
+                await newUser.save();
+                console.log(
+                  "Saved User with Google Drive Safe Folder ID in 401 retry of calendarNotesFolderInfo"
+                );
+                calendarNotesFolderInfo =
+                  calendarNotesFolderCreationResponse.data;
+              }
+            } catch (err) {
+              console.log(
+                "Failed to create CalendarNotes Folder in 401 retry of calendarNotesFolderInfo"
+              );
+            }
+          }
+
+          if (
+            calendarNotesFolderInfoResponse.status === 200 &&
+            calendarNotesFolderInfoResponse.data.trashed == false
+          ) {
+            calendarNotesFolderInfo = calendarNotesFolderInfoResponse.data;
+          }
+        }
+        if (err.response && err.response.status === 404) {
+          console.log("folder was deleted permanently, create a new one");
+          try {
+            const calendarNotesFolderCreationResponse = await axios({
+              method: "post",
+              url: `https://www.googleapis.com/drive/v3/files`,
+              headers: {
+                // Refactor Mongo Save call above to return new user and use that below
+                Authorization: `Bearer ${user.googleDriveSafe.accessToken}`,
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              data: {
+                name: "CalendarNotes",
+                mimeType: "application/vnd.google-apps.folder",
+              },
+            });
+            if (
+              calendarNotesFolderCreationResponse.status <= 299 &&
+              calendarNotesFolderCreationResponse.status >= 200
+            ) {
+              console.log(
+                "CalendarNotes folder created because it was deleted"
+              );
+              const calendarNotesFolderId =
+                calendarNotesFolderCreationResponse.data.id;
+              const newUser = await NextUser.findOne({ id: user.id });
+              console.log("NEW USER", newUser);
+              newUser.googleDriveSafe.folderId = calendarNotesFolderId;
+              await newUser.save();
+              console.log(
+                "Saved User with Google Drive Safe Folder ID first try"
+              );
+              calendarNotesFolderInfo =
+                calendarNotesFolderCreationResponse.data;
+            }
+          } catch (err) {
+            if (err.response && err.response.status === 401) {
+              const tokenService = new TokenService();
+              const userWithRefreshedToken =
+                await tokenService.refreshTokenNext(
+                  user,
+                  "GOOGLE",
+                  "DRIVE_SAFE"
+                );
+              const calendarNotesFolderCreationResponse = await axios({
+                method: "post",
+                url: `https://www.googleapis.com/drive/v3/files`,
+                headers: {
+                  // Refactor Mongo Save call above to return new user and use that below
+                  Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                },
+                data: {
+                  name: "CalendarNotes",
+                  mimeType: "application/vnd.google-apps.folder",
+                },
+              });
+              if (
+                calendarNotesFolderCreationResponse.status <= 299 &&
+                calendarNotesFolderCreationResponse.status >= 200
+              ) {
+                console.log(
+                  "CalendarNotes folder created because it was deleted"
+                );
+                const calendarNotesFolderId =
+                  calendarNotesFolderCreationResponse.data.id;
+                const newUser = await NextUser.findOne({ id: user.id });
+                console.log("NEW USER", newUser);
+                newUser.googleDriveSafe.folderId = calendarNotesFolderId;
+                await newUser.save();
+                console.log(
+                  "Saved User with Google Drive Safe Folder ID second try"
+                );
+                calendarNotesFolderInfo =
+                  calendarNotesFolderCreationResponse.data;
+              }
+            }
+          }
+        }
+      }
+
+      if (!calendarNotesFolderInfo) {
+        console.log({
+          error: true,
+          message:
+            "Could not retrieve CalendarNotes Folder info to move Google Doc to",
+        });
+        return response.json({
+          error: true,
+          message:
+            "Could not retrieve CalendarNotes Folder info to move Google Doc to",
+        });
+      }
+
+      let movedGoogleDoc = null;
+      try {
+        const moveGoogleDocResponse = await axios({
+          method: "patch",
+          url: `https://www.googleapis.com/drive/v3/files/${savedGoogleDocFileInfo.id}?enforceSingleParent=true&addParents=${calendarNotesFolderInfo.id}`,
+          headers: {
+            Authorization: `Bearer ${user.googleDriveSafe.accessToken}`,
+          },
+        });
+        if (moveGoogleDocResponse.status === 200) {
+          movedGoogleDoc = moveGoogleDocResponse.data;
+        }
+        if (moveGoogleDocResponse.status !== 200) {
+          movedGoogleDoc = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE_SAFE"
+          );
+          try {
+            const moveGoogleDocResponse = await axios({
+              method: "patch",
+              url: `https://www.googleapis.com/drive/v3/files/${savedGoogleDocFileInfo.id}?enforceSingleParent=true&addParents=${calendarNotesFolderInfo.id}`,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+              },
+            });
+            if (moveGoogleDocResponse.status === 200) {
+              movedGoogleDoc = moveGoogleDocResponse.data;
+            }
+            if (moveGoogleDocResponse.status !== 200) {
+              movedGoogleDoc = null;
+            }
+          } catch (err) {
+            movedGoogleDoc = null;
+          }
+        } else {
+          movedGoogleDoc = null;
+        }
+      }
+
+      if (!movedGoogleDoc) {
+        console.log({
+          error: true,
+          message:
+            "Saved Google Doc, but failed to move it into user selected folder",
+        });
+        return response.json({
+          error: true,
+          message:
+            "Saved Google Doc, but failed to move it into user selected folder",
+        });
+      }
+
+      // Append content to Google Doc
+      const googleDocBody = {
+        requests: [
+          {
+            createParagraphBullets: {
+              bulletPreset: "BULLET_CHECKBOX",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "Action Items\n",
+            },
+          },
+          {
+            deleteParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+            },
+          },
+          {
+            updateParagraphStyle: {
+              paragraphStyle: {
+                namedStyleType: "HEADING_1",
+              },
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+              fields: "*",
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "\n",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              paragraphStyle: {
+                namedStyleType: "NORMAL_TEXT",
+              },
+            },
+          },
+          {
+            createParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              bulletPreset: "BULLET_DISC_CIRCLE_SQUARE",
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "Meeting Notes\n",
+            },
+          },
+          {
+            deleteParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+            },
+          },
+          {
+            updateParagraphStyle: {
+              paragraphStyle: {
+                namedStyleType: "HEADING_1",
+              },
+              range: {
+                startIndex: 1,
+                endIndex: 14,
+              },
+              fields: "*",
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "\n",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              paragraphStyle: {
+                namedStyleType: "NORMAL_TEXT",
+              },
+            },
+          },
+        ],
+      };
+
+      if (calendarEvent.attendees) {
+        calendarEvent.attendees.forEach((attendee) => {
+          googleDocBody.requests.push(
+            {
+              createParagraphBullets: {
+                bulletPreset: "BULLET_DISC_CIRCLE_SQUARE",
+                range: {
+                  startIndex: 1,
+                  endIndex: 2,
+                },
+              },
+            },
+            {
+              insertText: {
+                text: `${attendee.email}\u00A0`,
+                location: {
+                  index: 1,
+                },
+              },
+            },
+            {
+              updateTextStyle: {
+                fields: "*",
+                range: {
+                  startIndex: 1,
+                  endIndex: `${attendee.email}`.length + 1,
+                },
+                textStyle: {
+                  link: {
+                    url: `mailto:${attendee.email}`,
+                  },
+                  underline: true,
+                  foregroundColor: {
+                    color: {
+                      rgbColor: {
+                        blue: 0.8,
+                        green: 0.3333,
+                        red: 0.0667,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            {
+              insertText: {
+                location: {
+                  index: 1,
+                },
+                text: "\n",
+              },
+            }
+          );
+        });
+      }
+
+      if (calendarEvent.attendees) {
+        googleDocBody.requests.push(
+          {
+            deleteParagraphBullets: {
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              paragraphStyle: {
+                namedStyleType: "NORMAL_TEXT",
+              },
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "Attendees",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              paragraphStyle: {
+                namedStyleType: "HEADING_1",
+              },
+              range: {
+                startIndex: 1,
+                endIndex: 10,
+              },
+              fields: "*",
+            },
+          },
+          {
+            insertText: {
+              location: {
+                index: 1,
+              },
+              text: "\n",
+            },
+          },
+          {
+            updateParagraphStyle: {
+              fields: "*",
+              range: {
+                startIndex: 1,
+                endIndex: 2,
+              },
+              paragraphStyle: {
+                namedStyleType: "NORMAL_TEXT",
+              },
+            },
+          }
+        );
+      }
+
+      googleDocBody.requests.push(
+        {
+          insertText: {
+            location: {
+              index: 1,
+            },
+            text: `${eventStartTime} - ${eventEndTime}`,
+          },
+        },
+        {
+          updateParagraphStyle: {
+            fields: "*",
+            range: {
+              startIndex: 1,
+              endIndex: `${eventStartTime} - ${eventEndTime}`.length,
+            },
+            paragraphStyle: {
+              namedStyleType: "SUBTITLE",
+            },
+          },
+        },
+        {
+          insertText: {
+            location: {
+              index: 1,
+            },
+            text: "\n",
+          },
+        },
+        {
+          updateParagraphStyle: {
+            fields: "*",
+            range: {
+              startIndex: 1,
+              endIndex: 2,
+            },
+            paragraphStyle: {
+              namedStyleType: "NORMAL_TEXT",
+            },
+          },
+        },
+        {
+          insertText: {
+            location: {
+              index: 1,
+            },
+            text: `${calendarEvent.summary}`,
+          },
+        },
+        {
+          updateParagraphStyle: {
+            fields: "*",
+            range: {
+              startIndex: 1,
+              endIndex: `${calendarEvent.summary}`.length,
+            },
+            paragraphStyle: {
+              namedStyleType: "TITLE",
+            },
+          },
+        }
+      );
+
+      let addContentToGoogleDocResponse = null;
+      try {
+        addContentToGoogleDocResponse = await axios({
+          method: "post",
+          url: `https://docs.googleapis.com/v1/documents/${savedGoogleDocFileInfo.id}:batchUpdate`,
+          data: googleDocBody,
+          headers: {
+            Authorization: `Bearer ${user.googleDriveSafe.accessToken}`,
+          },
+        });
+
+        if (addContentToGoogleDocResponse.status !== 200) {
+          addContentToGoogleDocResponse = null;
+        }
+      } catch (err) {
+        if (err.response && err.response.status === 401) {
+          const tokenService = new TokenService();
+          const userWithRefreshedToken = await tokenService.refreshTokenNext(
+            user,
+            "GOOGLE",
+            "DRIVE_SAFE"
+          );
+
+          try {
+            addContentToGoogleDocResponse = await axios({
+              method: "post",
+              url: `https://docs.googleapis.com/v1/documents/${savedGoogleDocFileInfo.id}:batchUpdate`,
+              data: googleDocBody,
+              headers: {
+                Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+              },
+            });
+
+            if (addContentToGoogleDocResponse.status !== 200) {
+              addContentToGoogleDocResponse = null;
+            }
+          } catch (err) {
+            addContentToGoogleDocResponse = null;
+          }
+        } else {
+          addContentToGoogleDocResponse = null;
+        }
+      }
+    }
+
     if (user.notesStorage.current === "googleDrive") {
       // Create Google Doc w/ Title
       let googleDoc = {
@@ -1010,7 +1904,8 @@ module.exports = {
           const tokenService = new TokenService();
           const userWithRefreshedToken = await tokenService.refreshTokenNext(
             user,
-            "GOOGLE"
+            "GOOGLE",
+            "DRIVE"
           );
           try {
             const googleDocResponse = await axios({
@@ -1036,10 +1931,10 @@ module.exports = {
       }
 
       if (!savedGoogleDoc)
-        return {
+        return response.json({
           error: true,
           message: "Failed to create Google Doc",
-        };
+        });
 
       // Move Google Doc to desired folder
       let savedGoogleDocFileInfo = null;
@@ -1092,11 +1987,11 @@ module.exports = {
       }
 
       if (!savedGoogleDocFileInfo)
-        return {
+        return response.json({
           error: true,
           message:
             "Saved Google Doc, but failed to retrieve saved Google Doc file info",
-        };
+        });
 
       notesPermalink = savedGoogleDocFileInfo.webViewLink;
 
@@ -1146,11 +2041,11 @@ module.exports = {
       }
 
       if (!movedGoogleDoc)
-        return {
+        return response.json({
           error: true,
           message:
             "Saved Google Doc, but failed to move it into user selected folder",
-        };
+        });
 
       // Append content to Google Doc
       const googleDocBody = {
@@ -1570,10 +2465,10 @@ module.exports = {
         }
       }
       if (!wrikeUserId)
-        return {
+        return response.json({
           error: true,
           message: "Failed to retrieve Wrike User ID",
-        };
+        });
       wrikeTask.responsibles.push(wrikeUserId);
 
       let createdWrikeTask = null;
@@ -1622,10 +2517,10 @@ module.exports = {
         }
       }
       if (!createdWrikeTask)
-        return {
+        return response.json({
           error: true,
           message: "Failed to create Wrike task",
-        };
+        });
 
       notesPermalink = createdWrikeTask.data[0].permalink;
     }

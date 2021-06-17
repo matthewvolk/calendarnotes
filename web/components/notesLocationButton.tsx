@@ -62,12 +62,33 @@ export default function NotesLocationButton({
     );
   };
 
+  const googleDriveLoginSafe = async (e) => {
+    e.preventDefault();
+    if (notesLocation?.available?.some((loc) => loc.id === "googleDriveSafe")) {
+      if (notesLocation?.current !== "googleDriveSafe") {
+        await authFetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/next/notes/storage?location=googleDriveSafe`,
+          token
+        );
+        setNotesLocation({ ...notesLocation, current: "googleDriveSafe" });
+        setFolderId(null);
+        return;
+      }
+      console.log("current notes location already googleDriveSafe");
+      return;
+    }
+    console.log("googleDriveSafe not in available array, sign in with Google");
+    window.location.assign(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/next/google/drive/safe?token=${token}`
+    );
+  };
+
   return (
     <>
       {googleDrive && (
         <button
           className={`${styles.button} ${styles.mr}`}
-          onClick={googleDriveLogin}
+          onClick={googleDriveLoginSafe}
         >
           Google Drive
         </button>

@@ -19,6 +19,9 @@ class TokenService {
     if (resource === "DRIVE") {
       googleRefreshToken = user.googleDrive.refreshToken;
     }
+    if (resource === "DRIVE_SAFE") {
+      googleRefreshToken = user.googleDriveSafe.refreshToken;
+    }
 
     const urls = {
       GOOGLE: `https://oauth2.googleapis.com/token?client_id=${process.env.GOOGLE_OAUTH2_CLIENT_ID}&client_secret=${process.env.GOOGLE_OAUTH2_CLIENT_SECRET}&grant_type=refresh_token&refresh_token=${googleRefreshToken}`,
@@ -54,6 +57,19 @@ class TokenService {
             "googleDrive.tokenType": response.data.token_type,
             "googleDrive.expiresIn": response.data.expires_in,
             "googleDrive.scope": response.data.scope,
+          },
+          { new: true }
+        ).exec();
+      }
+
+      if (provider === "GOOGLE" && resource === "DRIVE_SAFE") {
+        userWithRefreshedToken = await NextUserModel.findOneAndUpdate(
+          { id: user.id },
+          {
+            "googleDriveSafe.accessToken": response.data.access_token,
+            "googleDriveSafe.tokenType": response.data.token_type,
+            "googleDriveSafe.expiresIn": response.data.expires_in,
+            "googleDriveSafe.scope": response.data.scope,
           },
           { new: true }
         ).exec();

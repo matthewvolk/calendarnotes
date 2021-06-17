@@ -22,6 +22,14 @@ const nextUserSchema = new mongoose.Schema({
     scope: String,
     tokenType: String,
   },
+  googleDriveSafe: {
+    accessToken: String,
+    refreshToken: String,
+    expiresIn: Number,
+    scope: String,
+    tokenType: String,
+    folderId: String,
+  },
   wrike: {
     accessToken: String,
     refreshToken: String,
