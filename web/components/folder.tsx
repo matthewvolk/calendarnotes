@@ -66,9 +66,14 @@ export default function Folder({
   };
 
   const handleSelection = (e) => {
-    console.log("Set Notes Location to:", e.target.id);
     setChooseNotesLocationAlert(null);
-    setFolderId(e.target.id);
+    if (!e.target.id) {
+      setFolderId("recreate-folder");
+    }
+    if (e.target.id) {
+      setFolderId(e.target.id);
+    }
+    console.log("Set Notes Location to:", e.target.id);
   };
 
   return (

@@ -300,6 +300,11 @@ module.exports = {
       await userDoc.save();
       response.json({ status: 200, message: "success" });
     }
+    if (location === "googleDriveSafe") {
+      userDoc.notesStorage.current = "googleDriveSafe";
+      await userDoc.save();
+      response.json({ status: 200, message: "success" });
+    }
     if (location === "wrike") {
       userDoc.notesStorage.current = "wrike";
       await userDoc.save();
@@ -1373,8 +1378,11 @@ module.exports = {
             calendarNotesFolderInfo = calendarNotesFolderInfoResponse.data;
           }
         }
-        if (err.response && err.response.status === 404) {
-          console.log("folder was deleted permanently, create a new one");
+        if (
+          (err.response && err.response.status === 404) ||
+          err.response.status === 400
+        ) {
+          console.log("cannot match folder id to folder, creating a new one");
           try {
             const calendarNotesFolderCreationResponse = await axios({
               method: "post",
@@ -1454,6 +1462,7 @@ module.exports = {
             }
           }
         }
+        console.log("Should not see");
       }
 
       if (!calendarNotesFolderInfo) {

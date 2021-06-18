@@ -104,6 +104,33 @@ function Dashboard() {
               notesLocation={notesLocation}
               setChooseNotesLocationAlert={setChooseNotesLocationAlert}
             />
+            {notesLocation?.current === "googleDriveSafe" && (
+              <div
+                style={{
+                  color: "#987205",
+                  backgroundColor: "#fff7dc",
+                  padding: "0.5rem",
+                  borderRadius: "0.5rem",
+                  marginBottom: "1rem",
+                  marginTop: "2rem",
+                }}
+              >
+                <strong>Note:</strong> For security reasons, <br />
+                the Google Drive API <br />
+                places restrictions on the <br />
+                data that apps such as <br />
+                CalendarNotes are allowed
+                <br /> to view from your Google
+                <br /> Drive. For this reason,
+                <br /> all notes must be created <br />
+                in a "CalendarNotes" folder in <br />
+                your "My Drive". If you need <br />
+                the notes file to be placed <br />
+                in another folder, please <br />
+                move the file within your
+                <br /> Google Drive manually.
+              </div>
+            )}
           </div>
           <Events
             currentCal={currentCal}

@@ -66,6 +66,7 @@ export default function NotesLocationButton({
     e.preventDefault();
     if (notesLocation?.available?.some((loc) => loc.id === "googleDriveSafe")) {
       if (notesLocation?.current !== "googleDriveSafe") {
+        console.log("hello");
         await authFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/next/notes/storage?location=googleDriveSafe`,
           token
