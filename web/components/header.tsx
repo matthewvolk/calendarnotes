@@ -32,19 +32,19 @@ export default function Header({ currentCal, setCurrentCal, user }) {
       <div style={{ display: "flex", alignItems: "center" }}>
         <Logout />
         {/* @todo https://nextjs.org/docs/api-reference/next/image#src */}
-        <Link href="/settings">
-          <img
-            src={user.picture}
-            alt="Your Profile Picture"
-            height="40"
-            width="40"
-            style={{
-              borderRadius: "100%",
-              margin: "0 1rem",
-              cursor: "pointer",
-            }}
-          />
-        </Link>
+        {/* <Link href="/settings"> */}
+        <img
+          src={user.picture}
+          alt="Your Profile Picture"
+          height="40"
+          width="40"
+          style={{
+            borderRadius: "100%",
+            margin: "0 1rem",
+            cursor: "pointer",
+          }}
+        />
+        {/* </Link> */}
       </div>
     </header>
   );

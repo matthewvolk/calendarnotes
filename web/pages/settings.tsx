@@ -51,7 +51,6 @@ function Settings() {
               style={{
                 borderRadius: "100%",
                 margin: "0 1rem",
-                cursor: "pointer",
               }}
             />
             <h1
@@ -76,8 +75,18 @@ function Settings() {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: "5rem" }}>🚧</div>
-          <h2 style={{ fontWeight: 600 }}>Coming Soon!</h2>
+          <div style={{ fontSize: "5rem", margin: "10rem 0 2rem 0" }}>🚧</div>
+          <code
+            style={{
+              color: "#8A6534",
+              padding: "4px",
+              backgroundColor: "#FFF4DB",
+              fontSize: "1.65rem",
+              borderRadius: "4px",
+            }}
+          >
+            Under Construction
+          </code>
         </div>
       </>
     );
