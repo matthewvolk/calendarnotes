@@ -92,19 +92,35 @@ export const Event: React.FC<EventProps> = ({
           color: "#3e3e3e",
         }}
       >
-        {new Intl.DateTimeFormat("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
+        {event.start.date &&
+          `${new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }).format(Date.parse(event.start.date))}
+          -
+          ${new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }).format(Date.parse(event.end.date))}`}
+
+        {event.start.dateTime &&
+          `${new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+          }).format(Date.parse(event.start.dateTime))}
+        -
+        ${new Intl.DateTimeFormat("en-US", {
           hour: "numeric",
           minute: "numeric",
-        }).format(Date.parse(event.start.dateTime || event.start.date))}{" "}
-        -{" "}
-        {new Intl.DateTimeFormat("en-US", {
-          hour: "numeric",
-          minute: "numeric",
-        }).format(Date.parse(event.end.dateTime || event.end.date))}
+        }).format(Date.parse(event.end.dateTime))}`}
       </div>
       <div
         style={{
