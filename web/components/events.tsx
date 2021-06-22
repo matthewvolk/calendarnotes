@@ -114,6 +114,21 @@ export default function Events({
                 />
               );
             })}
+          {!currentCal && (
+            <div
+              style={{
+                color: "#856404",
+                backgroundColor: "#fff3cd",
+                borderColor: "#ffeeba",
+                padding: "0.5rem",
+                borderRadius: "0.5rem",
+                marginBottom: "1rem",
+                marginTop: "",
+              }}
+            >
+              Please select a Google Calendar from the dropdown above.
+            </div>
+          )}
         </div>
       </div>
     </div>

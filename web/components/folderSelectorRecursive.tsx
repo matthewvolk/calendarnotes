@@ -3,9 +3,27 @@ import Folder from "./folder";
 export default function FolderSelectorRecursive({
   folderTree,
   setFolderId,
+  notesLocation,
   getChildFoldersForFolderId,
   setChooseNotesLocationAlert,
 }) {
+  if (notesLocation?.available.length < 1) {
+    return (
+      <div
+        style={{
+          color: "#856404",
+          backgroundColor: "#fff3cd",
+          borderColor: "#ffeeba",
+          padding: "0.5rem",
+          borderRadius: "0.5rem",
+          marginBottom: "1rem",
+          marginTop: "",
+        }}
+      >
+        Please select a notes location above
+      </div>
+    );
+  }
   if (!folderTree) {
     return <div>Loading...</div>;
   }
@@ -41,6 +59,7 @@ export default function FolderSelectorRecursive({
             <FolderSelectorRecursive
               folderTree={folder.children} // setting it to folders causes infinite loop
               setFolderId={setFolderId}
+              notesLocation={notesLocation}
               getChildFoldersForFolderId={getChildFoldersForFolderId}
               setChooseNotesLocationAlert={setChooseNotesLocationAlert}
             />

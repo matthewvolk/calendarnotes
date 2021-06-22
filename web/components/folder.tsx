@@ -81,7 +81,7 @@ export default function Folder({
       key={index}
       style={{
         padding: "2px 0 2px 20px",
-        margin: "5px 0",
+        margin: "7.5px 0 0 0",
         fontSize: "1.1rem",
       }}
     >

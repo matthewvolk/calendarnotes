@@ -76,8 +76,9 @@ function Dashboard() {
             {chooseNotesLocationAlert && (
               <div
                 style={{
-                  color: "red",
-                  backgroundColor: "#ffe5e5",
+                  color: "#721c24",
+                  backgroundColor: "#f8d7da",
+                  borderColor: "#f5c6cb",
                   padding: "0.5rem",
                   borderRadius: "0.5rem",
                   marginBottom: "1rem",
@@ -99,7 +100,6 @@ function Dashboard() {
               wrike
             />
             <FolderSelector
-              folderId={folderId}
               setFolderId={setFolderId}
               notesLocation={notesLocation}
               setChooseNotesLocationAlert={setChooseNotesLocationAlert}
@@ -109,6 +109,7 @@ function Dashboard() {
                 style={{
                   color: "#987205",
                   backgroundColor: "#fff7dc",
+                  borderColor: "#fff3c8",
                   padding: "0.5rem",
                   borderRadius: "0.5rem",
                   marginBottom: "1rem",

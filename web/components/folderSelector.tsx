@@ -7,7 +7,6 @@ import { useToken } from "../context/token";
 const FolderSelector = ({
   setFolderId,
   notesLocation,
-  folderId,
   setChooseNotesLocationAlert,
 }) => {
   const { token } = useToken();
@@ -68,6 +67,7 @@ const FolderSelector = ({
       setFolderId={setFolderId}
       getChildFoldersForFolderId={getChildFoldersForFolderId}
       setChooseNotesLocationAlert={setChooseNotesLocationAlert}
+      notesLocation={notesLocation}
     />
   );
 };
