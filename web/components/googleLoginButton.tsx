@@ -8,8 +8,16 @@ export default function GoogleLoginButton() {
     );
   };
   return (
-    <button className={styles.button} onClick={logInWithGoogle}>
-      Click here to log in with Google
-    </button>
+    <div
+      onClick={logInWithGoogle}
+      className={`${styles.gButton} ${styles.normal}`}
+      role="login button"
+    >
+      <img
+        className={`${styles.logoTile}`}
+        src="/btn_google_dark_normal_ios.svg"
+      />
+      <span>Sign in with Google</span>
+    </div>
   );
 }
