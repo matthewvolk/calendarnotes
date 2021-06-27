@@ -50,6 +50,7 @@ module.exports = {
           "googleCalendar.expiresIn": tokens.expires_in,
           "googleCalendar.scope": tokens.scope,
           "googleCalendar.tokenType": tokens.token_type,
+          "googleCalendar.defaultCalId": googleUser.email,
         });
         await newUser.save();
       }
