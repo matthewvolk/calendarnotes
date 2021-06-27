@@ -61,11 +61,21 @@
     margin-bottom: 1.5rem;
   }
 
-  .my5 {
-    margin: 2rem 0 5rem 0;
-  }
-
   .imageContainer {
     min-width: 90%;
+  }
+
+  .singleClick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .my5 {
+    margin: 5rem 1rem;
+  }
+
+  .mt5 {
+    margin-top: 4rem;
   }
 }

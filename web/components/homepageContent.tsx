@@ -21,7 +21,9 @@ export default function HomepageContent() {
           </div>
         </div>
         <div className={styles.imageContainer}>
-          <h2 className={styles.textCenter}>...to this...</h2>
+          <h2 className={`${styles.textCenter} ${styles.mt5}`}>
+            ...to this...
+          </h2>
           <div className={styles.shadow}>
             <Image
               src={toThis}
