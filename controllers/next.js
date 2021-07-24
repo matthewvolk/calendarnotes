@@ -9,7 +9,7 @@ module.exports = {
   googleAuth: (_, response) => {
     response.redirect(
       `https://accounts.google.com/o/oauth2/v2/auth?scope=${encodeURIComponent(
-        "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid"
+        "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
       )}&access_type=offline&prompt=consent&include_granted_scopes=true&response_type=code&redirect_uri=${encodeURIComponent(
         process.env.GOOGLE_OAUTH2_REDIRECT_URI_NEXT
       )}&client_id=${encodeURIComponent(process.env.GOOGLE_OAUTH2_CLIENT_ID)}`
