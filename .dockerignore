@@ -1,5 +1,5 @@
 .env
 next
-client
+web
 node_modules
 npm-debug.log
