@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const nextUserSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   id: String,
   name: String,
   email: String,
@@ -43,6 +43,6 @@ const nextUserSchema = new mongoose.Schema({
   },
 });
 
-const NextUser = mongoose.model("NextUser", nextUserSchema);
+const User = mongoose.model("User", userSchema);
 
-module.exports = NextUser;
+module.exports = User;

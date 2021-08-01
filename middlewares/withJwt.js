@@ -1,4 +1,4 @@
-const NextUser = require("../models/NextUser");
+const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
 const withJwt = async (request, response, next) => {
@@ -11,7 +11,7 @@ const withJwt = async (request, response, next) => {
     response.status(401).send("Unauthorized");
     return;
   }
-  const user = await NextUser.findOne({ id: decoded.id }).exec();
+  const user = await User.findOne({ id: decoded.id }).exec();
   if (!user) {
     response.status(401).send("Unauthorized");
     return;

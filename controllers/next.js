@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const { DateTime } = require("luxon");
-const NextUser = require("../models/NextUser");
+const User = require("../models/User");
 const DateService = require("../services/DateService");
 const TokenService = require("../services/TokenService");
 
@@ -36,9 +36,9 @@ module.exports = {
           Authorization: `Bearer ${tokens.access_token}`,
         },
       });
-      const user = await NextUser.findOne({ id: googleUser.id }).exec();
+      const user = await User.findOne({ id: googleUser.id }).exec();
       if (!user) {
-        const newUser = new NextUser({
+        const newUser = new User({
           id: googleUser.id,
           name: googleUser.name,
           email: googleUser.email,
@@ -294,7 +294,7 @@ module.exports = {
     const { location } = request.query;
     const user = request.user;
 
-    const userDoc = await NextUser.findOne({ id: user.id });
+    const userDoc = await User.findOne({ id: user.id });
 
     if (location === "googleDrive") {
       userDoc.notesStorage.current = "googleDrive";
@@ -811,7 +811,7 @@ module.exports = {
           process.env.GOOGLE_DRIVE_OAUTH_REDIRECT_URI_NEXT
         )}`,
       });
-      const user = await NextUser.findOne({ id });
+      const user = await User.findOne({ id });
       user.googleDrive.accessToken = googleDriveCreds.data.access_token;
       user.googleDrive.expiresIn = googleDriveCreds.data.expires_in;
       user.googleDrive.refreshToken = googleDriveCreds.data.refresh_token;
@@ -860,7 +860,7 @@ module.exports = {
           process.env.GOOGLE_DRIVE_SAFE_OAUTH_REDIRECT_URI_NEXT
         )}`,
       });
-      const user = await NextUser.findOne({ id });
+      const user = await User.findOne({ id });
       user.googleDriveSafe.accessToken = googleDriveCreds.data.access_token;
       user.googleDriveSafe.expiresIn = googleDriveCreds.data.expires_in;
       user.googleDriveSafe.refreshToken = googleDriveCreds.data.refresh_token;
@@ -895,7 +895,7 @@ module.exports = {
         console.log("CalendarNotes folder created");
         const calendarNotesFolderId =
           calendarNotesFolderCreationResponse.data.id;
-        const user = await NextUser.findOne({ id });
+        const user = await User.findOne({ id });
         user.googleDriveSafe.folderId = calendarNotesFolderId;
         await user.save();
         console.log("Saved User with Google Drive Safe Folder ID");
@@ -936,7 +936,7 @@ module.exports = {
             process.env.WRIKE_OAUTH2_REDIRECT_URI_NEXT
           )}`,
         });
-        const user = await NextUser.findOne({ id });
+        const user = await User.findOne({ id });
         user.wrike.accessToken = wrikeResponse.data.access_token;
         user.wrike.refreshToken = wrikeResponse.data.refresh_token;
         user.wrike.apiHost = wrikeResponse.data.host;
@@ -1244,7 +1244,7 @@ module.exports = {
               );
               const calendarNotesFolderId =
                 calendarNotesFolderCreationResponse.data.id;
-              const newUser = await NextUser.findOne({ id: user.id });
+              const newUser = await User.findOne({ id: user.id });
               console.log("NEW USER", newUser);
               newUser.googleDriveSafe.folderId = calendarNotesFolderId;
               await newUser.save();
@@ -1286,7 +1286,7 @@ module.exports = {
                 );
                 const calendarNotesFolderId =
                   calendarNotesFolderCreationResponse.data.id;
-                const newUser = await NextUser.findOne({ id: user.id });
+                const newUser = await User.findOne({ id: user.id });
                 console.log("NEW USER", newUser);
                 newUser.googleDriveSafe.folderId = calendarNotesFolderId;
                 await newUser.save();
@@ -1355,7 +1355,7 @@ module.exports = {
                 );
                 const calendarNotesFolderId =
                   calendarNotesFolderCreationResponse.data.id;
-                const newUser = await NextUser.findOne({ id: user.id });
+                const newUser = await User.findOne({ id: user.id });
                 console.log("NEW USER", newUser);
                 newUser.googleDriveSafe.folderId = calendarNotesFolderId;
                 await newUser.save();
@@ -1408,7 +1408,7 @@ module.exports = {
               );
               const calendarNotesFolderId =
                 calendarNotesFolderCreationResponse.data.id;
-              const newUser = await NextUser.findOne({ id: user.id });
+              const newUser = await User.findOne({ id: user.id });
               console.log("NEW USER", newUser);
               newUser.googleDriveSafe.folderId = calendarNotesFolderId;
               await newUser.save();
@@ -1450,7 +1450,7 @@ module.exports = {
                 );
                 const calendarNotesFolderId =
                   calendarNotesFolderCreationResponse.data.id;
-                const newUser = await NextUser.findOne({ id: user.id });
+                const newUser = await User.findOne({ id: user.id });
                 console.log("NEW USER", newUser);
                 newUser.googleDriveSafe.folderId = calendarNotesFolderId;
                 await newUser.save();

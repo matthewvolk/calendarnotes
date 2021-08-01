@@ -1,4 +1,4 @@
-const NextUserModel = require("../models/NextUser");
+const User = require("../models/User");
 const axios = require("axios");
 
 class TokenService {
@@ -35,7 +35,7 @@ class TokenService {
       let userWithRefreshedToken = null;
 
       if (provider === "GOOGLE" && resource === "AUTH") {
-        userWithRefreshedToken = await NextUserModel.findOneAndUpdate(
+        userWithRefreshedToken = await User.findOneAndUpdate(
           { id: user.id },
           {
             "googleCalendar.accessToken": response.data.access_token,
@@ -48,7 +48,7 @@ class TokenService {
       }
 
       if (provider === "GOOGLE" && resource === "DRIVE") {
-        userWithRefreshedToken = await NextUserModel.findOneAndUpdate(
+        userWithRefreshedToken = await User.findOneAndUpdate(
           { id: user.id },
           {
             "googleDrive.accessToken": response.data.access_token,
@@ -61,7 +61,7 @@ class TokenService {
       }
 
       if (provider === "GOOGLE" && resource === "DRIVE_SAFE") {
-        userWithRefreshedToken = await NextUserModel.findOneAndUpdate(
+        userWithRefreshedToken = await User.findOneAndUpdate(
           { id: user.id },
           {
             "googleDriveSafe.accessToken": response.data.access_token,
@@ -74,7 +74,7 @@ class TokenService {
       }
 
       if (provider === "WRIKE") {
-        userWithRefreshedToken = await NextUserModel.findOneAndUpdate(
+        userWithRefreshedToken = await User.findOneAndUpdate(
           { id: user.id },
           {
             "wrike.accessToken": response.data.access_token,
