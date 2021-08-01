@@ -38,7 +38,6 @@
 
 ```
 calendarnotes/
-├── client/        # Frontend create-react-app
 ├── controllers/   # Controllers for Express.js routes
 ├── middlewares/   # Express.js middleware handlers
 ├── models/        # Mongoose.js models
