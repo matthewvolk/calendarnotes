@@ -1,9 +1,10 @@
 import Head from "next/head";
 import Headline from "../components/headline";
+import Cookies from "universal-cookie";
 import Layout from "../components/layout";
 import GoogleLoginButton from "../components/googleLoginButton";
 
-export default function Login() {
+function Login() {
   return (
     <Layout>
       <Head>
@@ -21,3 +22,33 @@ export default function Login() {
     </Layout>
   );
 }
+
+export const getServerSideProps = async (ctx) => {
+  const cookies = new Cookies(ctx.req ? ctx.req.headers.cookie : null);
+  const cnauthtkn = cookies.get("cnauthtkn");
+  // validate cookie
+  if (cnauthtkn) {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/next/user`,
+      {
+        headers: {
+          Authorization: `Bearer ${cnauthtkn}`,
+        },
+      }
+    );
+    if (response.ok) {
+      return {
+        redirect: {
+          permanent: false,
+          destination: "/dashboard",
+        },
+      };
+    }
+  }
+
+  return {
+    props: {}, // will be passed to the page component as props
+  };
+};
+
+export default Login;

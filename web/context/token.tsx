@@ -1,30 +1,42 @@
 import React from "react";
+import Cookies from "universal-cookie";
 
-const TokenContext = React.createContext(null);
+const Context = React.createContext(null);
+
+const { Provider } = Context;
 
 function TokenProvider({ children }) {
   const [token, setToken] = React.useState("");
+  const cookies = new Cookies();
 
   React.useEffect(() => {
-    (function () {
+    const validateToken = async () => {
       if (typeof window !== "undefined") {
-        const tokenInStorage = localStorage.getItem("cnauthtkn");
+        const tokenInStorage = cookies.get("cnauthtkn");
         if (tokenInStorage) {
-          setToken(tokenInStorage);
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/next/user`,
+            { headers: { Authorization: `Bearer ${tokenInStorage}` } }
+          );
+          if (response.ok) {
+            setToken(tokenInStorage);
+          }
+          if (!response.ok) {
+            setToken("");
+            cookies.remove("cnauthtkn");
+          }
         }
       }
-    })();
-    // need to clear token state when user logs out
+    };
+    validateToken();
   });
 
   const value = { token, setToken };
-  return (
-    <TokenContext.Provider value={value}>{children}</TokenContext.Provider>
-  );
+  return <Provider value={value}>{children}</Provider>;
 }
 
 function useToken() {
-  const { token, setToken } = React.useContext(TokenContext);
+  const { token, setToken } = React.useContext(Context);
   return { token, setToken };
 }
 

@@ -1,19 +1,20 @@
-import { useRouter } from "next/router";
-import { useToken } from "../context/token";
 import styles from "../styles/logout.module.css";
+import Cookies from "universal-cookie";
+import Router from "next/router";
+import { useToken } from "../context/token";
 
 export default function Logout() {
-  const Router = useRouter();
   const { setToken } = useToken();
   return (
     <button
       className={styles.button}
       onClick={(e) => {
         e.preventDefault();
-        localStorage.removeItem("cnauthtkn");
+        const cookies = new Cookies();
+        cookies.remove("cnauthtkn", { path: "/" });
         setToken("");
         // fix with swr
-        window.location.reload();
+        Router.push("/login");
       }}
     >
       Logout

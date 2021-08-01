@@ -56,7 +56,9 @@ module.exports = {
       }
       const token = jwt.sign({ id: googleUser.id }, process.env.JWT_SECRET);
       response.redirect(
-        `${process.env.GOOGLE_OAUTH_REDIRECT_NEXT}?token=${token}`
+        `${process.env.GOOGLE_OAUTH_REDIRECT_NEXT}?token=${encodeURIComponent(
+          token
+        )}`
       );
     }
     if (error) {
