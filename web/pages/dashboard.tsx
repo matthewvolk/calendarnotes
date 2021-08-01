@@ -17,14 +17,14 @@ function Dashboard({ user }) {
 
   useEffect(() => {
     setCurrentCal(user.googleCalendar?.defaultCalId);
-  });
+  }, []);
 
   useEffect(() => {
     setNotesLocation({
       current: user.notesStorage?.current,
       available: user.notesStorage?.available,
     });
-  });
+  }, []);
 
   return (
     <>
