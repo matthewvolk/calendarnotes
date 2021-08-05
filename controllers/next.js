@@ -54,6 +54,17 @@ module.exports = {
         });
         await newUser.save();
       }
+      if (user) {
+        console.log(user.googleCalendar.scope);
+        user.googleCalendar.accessToken = tokens.access_token;
+        user.googleCalendar.refreshToken = tokens.refresh_token;
+        user.googleCalendar.expiresIn = tokens.expires_in;
+        user.googleCalendar.scope = tokens.scope;
+        user.googleCalendar.tokenType = tokens.token_type;
+        user.googleCalendar.defaultCalId = googleUser.email;
+        console.log(user.googleCalendar.scope);
+        await user.save();
+      }
       const token = jwt.sign({ id: googleUser.id }, process.env.JWT_SECRET);
       response.redirect(
         `${process.env.GOOGLE_OAUTH_REDIRECT_NEXT}?token=${encodeURIComponent(
@@ -196,6 +207,7 @@ module.exports = {
       return response.json({
         error: true,
         message: "Failed to retrieve user calendar timezone",
+        didNotProvideConsent: true,
       });
     }
 
@@ -1062,6 +1074,7 @@ module.exports = {
       return response.json({
         error: true,
         message: "Failed to retrieve user calendar timezone",
+        didNotProvideConsent: true,
       });
     }
 

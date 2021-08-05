@@ -103,6 +103,30 @@ export default function Events({
       </div>
       <div>
         <div style={{ padding: "0.1rem 0" }}>
+          {events && events.error && events.didNotProvideConsent && (
+            <div
+              style={{
+                color: "#721c24",
+                backgroundColor: "#f8d7da",
+                borderColor: "#f5c6cb",
+                padding: "0.5rem",
+                borderRadius: "0.5rem",
+                marginBottom: "1rem",
+                marginTop: "",
+              }}
+            >
+              Failed to retrieve your calendar events. You may have forgotten to
+              provide CalendarNotes access to your Google Calendars. Please{" "}
+              <a
+                style={{ color: "#5582e8", textDecoration: "underline" }}
+                href={`${process.env.NEXT_PUBLIC_API_URL}/api/next/google`}
+              >
+                click here
+              </a>{" "}
+              and be sure to click the two checkboxes requesting your permission
+              to access your Google Calendar
+            </div>
+          )}
           {events &&
             events?.events?.map((event) => {
               return (

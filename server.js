@@ -18,7 +18,6 @@ mongoose
     console.log(`MongoDB Connection Error: ${err.message}`);
   });
 
-app.use(express.static(path.join(__dirname, "client/build")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(
@@ -26,10 +25,6 @@ app.use(
 );
 
 app.use("/api", require("./router"));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname + "/client/build/index.html"));
-});
 
 app.listen(PORT, () => {
   console.log(`HTTP server listening on http://localhost:${PORT}`);
