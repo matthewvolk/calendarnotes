@@ -115,8 +115,8 @@ export default function Events({
                 marginTop: "",
               }}
             >
-              Failed to retrieve your calendar events. You may have forgotten to
-              provide CalendarNotes access to your Google Calendars. Please{" "}
+              Failed to retrieve your calendar events. CalendarNotes may have
+              lost access to your Google Calendars. Please{" "}
               <a
                 style={{ color: "#5582e8", textDecoration: "underline" }}
                 href={`${process.env.NEXT_PUBLIC_API_URL}/api/next/google`}

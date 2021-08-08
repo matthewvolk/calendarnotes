@@ -796,55 +796,6 @@ module.exports = {
     // ]);
   },
 
-  googleDriveAuth: (request, response) => {
-    const user = request.user;
-    response.redirect(
-      `https://accounts.google.com/o/oauth2/v2/auth?client_id=${
-        process.env.GOOGLE_OAUTH2_CLIENT_ID
-      }&redirect_uri=${encodeURIComponent(
-        process.env.GOOGLE_DRIVE_OAUTH_REDIRECT_URI_NEXT
-      )}&response_type=code&scope=${encodeURIComponent(
-        "https://www.googleapis.com/auth/drive"
-      )}&access_type=offline&prompt=consent&state=${encodeURIComponent(
-        `${user.id}`
-      )}`
-    );
-  },
-
-  googleDriveAuthCallback: async (request, response) => {
-    const { error, code, state: id } = request.query;
-
-    if (code) {
-      const googleDriveCreds = await axios({
-        method: "post",
-        url: `https://oauth2.googleapis.com/token?client_id=${
-          process.env.GOOGLE_OAUTH2_CLIENT_ID
-        }&client_secret=${
-          process.env.GOOGLE_OAUTH2_CLIENT_SECRET
-        }&code=${code}&grant_type=authorization_code&redirect_uri=${encodeURIComponent(
-          process.env.GOOGLE_DRIVE_OAUTH_REDIRECT_URI_NEXT
-        )}`,
-      });
-      const user = await User.findOne({ id });
-      user.googleDrive.accessToken = googleDriveCreds.data.access_token;
-      user.googleDrive.expiresIn = googleDriveCreds.data.expires_in;
-      user.googleDrive.refreshToken = googleDriveCreds.data.refresh_token;
-      user.googleDrive.scope = googleDriveCreds.data.scope;
-      user.googleDrive.tokenType = googleDriveCreds.data.token_type;
-      user.notesStorage.current = "googleDrive";
-      user.notesStorage.available.push({
-        id: "googleDrive",
-        name: "Google Drive",
-      });
-      await user.save();
-      response.redirect(process.env.GOOGLE_OAUTH_REDIRECT_NEXT);
-    }
-
-    if (error) {
-      response.redirect(process.env.GOOGLE_OAUTH_REDIRECT_NEXT);
-    }
-  },
-
   googleDriveAuthSafe: (request, response) => {
     const user = request.user;
     response.redirect(
@@ -919,6 +870,48 @@ module.exports = {
 
     if (error) {
       response.redirect(process.env.GOOGLE_OAUTH_REDIRECT_NEXT);
+    }
+  },
+
+  googleDriveAuthCheck: async (request, response) => {
+    try {
+      const checkAuth = await axios({
+        method: "get",
+        url: `https://www.googleapis.com/drive/v3/files/${request.user.googleDriveSafe.folderId}`,
+        headers: {
+          Authorization: `Bearer ${request.user.googleDriveSafe.accessToken}`,
+          Accept: "application/json",
+        },
+      });
+      response.status(204).send();
+    } catch (error) {
+      if (error.response.status === 401) {
+        const tokenService = new TokenService();
+        const userWithRefreshedToken = await tokenService.refreshTokenNext(
+          request.user,
+          "GOOGLE",
+          "DRIVE_SAFE"
+        );
+        try {
+          const checkAuth = await axios({
+            method: "get",
+            url: `https://www.googleapis.com/drive/v3/files/${userWithRefreshedToken.googleDriveSafe.folderId}`,
+            headers: {
+              Authorization: `Bearer ${userWithRefreshedToken.googleDriveSafe.accessToken}`,
+              Accept: "application/json",
+            },
+          });
+          response.status(204).send();
+        } catch (error) {
+          const user = await User.findOne({ id: request.user.id });
+          user.googleDriveSafe = undefined;
+          user.notesStorage.current = undefined;
+          user.notesStorage.available.pop();
+          await user.save();
+          console.log(user);
+        }
+      }
+      response.status(200).send();
     }
   },
 

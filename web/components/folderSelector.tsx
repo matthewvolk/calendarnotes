@@ -12,6 +12,20 @@ const FolderSelector = ({
   const { token } = useToken();
   const [folderTree, setFolderTree] = useState(null);
 
+  const checkDriveAuth = async () => {
+    const res = await authFetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/next/google/drive/check`,
+      token
+    );
+    console.log("res", res);
+  };
+
+  useEffect(() => {
+    if (token) {
+      checkDriveAuth();
+    }
+  }, [token]);
+
   const getTopLevelFolders = async () => {
     const folders = await authFetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/next/folders?location=${notesLocation.current}`,
