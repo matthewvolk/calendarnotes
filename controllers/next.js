@@ -73,7 +73,7 @@ module.exports = {
       );
     }
     if (error) {
-      console.error(error);
+      response.redirect(process.env.GOOGLE_OAUTH_FAILURE_REDIRECT);
     }
   },
 
