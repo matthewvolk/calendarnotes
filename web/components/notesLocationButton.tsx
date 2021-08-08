@@ -60,14 +60,19 @@ export default function NotesLocationButton({
 
   return (
     <>
-      {googleDrive && (
-        <button
-          className={`${styles.button} ${styles.mr}`}
-          onClick={googleDriveLoginSafe}
-        >
-          Log In with Google Drive
-        </button>
-      )}
+      {googleDrive &&
+        (notesLocation && notesLocation.current === "googleDriveSafe" ? (
+          <button className={`${styles.buttonDisabled} ${styles.mr}`}>
+            Google Drive
+          </button>
+        ) : (
+          <button
+            className={`${styles.button} ${styles.mr}`}
+            onClick={googleDriveLoginSafe}
+          >
+            Log In with Google Drive
+          </button>
+        ))}
       {/* {wrike && (
         <button className={styles.button} onClick={wrikeLogin}>
           Wrike
