@@ -20,7 +20,7 @@ export default function FolderSelectorRecursive({
           marginTop: "",
         }}
       >
-        Please select a notes location above
+        Please log in with Google Drive above
       </div>
     );
   }

@@ -18,7 +18,6 @@ export default function NotesLocationButton({
   wrike,
 }: Props) {
   const { token } = useToken();
-  console.log("googleDrive", googleDrive);
 
   const wrikeLogin = async (e) => {
     e.preventDefault();
@@ -32,33 +31,10 @@ export default function NotesLocationButton({
         setFolderId(null);
         return;
       }
-      console.log("current notes location already wrike");
       return;
     }
-    console.log("googleDrive not in available array, sign in with Google");
     window.location.assign(
       `${process.env.NEXT_PUBLIC_API_URL}/api/next/wrike?token=${token}`
-    );
-  };
-
-  const googleDriveLogin = async (e) => {
-    e.preventDefault();
-    if (notesLocation?.available?.some((loc) => loc.id === "googleDrive")) {
-      if (notesLocation?.current !== "googleDrive") {
-        await authFetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/next/notes/storage?location=googleDrive`,
-          token
-        );
-        setNotesLocation({ ...notesLocation, current: "googleDrive" });
-        setFolderId(null);
-        return;
-      }
-      console.log("current notes location already googleDrive");
-      return;
-    }
-    console.log("googleDrive not in available array, sign in with Google");
-    window.location.assign(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/next/google/drive?token=${token}`
     );
   };
 
@@ -75,10 +51,8 @@ export default function NotesLocationButton({
         setFolderId(null);
         return;
       }
-      console.log("current notes location already googleDriveSafe");
       return;
     }
-    console.log("googleDriveSafe not in available array, sign in with Google");
     window.location.assign(
       `${process.env.NEXT_PUBLIC_API_URL}/api/next/google/drive/safe?token=${token}`
     );
@@ -91,14 +65,14 @@ export default function NotesLocationButton({
           className={`${styles.button} ${styles.mr}`}
           onClick={googleDriveLoginSafe}
         >
-          Google Drive
+          Log In with Google Drive
         </button>
       )}
-      {wrike && (
+      {/* {wrike && (
         <button className={styles.button} onClick={wrikeLogin}>
           Wrike
         </button>
-      )}
+      )} */}
     </>
   );
 }
