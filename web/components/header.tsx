@@ -41,7 +41,6 @@ export default function Header({ currentCal, setCurrentCal, user }) {
           style={{
             borderRadius: "100%",
             margin: "0 1rem",
-            cursor: "pointer",
           }}
         />
         {/* </Link> */}
