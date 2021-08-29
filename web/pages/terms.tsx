@@ -29,7 +29,7 @@ export default function Terms() {
         </p>
         <h2 style={{ fontSize: "2rem" }}>Conditions of Use</h2>
         <p style={{ fontWeight: 300 }}>
-          By ysing this website, you certify that you have read and reviewed
+          By using this website, you certify that you have read and reviewed
           this agreement and that you agree to comply with its terms. If you do
           not want to be bound by the terms of this agreement, you are advised
           to leave this website accordingly. CalendarNotes.io only grants use
