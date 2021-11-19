@@ -73,11 +73,11 @@ export default function NotesLocationButton({
             Log In with Google Drive
           </button>
         ))}
-      {/* {wrike && (
+      {wrike && (
         <button className={styles.button} onClick={wrikeLogin}>
           Wrike
         </button>
-      )} */}
+      )}
     </>
   );
 }
